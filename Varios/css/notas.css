@@ -405,12 +405,12 @@
 /* ===== FECHA ACTUAL ===== */
 
 .current-date {
-    background: #4299e1;
+    background: #ededf2; /* Fondo suave */
     border-radius: 6px;
     padding: 6px 12px;     /* ✅ Compacto como las tareas */
     margin-bottom: 20px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 3px 3px rgba(0, 0, 0, 0.1);
+    border: 3px solid var(--border-color);
     text-align: center;
 }
 

@@ -553,7 +553,7 @@ class NotasManager {
         <div class="reminder-item-original ${statusClass} ${isPaid ? 'paid-reminder' : ''}" data-id="${reminder.id}">
             <div class="reminder-checkbox-original">
                 <input type="checkbox" ${isPaid ? 'checked' : ''} 
-                       onchange="window.notasManager.toggleReminderPaid('${reminder.id}')">
+                onchange="window.notasManager.toggleReminder('${reminder.id}')">
             </div>
             <div class="reminder-content-original">
                 <div class="reminder-header-original">
@@ -699,8 +699,8 @@ toggleReminderPaid(reminderId) {
                     </div>
 
                     <div class="modal-footer-reminder">
-                        <button class="btn-reminder success" onclick="window.notasManager.saveReminder()">💾 Guardar</button>
-                        <button class="btn-reminder cancel" onclick="window.notasManager.closeReminderModal()">Cancelar</button>
+                        <button class="btn-voice primary" onclick="window.notasManager.saveReminder()">📅 Guardar Recordatorio</button>
+                        <button class="btn-voice secondary" onclick="window.notasManager.closeReminderModal()">Cancelar</button>
                     </div>
                 </div>
             </div>
@@ -1104,6 +1104,57 @@ toggleReminderPaid(reminderId) {
         const status = task.completed ? 'completada' : 'pendiente';
         this.showNotification('✅ Tarea actualizada', `Tarea marcada como ${status}`, 'success');
     }
+}
+
+    /**
+ * ✅ Alternar estado de recordatorio (pagado/pendiente)
+ */
+toggleReminder(reminderId) {
+    const reminder = this.reminders.find(r => r.id === reminderId);
+    if (reminder) {
+        reminder.paid = !reminder.paid;
+        reminder.paidAt = reminder.paid ? new Date().toISOString() : null;
+        reminder.updatedAt = new Date().toISOString();
+        
+        if (reminder.paid) {
+            // ✅ MARCAR COMO PAGADO: Mover al final
+            this.movePaidToBottom();
+        } else {
+            // ⚪ DESMARCAR: Mover al inicio
+            this.moveReminderToTop(reminderId);
+        }
+        
+        const status = reminder.paid ? 'pagado' : 'pendiente';
+        this.showNotification('✅ Recordatorio actualizado', `Recordatorio marcado como ${status}`, 'success');
+    }
+}
+
+/**
+ * ⬇️ MOVER RECORDATORIOS PAGADOS AL FINAL
+ */
+movePaidToBottom() {
+    const unpaidReminders = this.reminders.filter(reminder => !reminder.paid);
+    const paidReminders = this.reminders.filter(reminder => reminder.paid);
+    this.reminders = [...unpaidReminders, ...paidReminders];
+    this.saveData();
+    this.refreshRemindersList();
+}
+
+/**
+ * ⬆️ MOVER RECORDATORIO AL INICIO
+ */
+moveReminderToTop(reminderId) {
+    const reminderIndex = this.reminders.findIndex(reminder => reminder.id === reminderId);
+    if (reminderIndex === -1) return;
+    
+    // Extraer el recordatorio
+    const [reminder] = this.reminders.splice(reminderIndex, 1);
+    
+    // Agregar al inicio
+    this.reminders.unshift(reminder);
+    
+    this.saveData();
+    this.refreshRemindersList();
 }
 
     /**

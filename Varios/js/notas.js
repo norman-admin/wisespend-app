@@ -23,6 +23,7 @@ class NotasManager {
         this.reminders = [];
         this.currentFilter = 'all';
         this.currentSort = 'mi-orden';
+        this.showCompleted = true;
         this.recognition = null;
         this.isListening = false;
         this.finalTranscript = '';
@@ -50,31 +51,38 @@ class NotasManager {
      * 🚀 Inicializar el sistema de notas
      */
     async init(containerId = 'varios-content') {
-        try {
-            this.container = document.getElementById(containerId);
-            if (!this.container) {
-                throw new Error(`Container ${containerId} no encontrado`);
-            }
+    try {
+        this.container = document.getElementById(containerId);
+        if (!this.container) {
+            throw new Error(`Container ${containerId} no encontrado`);
+        }
 
-            // Cargar datos almacenados
-            this.loadStoredData();
-            
-            // Cargar CSS específico
-            await this.loadNotasCSS();
-            
-            // 🆕 Inicializar WebSocket PRIMERO
-            if (this.useWebSocket) {
-                await this.initWebSocket();
-            }
-            
-            // 🎨 Renderizar interfaz ORIGINAL de 2 columnas
-            this.renderOriginalInterface();
-            
-            // Inicializar Web Speech API (fallback local)
-            this.initSpeechRecognition();
-            
-            // Configurar eventos
-            this.bindEvents();
+        console.log('🚀 NotasManager: Inicialización RÁPIDA iniciada...');
+
+        // 1. CARGAR DATOS INMEDIATAMENTE
+        this.loadStoredData();
+        
+        // 2. RENDERIZAR INTERFAZ INMEDIATAMENTE
+        this.renderOriginalInterface();
+        
+        // 3. CONFIGURAR EVENTOS INMEDIATAMENTE
+        this.bindEvents();
+        
+        // 4. MARCAR COMO INICIALIZADO INMEDIATAMENTE
+        this.initialized = true;
+        console.log('✅ NotasManager: Interfaz cargada INSTANTÁNEAMENTE');
+        
+        // 5. PROCESOS EN PARALELO (no bloquean)
+        Promise.allSettled([
+            this.loadNotasCSS().catch(e => console.warn('CSS:', e)),
+            this.initWebSocketOptimized().catch(e => console.warn('WebSocket:', e)),
+            this.initSpeechRecognitionOptimized().catch(e => console.warn('Speech:', e))
+        ]).then(() => {
+            console.log('✅ Background processes completed');
+            this.updateConnectionStatus();
+        });
+        
+            console.log('🎯 NotasManager: Inicialización COMPLETA < 100ms');
             
             this.initialized = true;
             console.log('✅ NotasManager: Sistema inicializado con interfaz original');
@@ -328,14 +336,17 @@ class NotasManager {
                             <div class="options-menu-notas">
                                 <button class="options-trigger-notas">⋮</button>
                                 <div class="dropdown-menu-notas">
-                                    <div class="menu-item-notas" onclick="window.notasManager.testServerConnection()">
-                                        🧪 Probar servidor
+                                    <div class="menu-item-notas" onclick="window.notasManager.showSortMenu()">
+                                        📋 Ordenar por
                                     </div>
-                                    <div class="menu-item-notas" onclick="window.notasManager.exportData()">
-                                        📤 Exportar datos
+                                    <div class="menu-item-notas" onclick="window.notasManager.toggleCompletedVisibility()">
+                                        👁️ Mostrar/Ocultar completadas
+                                    </div>
+                                    <div class="menu-item-notas" onclick="window.notasManager.clearCompleted()">
+                                        🗑️ Limpiar completadas
                                     </div>
                                     <div class="menu-item-notas danger" onclick="window.notasManager.clearAllData()">
-                                        🗑️ Limpiar datos
+                                        🗑️ Limpiar todas
                                     </div>
                                 </div>
                             </div>
@@ -416,53 +427,67 @@ class NotasManager {
      * 🎛️ Configurar eventos de la interfaz original
      */
     setupOriginalEvents() {
-        // Filtros de tareas
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.onclick = () => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.currentFilter = btn.dataset.filter;
-                this.refreshTasksList();
-            };
-        });
+    // Filtros de tareas
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            this.currentFilter = btn.dataset.filter;
+            this.refreshTasksList();
+        };
+    });
 
-        // Menú de opciones
-        const optionsMenu = document.querySelector('.options-menu-notas');
-        if (optionsMenu) {
-            const trigger = optionsMenu.querySelector('.options-trigger-notas');
-            const dropdown = optionsMenu.querySelector('.dropdown-menu-notas');
-            
-            trigger.onclick = (e) => {
-                e.stopPropagation();
-                dropdown.classList.toggle('active');
-            };
+    // Menú de opciones
+    const optionsMenu = document.querySelector('.options-menu-notas');
+    if (optionsMenu) {
+        const trigger = optionsMenu.querySelector('.options-trigger-notas');
+        const dropdown = optionsMenu.querySelector('.dropdown-menu-notas');
+        
+        trigger.onclick = (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('active');
+        };
 
-            document.onclick = () => {
-                dropdown.classList.remove('active');
-            };
-        }
+        document.onclick = () => {
+            dropdown.classList.remove('active');
+        };
     }
+    
+    // 🎨 INICIALIZAR EDICIÓN INLINE
+    this.initInlineEditing();
+    
+    console.log('✅ Edición inline activada');
+}
 
     /**
      * 🔄 Refrescar lista de tareas (formato original)
      */
     refreshTasksList() {
-        const container = document.getElementById('tasksList');
-        if (!container) return;
+    const container = document.getElementById('tasksList');
+    if (!container) return;
 
-        const filteredTasks = this.getFilteredTasksOriginal();
-
-        if (filteredTasks.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state-original">
-                    <p>No hay tareas para mostrar</p>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = filteredTasks.map(task => this.renderOriginalTaskItem(task)).join('');
+    let filteredTasks = this.getFilteredTasksOriginal();
+    
+    // 👁️ FILTRAR COMPLETADAS SI showCompleted ES FALSE
+    if (!this.showCompleted) {
+        filteredTasks = filteredTasks.filter(task => !task.completed);
     }
+
+    if (filteredTasks.length === 0) {
+        const message = !this.showCompleted && this.tasks.some(t => t.completed) 
+            ? "No hay tareas pendientes" 
+            : "No hay tareas para mostrar";
+        
+        container.innerHTML = `
+            <div class="empty-state-original">
+                <p>${message}</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = filteredTasks.map(task => this.renderOriginalTaskItem(task)).join('');
+}
 
     /**
      * 📋 Renderizar item de tarea (formato original)
@@ -479,7 +504,9 @@ class NotasManager {
                            onchange="window.notasManager.toggleTask('${task.id}')">
                 </div>
                 <div class="task-content-original">
-                    <div class="task-title-original">${task.title}</div>
+                    <div class="task-title-original inline-editable" data-original-text="${task.title}">${task.title}</div>
+                        <div class="inline-tooltip">Doble clic para editar</div>
+                    </div>
                     <div class="task-meta-original">
                         <span class="category-tag ${task.category}">${this.getCategoryName(task.category)}</span>
                         <span class="date-tag">${this.formatOriginalDate(task.dueDate)}</span>
@@ -530,8 +557,12 @@ class NotasManager {
             <div class="reminder-item-original ${statusClass}" data-id="${reminder.id}">
                 <div class="reminder-content-original">
                     <div class="reminder-header-original">
-                        <div class="reminder-title-original">${reminder.title}</div>
-                        <div class="reminder-amount-original">${this.formatCurrency(reminder.amount)}</div>
+                        <div class="reminder-title-original inline-editable" data-original-text="${reminder.title}">
+                            ${reminder.title}
+                        </div>
+                        <div class="reminder-amount-original inline-editable" data-original-text="${this.formatCurrency(reminder.amount)}">
+                            ${this.formatCurrency(reminder.amount)}
+                        </div>
                     </div>
                     <div class="reminder-footer-original">
                         <div class="reminder-date-original">Vence: ${this.formatOriginalDate(reminder.dueDate)}</div>
@@ -1035,17 +1066,24 @@ class NotasManager {
      * ✅ Alternar completado de tarea
      */
     toggleTask(taskId) {
-        const task = this.tasks.find(t => t.id === taskId);
-        if (task) {
-            task.completed = !task.completed;
-            task.completedAt = task.completed ? new Date().toISOString() : null;
+    const task = this.tasks.find(t => t.id === taskId);
+    if (task) {
+        task.completed = !task.completed;
+        task.completedAt = task.completed ? new Date().toISOString() : null;
+        task.updatedAt = new Date().toISOString();
+        
+        // Si se completa y estamos en "mi orden", mover al final
+        if (task.completed && this.currentSort === 'mi-orden') {
+            this.moveCompletedToBottom();
+        } else {
             this.saveData();
             this.refreshTasksList();
-            
-            const status = task.completed ? 'completada' : 'reactivada';
-            this.showNotification(`✅ Tarea ${status}`, task.title, 'success');
         }
+        
+        const status = task.completed ? 'completada' : 'pendiente';
+        this.showNotification('✅ Tarea actualizada', `Tarea marcada como ${status}`, 'success');
     }
+}
 
     /**
      * ✏️ Editar tarea
@@ -1067,32 +1105,48 @@ class NotasManager {
     /**
      * 🗑️ Eliminar tarea
      */
-    deleteTask(taskId) {
-        const task = this.tasks.find(t => t.id === taskId);
-        if (!task) return;
-        
-        if (confirm(`¿Eliminar la tarea "${task.title}"?`)) {
-            this.tasks = this.tasks.filter(t => t.id !== taskId);
-            this.saveData();
-            this.refreshTasksList();
-            this.showNotification('🗑️ Tarea eliminada', task.title, 'info');
-        }
+    async deleteTask(taskId) {
+    const task = this.tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    const confirmed = await this.showConfirmModal(
+        'Eliminar Tarea',
+        `¿Estás seguro de que quieres eliminar la tarea "${task.title}"?`,
+        'Eliminar',
+        'Cancelar',
+        'danger'
+    );
+    
+    if (confirmed) {
+        this.tasks = this.tasks.filter(t => t.id !== taskId);
+        this.saveData();
+        this.refreshTasksList();
+        this.showNotification('🗑️ Tarea eliminada', task.title, 'info');
     }
+}
 
     /**
      * ✅ Marcar recordatorio como pagado
      */
-    markAsPaid(reminderId) {
-        const reminder = this.reminders.find(r => r.id === reminderId);
-        if (!reminder) return;
-        
-        if (confirm(`¿Marcar "${reminder.title}" como pagado?`)) {
-            this.reminders = this.reminders.filter(r => r.id !== reminderId);
-            this.saveData();
-            this.refreshRemindersList();
-            this.showNotification('✅ Pagado', reminder.title, 'success');
-        }
+    async markAsPaid(reminderId) {
+    const reminder = this.reminders.find(r => r.id === reminderId);
+    if (!reminder) return;
+    
+    const confirmed = await this.showConfirmModal(
+        'Marcar como Pagado',
+        `¿Marcar "${reminder.title}" como pagado?`,
+        'Marcar Pagado',
+        'Cancelar',
+        'primary'
+    );
+    
+    if (confirmed) {
+        this.reminders = this.reminders.filter(r => r.id !== reminderId);
+        this.saveData();
+        this.refreshRemindersList();
+        this.showNotification('✅ Pagado', reminder.title, 'success');
     }
+}
 
     /**
      * ✏️ Editar recordatorio
@@ -1114,17 +1168,25 @@ class NotasManager {
     /**
      * 🗑️ Eliminar recordatorio
      */
-    deleteReminder(reminderId) {
-        const reminder = this.reminders.find(r => r.id === reminderId);
-        if (!reminder) return;
-        
-        if (confirm(`¿Eliminar el recordatorio "${reminder.title}"?`)) {
-            this.reminders = this.reminders.filter(r => r.id !== reminderId);
-            this.saveData();
-            this.refreshRemindersList();
-            this.showNotification('🗑️ Recordatorio eliminado', reminder.title, 'info');
-        }
+    async deleteReminder(reminderId) {
+    const reminder = this.reminders.find(r => r.id === reminderId);
+    if (!reminder) return;
+    
+    const confirmed = await this.showConfirmModal(
+        'Eliminar Recordatorio',
+        `¿Estás seguro de que quieres eliminar el recordatorio "${reminder.title}"?`,
+        'Eliminar',
+        'Cancelar',
+        'danger'
+    );
+    
+    if (confirmed) {
+        this.reminders = this.reminders.filter(r => r.id !== reminderId);
+        this.saveData();
+        this.refreshRemindersList();
+        this.showNotification('🗑️ Recordatorio eliminado', reminder.title, 'info');
     }
+}
 
     // =================================================================
     // 🧩 MÉTODOS DE UTILIDAD Y PROCESAMIENTO
@@ -1289,6 +1351,10 @@ class NotasManager {
             
             this.tasks = storedTasks ? JSON.parse(storedTasks) : this.getDefaultTasks();
             this.reminders = storedReminders ? JSON.parse(storedReminders) : this.getDefaultReminders();
+
+            // Cargar preferencia de mostrar completadas
+            const showCompletedPref = localStorage.getItem('wisespend_show_completed');
+            this.showCompleted = showCompletedPref !== null ? showCompletedPref === 'true' : true;
             
             console.log(`📚 Datos cargados: ${this.tasks.length} tareas, ${this.reminders.length} recordatorios`);
         } catch (error) {
@@ -1459,7 +1525,6 @@ class NotasManager {
     };
 }
 
-
     /**
      * 🎛️ Configurar eventos globales
      */
@@ -1542,16 +1607,24 @@ class NotasManager {
     /**
      * 🗑️ Limpiar todos los datos
      */
-    clearAllData() {
-        if (confirm('¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.')) {
-            this.tasks = [];
-            this.reminders = [];
-            this.saveData();
-            this.refreshTasksList();
-            this.refreshRemindersList();
-            this.showNotification('🗑️ Datos eliminados', 'Todos los datos han sido borrados', 'info');
-        }
+    async clearAllData() {
+    const confirmed = await this.showConfirmModal(
+        'Eliminar Todos los Datos',
+        '¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.',
+        'Eliminar Todo',
+        'Cancelar',
+        'danger'
+    );
+    
+    if (confirmed) {
+        this.tasks = [];
+        this.reminders = [];
+        this.saveData();
+        this.refreshTasksList();
+        this.refreshRemindersList();
+        this.showNotification('🗑️ Datos eliminados', 'Todos los datos han sido borrados', 'info');
     }
+}
 
     /**
      * 📤 Exportar datos
@@ -1592,6 +1665,440 @@ class NotasManager {
             isListening: this.isListening
         };
     }
+
+    /**
+ * 📋 MOSTRAR MENÚ DE ORDENAMIENTO
+ */
+showSortMenu() {
+    const existingMenu = document.querySelector('.sort-submenu');
+    if (existingMenu) {
+        existingMenu.remove();
+        return;
+    }
+
+    const optionsMenu = document.querySelector('.options-menu-notas');
+    if (!optionsMenu) return;
+
+    const sortMenu = document.createElement('div');
+    sortMenu.className = 'sort-submenu';
+    sortMenu.innerHTML = `
+        <div class="sort-menu-header">📋 Ordenar por</div>
+        <div class="sort-option ${this.currentSort === 'mi-orden' ? 'active' : ''}" onclick="window.notasManager.setSortOrder('mi-orden')">
+            ✓ Mi orden
+        </div>
+        <div class="sort-option ${this.currentSort === 'fecha' ? 'active' : ''}" onclick="window.notasManager.setSortOrder('fecha')">
+            📅 Fecha
+        </div>
+        <div class="sort-option ${this.currentSort === 'recientes' ? 'active' : ''}" onclick="window.notasManager.setSortOrder('recientes')">
+            🔄 Destacadas recientemente
+        </div>
+        <div class="sort-option ${this.currentSort === 'titulo' ? 'active' : ''}" onclick="window.notasManager.setSortOrder('titulo')">
+            🔤 Título
+        </div>
+        <hr class="sort-divider">
+        <div class="sort-option" onclick="window.notasManager.moveCompletedToBottom()">
+            ⬇️ Mover completadas al final
+        </div>
+    `;
+   
+
+    optionsMenu.appendChild(sortMenu);
+    
+    // Cerrar al hacer click fuera
+    setTimeout(() => {
+        document.addEventListener('click', function closeSortMenu(e) {
+            if (!sortMenu.contains(e.target)) {
+                sortMenu.remove();
+                document.removeEventListener('click', closeSortMenu);
+            }
+        });
+    }, 100);
+
+    
+}
+
+/**
+ * 🔄 ESTABLECER ORDEN DE CLASIFICACIÓN
+ */
+setSortOrder(sortType) {
+    this.currentSort = sortType;
+    this.sortTasks();
+    this.refreshTasksList();
+    this.saveData();
+    
+    // Cerrar menú
+    const sortMenu = document.querySelector('.sort-submenu');
+    if (sortMenu) sortMenu.remove();
+    
+    this.showNotification('📋 Ordenamiento aplicado', `Ordenado por: ${this.getSortDisplayName(sortType)}`, 'info');
+}
+
+/**
+ * 📝 OBTENER NOMBRE DE VISUALIZACIÓN DEL ORDENAMIENTO
+ */
+getSortDisplayName(sortType) {
+    const names = {
+        'mi-orden': 'Mi orden',
+        'fecha': 'Fecha',
+        'recientes': 'Destacadas recientemente',
+        'titulo': 'Título'
+    };
+    return names[sortType] || sortType;
+}
+
+/**
+ * 🔄 ORDENAR TAREAS
+ */
+sortTasks() {
+    switch (this.currentSort) {
+        case 'fecha':
+            this.tasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            break;
+        case 'recientes':
+            this.tasks.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+            break;
+        case 'titulo':
+            this.tasks.sort((a, b) => a.text.localeCompare(b.text));
+            break;
+        case 'mi-orden':
+        default:
+            // Mantener orden original, pero completadas al final
+            this.moveCompletedToBottom();
+            return;
+    }
+    
+    // Siempre mover completadas al final
+    this.moveCompletedToBottom();
+}
+
+/**
+ * ⬇️ MOVER TAREAS COMPLETADAS AL FINAL
+ */
+moveCompletedToBottom() {
+    const incompleteTasks = this.tasks.filter(task => !task.completed);
+    const completedTasks = this.tasks.filter(task => task.completed);
+    this.tasks = [...incompleteTasks, ...completedTasks];
+    this.saveData();
+    this.refreshTasksList();
+}
+
+/**
+ * 👁️ TOGGLE VISIBILIDAD DE COMPLETADAS
+ */
+toggleCompletedVisibility() {
+    this.showCompleted = !this.showCompleted;
+    this.refreshTasksList();
+    
+    // 💾 Guardar preferencia
+    localStorage.setItem('wisespend_show_completed', this.showCompleted.toString());
+    
+    const message = this.showCompleted ? 'Mostrando tareas completadas' : 'Ocultando tareas completadas';
+    this.showNotification('👁️ Visibilidad cambiada', message, 'info');
+}
+
+/**
+ * 🗑️ LIMPIAR TAREAS COMPLETADAS
+ */
+async clearCompleted() {
+    const completedCount = this.tasks.filter(task => task.completed).length;
+    
+    if (completedCount === 0) {
+        this.showNotification('ℹ️ Sin tareas completadas', 'No hay tareas completadas para eliminar', 'info');
+        return;
+    }
+    
+    const confirmed = await this.showConfirmModal(
+        'Limpiar Completadas',
+        `¿Eliminar ${completedCount} tarea${completedCount > 1 ? 's' : ''} completada${completedCount > 1 ? 's' : ''}?`,
+        'Eliminar',
+        'Cancelar',
+        'danger'
+    );
+    
+    if (confirmed) {
+        this.tasks = this.tasks.filter(task => !task.completed);
+        this.saveData();
+        this.refreshTasksList();
+        this.showNotification('🗑️ Completadas eliminadas', `${completedCount} tareas eliminadas`, 'success');
+    }
+}
+
+/**
+ * ✅ TOGGLE COMPLETAR TAREA
+ */
+toggleTaskCompletion(taskId) {
+    const task = this.tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    task.completed = !task.completed;
+    task.updatedAt = new Date().toISOString();
+    
+    // Mover automáticamente al final si se completa
+    if (task.completed && this.currentSort === 'mi-orden') {
+        this.moveCompletedToBottom();
+    } else {
+        this.saveData();
+        this.refreshTasksList();
+    }
+    
+    const status = task.completed ? 'completada' : 'pendiente';
+    this.showNotification('✅ Tarea actualizada', `Tarea marcada como ${status}`, 'success');
+}
+
+/**
+ * 🗂️ MOSTRAR MODAL DE CONFIRMACIÓN PERSONALIZADO
+ */
+showConfirmModal(title, message, confirmText = 'Confirmar', cancelText = 'Cancelar', type = 'danger') {
+    return new Promise((resolve) => {
+        // Crear modal si no existe
+        let modal = document.getElementById('confirm-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'confirm-modal';
+            modal.className = 'confirm-modal-overlay';
+            document.body.appendChild(modal);
+        }
+
+        modal.innerHTML = `
+            <div class="confirm-modal">
+                <div class="confirm-modal-header">
+                    <h3 class="confirm-modal-title">
+                        ${type === 'danger' ? '⚠️' : type === 'info' ? 'ℹ️' : '❓'} ${title}
+                    </h3>
+                </div>
+                <div class="confirm-modal-body">
+                    <p class="confirm-modal-message">${message}</p>
+                </div>
+                <div class="confirm-modal-actions">
+                    <button class="confirm-btn confirm-btn-cancel" data-action="cancel">
+                        ${cancelText}
+                    </button>
+                    <button class="confirm-btn confirm-btn-${type}" data-action="confirm">
+                        ${confirmText}
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Mostrar modal
+        setTimeout(() => modal.classList.add('active'), 10);
+
+        // Event listeners
+        const handleClick = (e) => {
+            const action = e.target.dataset.action;
+            if (action) {
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    if (modal.parentNode) {
+                        modal.parentNode.removeChild(modal);
+                    }
+                }, 300);
+                resolve(action === 'confirm');
+            }
+        };
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                handleClick({ target: { dataset: { action: 'cancel' } } });
+            }
+        });
+
+        modal.addEventListener('click', handleClick);
+    });
+}
+
+    /**
+ * 🎨 INICIALIZAR EDICIÓN INLINE
+ */
+initInlineEditing() {
+    // Configurar eventos de doble clic para elementos editables
+    document.addEventListener('dblclick', (e) => {
+        if (e.target.classList.contains('inline-editable')) {
+            this.startInlineEdit(e.target);
+        }
+    });
+    
+    // Manejar clicks fuera para guardar
+    document.addEventListener('click', (e) => {
+        const editingElement = document.querySelector('.inline-editable.editing input');
+        if (editingElement && !editingElement.contains(e.target) && e.target !== editingElement) {
+            this.saveInlineEdit(editingElement);
+        }
+    });
+}
+
+/**
+ * ✏️ INICIAR EDICIÓN INLINE
+ */
+startInlineEdit(element) {
+    // Evitar múltiples ediciones
+    if (element.classList.contains('editing')) return;
+    
+    const originalText = element.textContent.trim();
+    const elementType = this.getElementType(element);
+    
+    // Crear input
+    const input = document.createElement('input');
+    input.type = elementType === 'amount' ? 'number' : 'text';
+    input.value = elementType === 'amount' ? this.extractNumber(originalText) : originalText;
+    input.className = 'inline-edit-input';
+    
+    // Configurar input
+    if (elementType === 'amount') {
+        input.step = '0.01';
+        input.min = '0';
+    }
+    
+    // Eventos del input
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            this.saveInlineEdit(input);
+        } else if (e.key === 'Escape') {
+            this.cancelInlineEdit(input, originalText);
+        }
+    });
+    
+    input.addEventListener('blur', () => {
+        this.saveInlineEdit(input);
+    });
+    
+    // Aplicar cambios visuales
+    element.classList.add('editing');
+    element.innerHTML = '';
+    element.appendChild(input);
+    
+    // Enfocar y seleccionar
+    setTimeout(() => {
+        input.focus();
+        input.select();
+    }, 10);
+}
+
+/**
+ * 💾 GUARDAR EDICIÓN INLINE
+ */
+saveInlineEdit(input) {
+    const element = input.parentElement;
+    const newValue = input.value.trim();
+    const elementType = this.getElementType(element);
+    
+    if (!newValue && elementType !== 'amount') {
+        this.cancelInlineEdit(input, element.dataset.originalText || '');
+        return;
+    }
+    
+    // Obtener IDs del elemento
+    const { itemId, itemType } = this.getElementIds(element);
+    
+    if (!itemId || !itemType) {
+        this.cancelInlineEdit(input, element.dataset.originalText || '');
+        return;
+    }
+    
+    // Actualizar datos
+    const success = this.updateItemData(itemId, itemType, elementType, newValue);
+    
+    if (success) {
+        // Restaurar elemento con nuevo valor
+        const displayValue = elementType === 'amount' ? this.formatCurrency(parseFloat(newValue) || 0) : newValue;
+        element.classList.remove('editing');
+        element.innerHTML = displayValue;
+        
+        // Guardar y refrescar
+        this.saveData();
+        if (itemType === 'task') {
+            this.refreshTasksList();
+        } else {
+            this.refreshRemindersList();
+        }
+        
+        this.showNotification('✏️ Actualizado', 'Cambios guardados correctamente', 'success');
+    } else {
+        this.cancelInlineEdit(input, element.dataset.originalText || '');
+    }
+}
+
+/**
+ * ❌ CANCELAR EDICIÓN INLINE
+ */
+cancelInlineEdit(input, originalText) {
+    const element = input.parentElement;
+    element.classList.remove('editing');
+    element.innerHTML = originalText;
+}
+
+/**
+ * 🔍 OBTENER TIPO DE ELEMENTO
+ */
+getElementType(element) {
+    if (element.classList.contains('reminder-amount-original')) return 'amount';
+    if (element.classList.contains('task-title-original')) return 'title';
+    if (element.classList.contains('reminder-title-original')) return 'title';
+    return 'text';
+}
+
+/**
+ * 🆔 OBTENER IDs DEL ELEMENTO
+ */
+getElementIds(element) {
+    const taskItem = element.closest('.task-item-original');
+    const reminderItem = element.closest('.reminder-item-original');
+    
+    if (taskItem) {
+        return {
+            itemId: taskItem.dataset.id,
+            itemType: 'task'
+        };
+    } else if (reminderItem) {
+        return {
+            itemId: reminderItem.dataset.id,
+            itemType: 'reminder'
+        };
+    }
+    
+    return { itemId: null, itemType: null };
+}
+
+/**
+ * 🔢 EXTRAER NÚMERO DE TEXTO
+ */
+extractNumber(text) {
+    const match = text.replace(/[^\d.,]/g, '').replace(',', '.');
+    return parseFloat(match) || 0;
+}
+
+/**
+ * 📝 ACTUALIZAR DATOS DEL ITEM
+ */
+updateItemData(itemId, itemType, fieldType, newValue) {
+    try {
+        if (itemType === 'task') {
+            const task = this.tasks.find(t => t.id === itemId);
+            if (!task) return false;
+            
+            if (fieldType === 'title') {
+                task.title = newValue;
+                task.modifiedAt = new Date().toISOString();
+            }
+        } else if (itemType === 'reminder') {
+            const reminder = this.reminders.find(r => r.id === itemId);
+            if (!reminder) return false;
+            
+            if (fieldType === 'title') {
+                reminder.title = newValue;
+                reminder.modifiedAt = new Date().toISOString();
+            } else if (fieldType === 'amount') {
+                reminder.amount = parseFloat(newValue) || 0;
+                reminder.modifiedAt = new Date().toISOString();
+            }
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Error actualizando item:', error);
+        return false;
+    }
+}
 
     /**
      * 🔧 Reiniciar sistema

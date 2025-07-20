@@ -1,0 +1,365 @@
+/**
+ * 🎨 BASE.CSS - VARIABLES CENTRALIZADAS PARA TODOS LOS TEMAS
+ * Control de Gastos Familiares - Arquitectura Modular v2.0
+ * 
+ * 🎯 PROPÓSITO:
+ * ✅ Variables CSS base compartidas por todos los temas
+ * ✅ Colores de componentes (success, error, warning)
+ * ✅ Espaciado y tipografía
+ * ✅ Transiciones y animaciones
+ * ✅ Base para system prefers-color-scheme
+ */
+
+/* ===== VARIABLES GLOBALES BASE ===== */
+
+:root {
+    /* 🎨 Colores de componentes (independientes del tema) */
+    --component-success-50: #ecfdf5;
+    --component-success-100: #d1fae5;
+    --component-success-500: #10b981;
+    --component-success-600: #059669;
+    --component-success-700: #047857;
+    
+    --component-error-50: #fef2f2;
+    --component-error-100: #fee2e2;
+    --component-error-500: #ef4444;
+    --component-error-600: #dc2626;
+    --component-error-700: #b91c1c;
+    
+    --component-warning-50: #fffbeb;
+    --component-warning-100: #fef3c7;
+    --component-warning-500: #f59e0b;
+    --component-warning-600: #d97706;
+    --component-warning-700: #b45309;
+    
+    --component-info-50: #eff6ff;
+    --component-info-100: #dbeafe;
+    --component-info-500: #3b82f6;
+    --component-info-600: #2563eb;
+    --component-info-700: #1d4ed8;
+    
+    /* 📏 Espaciado consistente */
+    --spacing-xs: 0.25rem;  /* 4px */
+    --spacing-sm: 0.5rem;   /* 8px */
+    --spacing-md: 0.75rem;  /* 12px */
+    --spacing-lg: 1rem;     /* 16px */
+    --spacing-xl: 1.25rem;  /* 20px */
+    --spacing-2xl: 1.5rem;  /* 24px */
+    --spacing-3xl: 2rem;    /* 32px */
+    --spacing-4xl: 2.5rem;  /* 40px */
+    
+    /* 📝 Tipografía */
+    --font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', sans-serif;
+    --font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    
+    --font-size-xs: 0.75rem;   /* 12px */
+    --font-size-sm: 0.875rem;  /* 14px */
+    --font-size-base: 1rem;    /* 16px */
+    --font-size-lg: 1.125rem;  /* 18px */
+    --font-size-xl: 1.25rem;   /* 20px */
+    --font-size-2xl: 1.5rem;   /* 24px */
+    --font-size-3xl: 1.875rem; /* 30px */
+    
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+    
+    /* 🎯 Bordes y radios */
+    --border-radius-sm: 0.25rem;  /* 4px */
+    --border-radius-md: 0.5rem;   /* 8px */
+    --border-radius-lg: 0.75rem;  /* 12px */
+    --border-radius-xl: 1rem;     /* 16px */
+    --border-radius-2xl: 1.5rem;  /* 24px */
+    --border-radius-full: 9999px;
+    
+    --border-width-thin: 1px;
+    --border-width-thick: 2px;
+    --border-width-thicker: 3px;
+    
+    /* ⚡ Transiciones y animaciones */
+    --transition-fastest: 100ms ease;
+    --transition-fast: 150ms ease;
+    --transition-normal: 250ms ease;
+    --transition-slow: 350ms ease;
+    --transition-slowest: 500ms ease;
+    
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* 🎮 Z-index layers */
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal-backdrop: 1040;
+    --z-modal: 1050;
+    --z-popover: 1060;
+    --z-tooltip: 1070;
+    --z-toast: 1080;
+    
+    /* 🌐 Breakpoints (para uso en JavaScript) */
+    --breakpoint-sm: 640px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 1024px;
+    --breakpoint-xl: 1280px;
+    --breakpoint-2xl: 1536px;
+}
+
+/* ===== VARIABLES TEMA POR DEFECTO (LIGHT) ===== */
+
+:root {
+    /* 📄 Fondos */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+    --bg-accent: #f9fafb;
+    --bg-overlay: rgba(0, 0, 0, 0.6);
+    --bg-surface: #ffffff;
+    --bg-card: #ffffff;
+    
+    /* 📝 Textos */
+    --text-primary: #111827;
+    --text-secondary: #374151;
+    --text-tertiary: #6b7280;
+    --text-muted: #9ca3af;
+    --text-inverse: #ffffff;
+    --text-on-primary: #ffffff;
+    --text-on-surface: #111827;
+    
+    /* 🎯 Bordes */
+    --border-light: #f1f5f9;
+    --border-normal: #e5e7eb;
+    --border-medium: #d1d5db;
+    --border-strong: #9ca3af;
+    --border-focus: #3b82f6;
+    
+    /* 🌊 Sombras */
+    --shadow-xs: 0 1px 1px 0 rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    
+    /* 🎮 Estados interactivos */
+    --hover-overlay: rgba(0, 0, 0, 0.05);
+    --focus-ring: rgba(59, 130, 246, 0.1);
+    --active-overlay: rgba(0, 0, 0, 0.1);
+    --disabled-overlay: rgba(0, 0, 0, 0.05);
+    
+    /* 🎨 Colores primarios (pueden ser sobrescritos por temas) */
+    --primary-50: #eff6ff;
+    --primary-100: #dbeafe;
+    --primary-200: #bfdbfe;
+    --primary-300: #93c5fd;
+    --primary-400: #60a5fa;
+    --primary-500: #3b82f6;
+    --primary-600: #2563eb;
+    --primary-700: #1d4ed8;
+    --primary-800: #1e40af;
+    --primary-900: #1e3a8a;
+    
+    /* 🎨 Específicos de componentes */
+    --stat-income: var(--component-success-600);
+    --stat-expense: var(--component-error-600);
+    --stat-balance-positive: var(--component-success-600);
+    --stat-balance-negative: var(--component-error-600);
+    --stat-paid: var(--component-success-600);
+    --stat-pending: var(--component-warning-600);
+    --stat-neutral: var(--component-info-600);
+}
+
+/* ===== DETECCIÓN AUTOMÁTICA DARK MODE ===== */
+
+@media (prefers-color-scheme: dark) {
+    :root:not(.light-theme):not(.pastel-theme):not(.soft-dark-theme) {
+        /* 📄 Fondos oscuros */
+        --bg-primary: #0f172a;
+        --bg-secondary: #1e293b;
+        --bg-tertiary: #334155;
+        --bg-accent: #475569;
+        --bg-overlay: rgba(0, 0, 0, 0.8);
+        --bg-surface: #1e293b;
+        --bg-card: #1e293b;
+        
+        /* 📝 Textos claros */
+        --text-primary: #f8fafc;
+        --text-secondary: #e2e8f0;
+        --text-tertiary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --text-inverse: #0f172a;
+        --text-on-primary: #ffffff;
+        --text-on-surface: #f8fafc;
+        
+        /* 🎯 Bordes oscuros */
+        --border-light: #334155;
+        --border-normal: #475569;
+        --border-medium: #64748b;
+        --border-strong: #94a3b8;
+        --border-focus: #60a5fa;
+        
+        /* 🌊 Sombras intensas */
+        --shadow-xs: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.15);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+        
+        /* 🎮 Estados interactivos oscuros */
+        --hover-overlay: rgba(255, 255, 255, 0.05);
+        --focus-ring: rgba(96, 165, 250, 0.2);
+        --active-overlay: rgba(255, 255, 255, 0.1);
+        --disabled-overlay: rgba(255, 255, 255, 0.05);
+    }
+}
+
+/* ===== UTILIDADES GLOBALES ===== */
+
+/* Reset suave para consistencia entre temas */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Transiciones globales suaves */
+* {
+    transition: 
+        background-color var(--transition-normal),
+        border-color var(--transition-normal),
+        color var(--transition-normal),
+        fill var(--transition-normal),
+        stroke var(--transition-normal),
+        opacity var(--transition-normal),
+        box-shadow var(--transition-normal),
+        transform var(--transition-fast);
+}
+
+/* Disable transitions durante theme change para evitar flash */
+.theme-transitioning * {
+    transition: none !important;
+}
+
+/* Focus visible para accesibilidad */
+:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+}
+
+/* Scrollbars base (sobrescritos por temas específicos) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: var(--border-radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: var(--border-radius-sm);
+    transition: background var(--transition-normal);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* Firefox scrollbars */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) var(--bg-tertiary);
+}
+
+/* ===== MEDIA QUERIES PARA RESPONSIVE ===== */
+
+/* Reduce motion para usuarios sensibles */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* High contrast para accesibilidad */
+@media (prefers-contrast: high) {
+    :root {
+        --border-normal: currentColor;
+        --border-medium: currentColor;
+        --shadow-sm: none;
+        --shadow-md: none;
+        --shadow-lg: none;
+        --shadow-xl: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    :root {
+        --bg-primary: white !important;
+        --bg-secondary: white !important;
+        --bg-tertiary: white !important;
+        --text-primary: black !important;
+        --text-secondary: black !important;
+        --text-tertiary: black !important;
+        --shadow-sm: none !important;
+        --shadow-md: none !important;
+        --shadow-lg: none !important;
+        --shadow-xl: none !important;
+    }
+}
+
+/* ===== DOCUMENTACIÓN ===== */
+
+/*
+🎨 GUÍA DE USO DE VARIABLES:
+
+// Fondos
+var(--bg-primary)    // Fondo principal (contenido)
+var(--bg-secondary)  // Fondo secundario (áreas)
+var(--bg-tertiary)   // Fondo terciario (sidebar, headers)
+var(--bg-accent)     // Fondo de acentos (highlights)
+var(--bg-surface)    // Superficies elevadas (cards)
+
+// Textos
+var(--text-primary)   // Texto principal (títulos, contenido)
+var(--text-secondary) // Texto secundario (subtítulos)
+var(--text-tertiary)  // Texto terciario (labels)
+var(--text-muted)     // Texto apagado (placeholders)
+
+// Bordes
+var(--border-light)   // Bordes sutiles
+var(--border-normal)  // Bordes normales
+var(--border-medium)  // Bordes medios
+var(--border-strong)  // Bordes pronunciados
+
+// Componentes
+var(--component-success-600) // Verde para éxito
+var(--component-error-600)   // Rojo para errores
+var(--component-warning-600) // Amarillo para advertencias
+var(--component-info-600)    // Azul para información
+
+// Espaciado
+var(--spacing-sm)  // 8px
+var(--spacing-md)  // 12px
+var(--spacing-lg)  // 16px
+var(--spacing-xl)  // 20px
+
+// Transiciones
+var(--transition-fast)   // 150ms
+var(--transition-normal) // 250ms
+var(--transition-slow)   // 350ms
+*/

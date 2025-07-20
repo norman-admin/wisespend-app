@@ -1,0 +1,738 @@
+/**
+ * 🌙 THEMES.CSS - SISTEMA DARK MODE CENTRALIZADO
+ * Control de Gastos Familiares - Versión 1.0.0
+ * 
+ * 🎯 CARACTERÍSTICAS:
+ * ✅ Variables CSS centralizadas
+ * ✅ Detección automática prefers-color-scheme
+ * ✅ Toggle manual con persistencia
+ * ✅ Todos los componentes soportados
+ * ✅ Transiciones suaves entre temas
+ */
+
+/* ===== VARIABLES BASE - LIGHT THEME ===== */
+
+:root {
+    /* 🎨 Colores principales */
+    --primary-50: #eff6ff;
+    --primary-100: #dbeafe;
+    --primary-500: #3b82f6;
+    --primary-600: #2563eb;
+    --primary-700: #1d4ed8;
+    
+    /* 🟢 Colores de éxito */
+    --success-50: #ecfdf5;
+    --success-100: #d1fae5;
+    --success-500: #10b981;
+    --success-600: #059669;
+    --success-700: #047857;
+    
+    /* 🔴 Colores de error */
+    --error-50: #fef2f2;
+    --error-100: #fee2e2;
+    --error-500: #ef4444;
+    --error-600: #dc2626;
+    --error-700: #b91c1c;
+    
+    /* 🟡 Colores de warning */
+    --warning-50: #fffbeb;
+    --warning-100: #fef3c7;
+    --warning-500: #f59e0b;
+    --warning-600: #d97706;
+    
+    /* ===== TEMA CLARO (DEFAULT) ===== */
+    
+    /* 📄 Fondos */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+    --bg-accent: #f9fafb;
+    --bg-overlay: rgba(0, 0, 0, 0.6);
+    
+    /* 📝 Textos */
+    --text-primary: #111827;
+    --text-secondary: #374151;
+    --text-tertiary: #6b7280;
+    --text-muted: #9ca3af;
+    --text-inverse: #ffffff;
+    
+    /* 🎯 Bordes */
+    --border-light: #f1f5f9;
+    --border-normal: #e5e7eb;
+    --border-medium: #d1d5db;
+    --border-strong: #9ca3af;
+    
+    /* 🌊 Sombras */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    
+    /* 🎮 Estados interactivos */
+    --hover-overlay: rgba(0, 0, 0, 0.05);
+    --focus-ring: rgba(59, 130, 246, 0.1);
+    --active-overlay: rgba(0, 0, 0, 0.1);
+    
+    /* 🎨 Específicos de componentes */
+    --stat-income: var(--success-600);
+    --stat-expense: var(--error-600);
+    --stat-balance-positive: var(--success-600);
+    --stat-balance-negative: var(--error-600);
+    --stat-paid: var(--success-600);
+    --stat-pending: var(--warning-600);
+}
+
+/* ===== DARK MODE - AUTOMÁTICO ===== */
+
+@media (prefers-color-scheme: dark) {
+    :root:not(.light-theme) {
+        /* 📄 Fondos oscuros */
+        --bg-primary: #0f172a;
+        --bg-secondary: #1e293b;
+        --bg-tertiary: #334155;
+        --bg-accent: #475569;
+        --bg-overlay: rgba(0, 0, 0, 0.8);
+        
+        /* 📝 Textos claros */
+        --text-primary: #f8fafc;
+        --text-secondary: #e2e8f0;
+        --text-tertiary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --text-inverse: #0f172a;
+        
+        /* 🎯 Bordes oscuros */
+        --border-light: #334155;
+        --border-normal: #475569;
+        --border-medium: #64748b;
+        --border-strong: #94a3b8;
+        
+        /* 🌊 Sombras intensas */
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+        
+        /* 🎮 Estados interactivos oscuros */
+        --hover-overlay: rgba(255, 255, 255, 0.05);
+        --focus-ring: rgba(59, 130, 246, 0.2);
+        --active-overlay: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* ===== DARK MODE - MANUAL ===== */
+
+.dark-theme {
+    /* 📄 Fondos oscuros */
+    --bg-primary: #202020;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --bg-accent: #475569;
+    --bg-overlay: rgba(0, 0, 0, 0.8);
+    
+    /* 📝 Textos claros */
+    --text-primary: #f8fafc;
+    --text-secondary: #e2e8f0;
+    --text-tertiary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --text-inverse: #0f172a;
+    
+    /* 🎯 Bordes oscuros */
+    --border-light: #334155;
+    --border-normal: #475569;
+    --border-medium: #64748b;
+    --border-strong: #94a3b8;
+    
+    /* 🌊 Sombras intensas */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+    
+    /* 🎮 Estados interactivos oscuros */
+    --hover-overlay: rgba(255, 255, 255, 0.05);
+    --focus-ring: rgba(59, 130, 246, 0.2);
+    --active-overlay: rgba(255, 255, 255, 0.1);
+}
+
+/* ===== TEMA PASTEL ===== */
+
+.pastel-theme {
+    /* 🎨 Colores principales pastel */
+    --primary-50: #fdf2f8;
+    --primary-100: #fce7f3;
+    --primary-500: #ec4899;
+    --primary-600: #db2777;
+    --primary-700: #be185d;
+    
+    /* 📄 Fondos pastel */
+    --bg-primary: #fefcff;
+    --bg-secondary: #fdf2f8;
+    --bg-tertiary: #f3e8ff;
+    --bg-accent: #faf8ff;
+    --bg-overlay: rgba(236, 72, 153, 0.6);
+    
+    /* 📝 Textos pastel */
+    --text-primary: #831843;
+    --text-secondary: #be185d;
+    --text-tertiary: #ec4899;
+    --text-muted: #f9a8d4;
+    --text-inverse: #ffffff;
+    
+    /* 🎯 Bordes pastel */
+    --border-light: #f3e8ff;
+    --border-normal: #e9d5ff;
+    --border-medium: #d8b4fe;
+    --border-strong: #c084fc;
+    
+    /* 🌊 Sombras pastel */
+    --shadow-sm: 0 1px 2px 0 rgba(236, 72, 153, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(236, 72, 153, 0.1), 0 2px 4px -1px rgba(236, 72, 153, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(236, 72, 153, 0.1), 0 4px 6px -2px rgba(236, 72, 153, 0.05);
+    
+    /* 🎮 Estados interactivos pastel */
+    --hover-overlay: rgba(236, 72, 153, 0.05);
+    --focus-ring: rgba(236, 72, 153, 0.1);
+    --active-overlay: rgba(236, 72, 153, 0.1);
+    
+    /* 🎨 Específicos de componentes pastel */
+    --stat-income: #059669;
+    --stat-expense: #dc2626;
+    --stat-balance: #ec4899;
+}
+
+/* ===== LIGHT MODE - MANUAL (OVERRIDE) ===== */
+
+.light-theme {
+    /* 📄 Fondos claros */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+    --bg-accent: #f9fafb;
+    --bg-overlay: rgba(0, 0, 0, 0.6);
+    
+    /* 📝 Textos oscuros */
+    --text-primary: #111827;
+    --text-secondary: #374151;
+    --text-tertiary: #6b7280;
+    --text-muted: #9ca3af;
+    --text-inverse: #ffffff;
+    
+    /* 🎯 Bordes claros */
+    --border-light: #f1f5f9;
+    --border-normal: #e5e7eb;
+    --border-medium: #d1d5db;
+    --border-strong: #9ca3af;
+    
+    /* 🌊 Sombras suaves */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    
+    /* 🎮 Estados interactivos claros */
+    --hover-overlay: rgba(0, 0, 0, 0.05);
+    --focus-ring: rgba(59, 130, 246, 0.1);
+    --active-overlay: rgba(0, 0, 0, 0.1);
+}
+
+/* ===== APLICACIÓN GLOBAL DE TEMAS ===== */
+
+/* 📄 Body y elementos base */
+body {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ===== DASHBOARD COMPONENTS ===== */
+
+/* 🎨 Header */
+.dashboard-header {
+    background: var(--bg-primary) !important;
+    border-bottom-color: var(--border-normal) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.dashboard-title {
+    color: var(--text-primary) !important;
+}
+
+.header-right select {
+    background: var(--bg-primary) !important;
+    border-color: var(--border-medium) !important;
+    color: var(--text-primary) !important;
+}
+
+/* 📊 Stats Cards */
+.stats-section {
+    background: var(--bg-secondary) !important;
+}
+
+.stat-card {
+    background: var(--bg-primary) !important;
+    border-color: var(--border-normal) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+.stat-card:hover {
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.stat-title {
+    color: var(--text-tertiary) !important;
+}
+
+.stat-subtitle {
+    color: var(--text-muted) !important;
+}
+
+/* 🏗️ Layout Principal */
+.main-content {
+    background: var(--bg-secondary) !important;
+}
+
+
+
+/* 📄 Content Area */
+.content-area {
+    background: var(--bg-primary) !important;
+    border-color: var(--border-normal) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+.section-header {
+    border-bottom-color: var(--border-light) !important;
+}
+
+.section-header h2 {
+    color: var(--text-primary) !important;
+}
+
+/* 💰 Income Breakdown */
+.income-breakdown {
+    background: var(--bg-accent) !important;
+    border-color: var(--border-normal) !important;
+}
+
+.breakdown-item {
+    border-bottom-color: var(--border-normal) !important;
+}
+
+.breakdown-item:hover {
+    background: var(--hover-overlay) !important;
+}
+
+.breakdown-name {
+    color: var(--text-secondary) !important;
+}
+
+.breakdown-amount {
+    color: var(--success-600) !important;
+}
+
+.total-label {
+    color: var(--text-secondary) !important;
+}
+
+.total-amount {
+    color: var(--success-600) !important;
+}
+
+/* 💸 Expenses Grid */
+.expenses-column {
+    background: var(--bg-accent) !important;
+    border-color: var(--border-normal) !important;
+}
+
+.expenses-header {
+    background: var(--bg-tertiary) !important;
+    border-bottom-color: var(--border-normal) !important;
+}
+
+.expenses-header h3 {
+    color: var(--text-secondary) !important;
+}
+
+.expense-item {
+    border-bottom-color: var(--border-normal) !important;
+}
+
+.expense-item:hover {
+    background: var(--hover-overlay) !important;
+}
+
+.expense-name {
+    color: var(--text-secondary) !important;
+}
+
+.expense-amount {
+    color: var(--error-600) !important;
+}
+
+.expenses-total {
+    background: var(--bg-tertiary) !important;
+    border-top-color: var(--border-normal) !important;
+}
+
+.expenses-total .total-label {
+    color: var(--text-secondary) !important;
+}
+
+.expenses-total .total-amount {
+    color: var(--error-600) !important;
+}
+
+/* 📝 Formularios */
+.add-expense-form {
+    background: var(--bg-accent) !important;
+    border-color: var(--border-normal) !important;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    background: var(--bg-primary) !important;
+    border-color: var(--border-medium) !important;
+    color: var(--text-primary) !important;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    border-color: var(--primary-600) !important;
+    box-shadow: 0 0 0 3px var(--focus-ring) !important;
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+    color: var(--text-muted) !important;
+}
+
+.form-label {
+    color: var(--text-secondary) !important;
+}
+
+/* 🔘 Botones */
+.btn-primary {
+    background: var(--primary-600) !important;
+    border-color: var(--primary-600) !important;
+}
+
+.btn-primary:hover {
+    background: var(--primary-700) !important;
+    border-color: var(--primary-700) !important;
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border-medium) !important;
+}
+
+.btn-secondary:hover {
+    background: var(--bg-accent) !important;
+    border-color: var(--border-strong) !important;
+}
+
+/* ===== MODALES UNIVERSALES ===== */
+
+.modal-overlay {
+    background: var(--bg-overlay) !important;
+}
+
+.modal-content,
+.modern-modal {
+    background: var(--bg-primary) !important;
+    box-shadow: var(--shadow-xl) !important;
+}
+
+.modal-header,
+.modal-header-modern {
+    background: var(--bg-accent) !important;
+    border-bottom-color: var(--border-normal) !important;
+}
+
+.modal-header h2,
+.modal-header-modern h2,
+.modal-title {
+    color: var(--text-primary) !important;
+}
+
+.modal-subtitle {
+    color: var(--text-tertiary) !important;
+}
+
+.modal-close,
+.modal-close-modern {
+    background: var(--bg-tertiary) !important;
+    color: var(--text-tertiary) !important;
+}
+
+.modal-close:hover,
+.modal-close-modern:hover {
+    background: var(--bg-accent) !important;
+    color: var(--text-secondary) !important;
+}
+
+.modal-footer,
+.modal-footer-modern {
+    background: var(--bg-accent) !important;
+    border-top-color: var(--border-normal) !important;
+}
+
+/* ===== MENÚ CONTEXTUAL ===== */
+
+.contextual-menu {
+    background: var(--bg-primary) !important;
+    border-color: var(--border-normal) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.contextual-menu-header {
+    background: var(--bg-accent) !important;
+    border-bottom-color: var(--border-normal) !important;
+}
+
+.contextual-menu-header strong {
+    color: var(--text-secondary) !important;
+}
+
+.contextual-amount {
+    color: var(--success-600) !important;
+}
+
+.contextual-menu-item {
+    color: var(--text-secondary) !important;
+}
+
+.contextual-menu-item:hover {
+    background: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+}
+
+.contextual-menu-item.edit-action:hover {
+    background: var(--primary-50) !important;
+    color: var(--primary-600) !important;
+}
+
+.contextual-menu-item.delete-action:hover {
+    background: var(--error-50) !important;
+    color: var(--error-600) !important;
+}
+
+/* ===== LOGIN PAGE ===== */
+
+.login-body {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+.login-container {
+    background: var(--bg-primary) !important;
+    box-shadow: var(--shadow-xl) !important;
+}
+
+.login-header {
+    background: var(--bg-primary) !important;
+}
+
+.logo h1 {
+    color: var(--text-primary) !important;
+}
+
+.login-subtitle {
+    color: var(--text-tertiary) !important;
+}
+
+.loading-state {
+    background: var(--bg-accent) !important;
+    border-color: var(--border-normal) !important;
+}
+
+.loading-text {
+    color: var(--text-secondary) !important;
+}
+
+.password-feedback {
+    background: var(--bg-accent) !important;
+    border-color: var(--border-normal) !important;
+}
+
+.login-footer {
+    background: var(--bg-accent) !important;
+    border-top-color: var(--border-normal) !important;
+}
+
+.login-footer p {
+    color: var(--text-tertiary) !important;
+}
+
+.mode-selector {
+    border-top-color: var(--border-normal) !important;
+}
+
+.mode-text {
+    color: var(--text-tertiary) !important;
+}
+
+/* ===== TOGGLE THEME BUTTON ===== */
+
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    background: var(--bg-primary) !important;
+    border: 1px solid var(--border-medium) !important;
+    border-radius: 50px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-md) !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary) !important;
+}
+
+.theme-toggle:hover {
+    background: var(--bg-accent) !important;
+    border-color: var(--border-strong) !important;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.theme-icon {
+    font-size: 16px;
+    transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover .theme-icon {
+    transform: rotate(180deg);
+}
+
+/* ===== SCROLLBARS ===== */
+
+/* Webkit browsers */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-accent);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) var(--bg-accent);
+}
+
+/* ===== ANIMACIONES SMOOTH ===== */
+
+* {
+    transition: background-color 0.3s ease, 
+                color 0.3s ease, 
+                border-color 0.3s ease, 
+                box-shadow 0.3s ease !important;
+}
+
+/* ===== ACCESIBILIDAD - HIGH CONTRAST ===== */
+
+@media (prefers-contrast: high) {
+    :root {
+        --border-normal: #000000;
+        --border-medium: #000000;
+        --text-primary: #000000;
+        --bg-primary: #ffffff;
+    }
+    
+    .dark-theme {
+        --border-normal: #ffffff;
+        --border-medium: #ffffff;
+        --text-primary: #ffffff;
+        --bg-primary: #000000;
+    }
+}
+
+/* ===== PRINT MODE ===== */
+
+@media print {
+    .theme-toggle {
+        display: none !important;
+    }
+    
+    * {
+        background: white !important;
+        color: black !important;
+        box-shadow: none !important;
+    }
+}
+
+/* ===== MENÚ LATERAL - TEMA PASTEL ===== */
+
+.pastel-theme .nav-item,
+.pastel-theme .sidebar-container,
+.pastel-theme #sidebar-container {
+    background: linear-gradient(135deg, #fefcff 0%, #fdf2f8 100%) !important;
+    border-color: #f3e8ff !important;
+}
+
+.pastel-theme .nav-item {
+    background: rgba(254, 252, 255, 0.8) !important;
+    border: 1px solid #f3e8ff !important;
+    color: #831843 !important;
+}
+
+.pastel-theme .nav-item:hover {
+    background: linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 100%) !important;
+    border-color: #ec4899 !important;
+    transform: translateX(2px) !important;
+}
+
+.pastel-theme .nav-item.active {
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%) !important;
+    color: white !important;
+    border-color: #be185d !important;
+}
+
+/* ===== MENÚ LATERAL - TEMA OSCURO ===== */
+
+.dark-theme .nav-item,
+.dark-theme .sidebar-container,
+.dark-theme #sidebar-container {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark-theme .nav-item {
+    background: rgba(31, 41, 55, 0.8) !important;
+    border: 1px solid #374151 !important;
+    color: #e5e7eb !important;
+}
+
+.dark-theme .nav-item:hover {
+    background: #374151 !important;
+    border-color: #4b5563 !important;
+}
+
+.dark-theme .nav-item.active {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+    color: white !important;
+    border-color: #1d4ed8 !important;
+}
+

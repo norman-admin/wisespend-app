@@ -1,0 +1,564 @@
+/**
+ * 📋 VARIOS-MAIN.CSS - Sistema de Pestañas Actualizado
+ * Control de Gastos Familiares - WiseSpend
+ * Versión: 2.0.0 - Compatible con Interfaz Original
+ * 
+ * 🎯 FUNCIONALIDADES:
+ * ✅ Navegación de pestañas estilo interfaz original
+ * ✅ Estados activos y hover optimizados
+ * ✅ Layout responsive mejorado
+ * ✅ Compatible con temas existentes
+ * ✅ Loading states y errores
+ * ✅ Integración perfecta con notas.js v2.1.0
+ */
+
+/* ===== VARIABLES PARA CONSISTENCIA ===== */
+
+:root {
+    /* Colores coherentes con la interfaz original */
+    --tab-bg-primary: #f7fafc;
+    --tab-bg-secondary: #edf2f7;
+    --tab-text-primary: #2d3748;
+    --tab-text-secondary: #4a5568;
+    --tab-text-light: #718096;
+    --tab-border: #e2e8f0;
+    --tab-active: #4299e1;
+    --tab-hover: rgba(66, 153, 225, 0.05);
+}
+
+/* ===== CONTENEDOR PRINCIPAL ===== */
+
+.varios-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 500px;
+    background: var(--tab-bg-primary);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== NAVEGACIÓN DE PESTAÑAS ===== */
+
+.varios-tabs-nav {
+    display: flex;
+    background: var(--tab-bg-secondary);
+    border-bottom: 1px solid var(--tab-border);
+    padding: 0;
+    margin: 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.varios-tabs-nav::-webkit-scrollbar {
+    height: 4px;
+}
+
+.varios-tabs-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.varios-tabs-nav::-webkit-scrollbar-thumb {
+    background: var(--tab-border);
+    border-radius: 2px;
+}
+
+.varios-tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--tab-text-secondary);
+    white-space: nowrap;
+    position: relative;
+    min-width: 160px;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.varios-tab-btn:hover {
+    background: var(--tab-hover);
+    color: var(--tab-text-primary);
+    transform: translateY(-1px);
+}
+
+.varios-tab-btn.active {
+    background: var(--tab-bg-primary);
+    color: var(--tab-active);
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.varios-tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--tab-active);
+}
+
+/* ===== ICONOS Y TEXTO DE PESTAÑAS ===== */
+
+.tab-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.tab-name {
+    font-weight: inherit;
+    letter-spacing: 0.025em;
+}
+
+/* ===== CONTENIDO DE PESTAÑAS ===== */
+
+.varios-tabs-content {
+    flex: 1;
+    background: var(--tab-bg-primary);
+    overflow: hidden;
+    padding: 0;
+}
+
+.varios-tab-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== HEADER DEL CONTENIDO ===== */
+
+.tab-content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 24px 24px 16px 24px;
+    border-bottom: 1px solid var(--tab-border);
+    background: white;
+}
+
+.tab-content-header h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--tab-text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ===== BOTONES PRIMARIOS ===== */
+
+.btn-primary {
+    background: var(--tab-active);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 1px 3px rgba(66, 153, 225, 0.3);
+}
+
+.btn-primary:hover {
+    background: #3182ce;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(66, 153, 225, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* ===== CONTENIDO ESPECÍFICO POR PESTAÑA ===== */
+
+.notas-content,
+.herramientas-content, 
+.documentos-content {
+    flex: 1;
+    padding: 24px;
+    background: var(--tab-bg-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--tab-border);
+    min-height: 300px;
+    margin: 16px 24px 24px 24px;
+}
+
+.notas-content p,
+.herramientas-content p,
+.documentos-content p {
+    color: var(--tab-text-light);
+    font-size: 14px;
+    text-align: center;
+    margin: 60px 0;
+    font-style: italic;
+}
+
+/* ===== ESTADOS DE LOADING Y ERROR ===== */
+
+.varios-loading,
+.varios-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    text-align: center;
+    color: var(--tab-text-light);
+    padding: 24px;
+}
+
+.varios-loading p,
+.varios-error p {
+    font-size: 16px;
+    margin: 0 0 16px 0;
+}
+
+.varios-error {
+    color: #e53e3e;
+}
+
+.varios-error button {
+    background: #e53e3e;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.varios-error button:hover {
+    background: #c53030;
+    transform: translateY(-1px);
+}
+
+/* ===== LOADING INDICATOR ===== */
+
+.varios-loading::before {
+    content: '';
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--tab-border);
+    border-top: 2px solid var(--tab-active);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+@media (max-width: 768px) {
+    .varios-tabs-nav {
+        overflow-x: scroll;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .varios-tabs-nav::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .varios-tab-btn {
+        min-width: 140px;
+        padding: 12px 16px;
+        font-size: 13px;
+    }
+    
+    .tab-icon {
+        font-size: 16px;
+    }
+    
+    .varios-tabs-content {
+        padding: 0;
+    }
+    
+    .tab-content-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 16px;
+    }
+    
+    .tab-content-header h3 {
+        font-size: 18px;
+    }
+    
+    .notas-content,
+    .herramientas-content, 
+    .documentos-content {
+        margin: 16px;
+        padding: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .varios-tab-btn {
+        min-width: 120px;
+        padding: 10px 12px;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .tab-name {
+        font-size: 11px;
+    }
+    
+    .tab-icon {
+        font-size: 18px;
+    }
+    
+    .varios-tabs-content {
+        padding: 0;
+    }
+    
+    .notas-content,
+    .herramientas-content, 
+    .documentos-content {
+        margin: 12px;
+        padding: 12px;
+    }
+}
+
+/* ===== ANIMACIONES ===== */
+
+.varios-tab-content {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.varios-loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* ===== TRANSICIONES SUAVES ===== */
+
+.varios-tab-btn,
+.btn-primary {
+    will-change: transform;
+}
+
+.varios-tabs-content {
+    will-change: contents;
+}
+
+/* ===== COMPATIBILIDAD CON TEMAS ===== */
+
+/* Tema oscuro */
+.dark-theme .varios-container,
+.soft-dark-theme .varios-container {
+    --tab-bg-primary: var(--bg-primary);
+    --tab-bg-secondary: var(--bg-secondary);
+    --tab-text-primary: var(--text-primary);
+    --tab-text-secondary: var(--text-secondary);
+    --tab-text-light: var(--text-tertiary);
+    --tab-border: var(--border-medium);
+    --tab-active: var(--primary-500);
+    --tab-hover: rgba(99, 179, 237, 0.1);
+}
+
+.dark-theme .varios-tabs-nav,
+.soft-dark-theme .varios-tabs-nav {
+    background: var(--bg-secondary);
+    border-bottom-color: var(--border-medium);
+}
+
+.dark-theme .varios-tab-btn.active,
+.soft-dark-theme .varios-tab-btn.active {
+    background: var(--bg-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .tab-content-header,
+.soft-dark-theme .tab-content-header {
+    background: var(--bg-primary);
+    border-bottom-color: var(--border-medium);
+}
+
+/* Tema claro */
+.light-theme .varios-container {
+    --tab-bg-primary: #ffffff;
+    --tab-bg-secondary: #f8fafc;
+    --tab-text-primary: #1a202c;
+    --tab-text-secondary: #2d3748;
+    --tab-text-light: #718096;
+    --tab-border: #e2e8f0;
+    --tab-active: #4299e1;
+    --tab-hover: rgba(66, 153, 225, 0.05);
+}
+
+.light-theme .varios-tabs-nav {
+    background: var(--tab-bg-secondary);
+    border-bottom-color: var(--tab-border);
+}
+
+/* ===== ESTADOS ESPECIALES ===== */
+
+.varios-tab-btn:focus {
+    outline: 2px solid var(--tab-active);
+    outline-offset: 2px;
+}
+
+.varios-tab-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.varios-tab-btn:disabled:hover {
+    transform: none;
+    background: none;
+}
+
+/* ===== UTILIDADES ===== */
+
+.varios-hidden {
+    display: none !important;
+}
+
+.varios-visible {
+    display: block !important;
+}
+
+.varios-fade-in {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.varios-no-scroll {
+    overflow: hidden;
+}
+
+/* ===== ACCESIBILIDAD ===== */
+
+@media (prefers-reduced-motion: reduce) {
+    .varios-tab-btn,
+    .btn-primary,
+    .varios-tab-content {
+        transition: none;
+        animation: none;
+    }
+}
+
+/* ===== HIGH CONTRAST MODE ===== */
+
+@media (prefers-contrast: high) {
+    .varios-tab-btn.active {
+        border: 2px solid var(--tab-active);
+    }
+    
+    .btn-primary {
+        border: 2px solid transparent;
+    }
+    
+    .btn-primary:focus {
+        border-color: white;
+    }
+}
+
+/* ===== PRINT STYLES ===== */
+
+@media print {
+    .varios-tabs-nav {
+        display: none;
+    }
+    
+    .varios-container {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    .varios-tabs-content {
+        padding: 0;
+    }
+}
+
+/* ===== DEBUG STYLES (solo desarrollo) ===== */
+
+.varios-debug {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 9999;
+    font-family: monospace;
+}
+
+.varios-debug-info {
+    background: rgba(66, 153, 225, 0.1);
+    border: 1px solid var(--tab-active);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--tab-active);
+    margin-left: 8px;
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+
+.varios-tabs-nav {
+    contain: layout style;
+}
+
+.varios-tab-content {
+    contain: layout style paint;
+}
+
+/* ===== FINAL LOG ===== */
+
+/*
+📋 VARIOS-MAIN.CSS v2.0.0 ACTUALIZADO
+======================================
+✅ Navegación de pestañas estilo interfaz original
+✅ Colores coherentes con notas.css v2.1.0
+✅ Estados activos y hover optimizados
+✅ Layout responsive mejorado
+✅ Loading states con spinner animado
+✅ Compatibilidad con temas oscuro/claro
+✅ Accesibilidad y high contrast mejorados
+✅ Optimizaciones de rendimiento
+✅ Transiciones suaves
+✅ Debug styles para desarrollo
+
+🎯 PERFECTAMENTE INTEGRADO CON INTERFAZ ORIGINAL
+*/

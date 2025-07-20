@@ -1,0 +1,387 @@
+/**
+ * 📱 MOBILE-MAIN.CSS - SISTEMA MÓVIL SEPARADO
+ * Control de Gastos Familiares - Versión 1.0.0
+ * 
+ * 🎯 PROPÓSITO:
+ * ✅ Archivo independiente para móvil
+ * ✅ NO afecta nada de PC/Desktop
+ * ✅ Overrides específicos para móvil
+ * ✅ Solución al problema de menu lateral y tarjetas
+ */
+
+/* ===== RESET MÓVIL - DESFIJADO COMPLETO ===== */
+
+/* Header no fijo en móvil */
+.dashboard-header {
+    position: static !important;
+    top: auto !important;
+    z-index: auto !important;
+}
+
+/* Stats section no fija en móvil */
+.stats-section,
+#stats-container,
+body.dashboard-body .stats-section {
+    position: static !important;
+    top: auto !important;
+    z-index: auto !important;
+    padding: 8px 12px !important;
+}
+
+/* Body con scroll natural */
+body.dashboard-body {
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh !important;
+}
+
+/* Main content scrolleable */
+.main-content {
+    position: static !important;
+    overflow: visible !important;
+    grid-template-columns: 1fr !important;
+    padding: 0 12px 12px !important;
+}
+
+/* ===== TARJETAS SÚPER COMPACTAS MÓVIL ===== */
+
+.stats-container {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+}
+
+.stat-card {
+    padding: 4px 6px !important;
+    min-height: 45px !important;
+    border-radius: 4px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.stat-header {
+    margin-bottom: 2px !important;
+}
+
+.stat-title {
+    font-size: 8px !important;
+    margin-bottom: 1px !important;
+    letter-spacing: 0.2px !important;
+    line-height: 1 !important;
+}
+
+.stat-subtitle {
+    font-size: 7px !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+}
+
+.stat-value {
+    font-size: 11px !important;
+    line-height: 1 !important;
+    margin: 2px 0 0 0 !important;
+    font-weight: 600 !important;
+}
+
+/* ===== BOTÓN HAMBURGER PARA MENÚ ===== */
+
+/* Botón hamburger (lo agregamos al header existente) */
+.mobile-menu-btn {
+    display: block !important;
+    position: fixed !important;
+    top: 20px !important;
+    left: 20px !important;
+    z-index: 9999 !important;
+    background: #3b82f6 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 50% !important;
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 20px !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+    transition: all 0.3s ease !important;
+}
+
+.mobile-menu-btn:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6) !important;
+}
+
+/* ===== SIDEBAR MÓVIL OVERLAY ===== */
+
+.sidebar {
+    position: fixed !important;
+    left: -300px !important;
+    top: 0 !important;
+    height: 100vh !important;
+    width: 280px !important;
+    z-index: 9998 !important;
+    background: white !important;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.3) !important;
+    transition: left 0.3s ease !important;
+    overflow-y: auto !important;
+}
+
+.sidebar.mobile-open {
+    left: 0 !important;
+}
+
+/* Overlay para cerrar menú */
+.mobile-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    z-index: 9997 !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: all 0.3s ease !important;
+}
+
+.mobile-overlay.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* ===== HEADER MÓVIL COMPACTO ===== */
+
+.dashboard-header {
+    padding: 8px 60px 8px 80px !important; /* Espacio para botón hamburger */
+}
+
+.header-content {
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: stretch !important;
+}
+
+.dashboard-title {
+    font-size: 16px !important;
+    text-align: center !important;
+}
+
+.header-right {
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+}
+
+/* ===== CONTENT AREA MÓVIL ===== */
+
+.content-area {
+    margin-top: 0 !important;
+    border-radius: 12px !important;
+}
+
+.content-section {
+    padding: 12px !important;
+}
+
+.section-header {
+    flex-direction: column !important;
+    gap: 10px !important;
+    align-items: stretch !important;
+}
+
+/* ===== BOTONES Y FORMULARIOS MÓVIL ===== */
+
+.btn {
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+    min-height: 44px !important; /* Táctil friendly */
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    padding: 12px !important;
+    font-size: 16px !important; /* Evita zoom en iOS */
+}
+
+/* ===== MODALES MÓVIL ===== */
+
+.modal-content,
+.modern-modal {
+    width: 95% !important;
+    margin: 15px !important;
+    max-height: 85vh !important;
+}
+
+.modal-header-modern,
+.modal-body-modern,
+.modal-footer-modern {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+}
+
+/* ===== MENÚ CONTEXTUAL MÓVIL ===== */
+
+.contextual-menu {
+    min-width: 140px !important;
+    font-size: 14px !important;
+}
+
+.contextual-menu-item {
+    padding: 12px 14px !important;
+    font-size: 15px !important;
+}
+
+/* ===== NAVEGACIÓN MÓVIL MEJORADA ===== */
+
+.nav-item {
+    padding: 14px 20px !important;
+    font-size: 15px !important;
+    border-radius: 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.nav-icon {
+    font-size: 18px !important;
+    margin-right: 12px !important;
+}
+
+/* ===== GASTOS EXTRAS MÓVIL ===== */
+
+.gastos-extras-layout {
+    grid-template-columns: 1fr !important;
+    grid-template-areas: 
+        "expenses"
+        "budget"
+        "config" !important;
+    height: auto !important;
+    gap: 12px !important;
+    padding: 8px !important;
+}
+
+/* ===== TABLAS MÓVIL ===== */
+
+.table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+.income-table-enhanced {
+    min-width: 600px !important;
+    font-size: 12px !important;
+}
+
+.income-table-enhanced th,
+.income-table-enhanced td {
+    padding: 8px 6px !important;
+}
+
+/* ===== REPORTES MÓVIL ===== */
+
+.reports-3col-layout {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+}
+
+.summary-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+}
+
+.summary-card {
+    padding: 16px 12px !important;
+    min-height: 100px !important;
+}
+
+/* ===== UTILIDADES MÓVIL ===== */
+
+.hide-mobile {
+    display: none !important;
+}
+
+.show-mobile {
+    display: block !important;
+}
+
+/* ===== ANIMACIONES MÓVIL ===== */
+
+.sidebar,
+.mobile-overlay,
+.mobile-menu-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* ===== ACCESIBILIDAD MÓVIL ===== */
+
+.mobile-menu-btn:focus {
+    outline: 2px solid white !important;
+    outline-offset: 2px !important;
+}
+
+/* ===== ORIENTACIÓN LANDSCAPE MÓVIL ===== */
+
+@media (max-width: 768px) and (orientation: landscape) {
+    
+    .stats-container {
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 4px !important;
+    }
+    
+    .stat-card {
+        padding: 3px 4px !important;
+        min-height: 30px !important;
+    }
+    
+    .stat-value {
+        font-size: 9px !important;
+    }
+    
+    .stat-title {
+        font-size: 6px !important;
+    }
+    
+    .stat-subtitle {
+        font-size: 5px !important;
+    }
+}
+
+/* ===== MOBILE SMALL (480px y menor) ===== */
+
+@media (max-width: 480px) {
+    
+    .stats-container {
+        grid-template-columns: 1fr !important;
+        gap: 4px !important;
+    }
+    
+    .stat-card {
+        padding: 3px 5px !important;
+        min-height: 35px !important;
+    }
+    
+    .stat-title {
+        font-size: 7px !important;
+    }
+    
+    .stat-subtitle {
+        font-size: 6px !important;
+    }
+    
+    .stat-value {
+        font-size: 10px !important;
+    }
+    
+    .mobile-menu-btn {
+        width: 45px !important;
+        height: 45px !important;
+        font-size: 18px !important;
+    }
+    
+    .sidebar {
+        width: 260px !important;
+    }
+    
+    .dashboard-header {
+        padding: 6px 50px 6px 70px !important;
+    }
+    
+    .dashboard-title {
+        font-size: 14px !important;
+    }
+}

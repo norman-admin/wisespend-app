@@ -1,0 +1,43 @@
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Logs y temporales
+*.log
+logs/
+tmp/
+temp/
+
+# Backup local (no subir backups al repo)
+backup/
+*.backup
+*.bak
+
+# Dependencias Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+*.env
+
+# Datos sensibles
+data/users/
+data/local/
+config.local.js
+.env.local
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos específicos del proyecto
+voice_server/logs/
+voice_server/__pycache__/
+voice_server/*.log

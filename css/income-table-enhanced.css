@@ -1,0 +1,621 @@
+/**
+ * INCOME-TABLE-ENHANCED.CSS - Estilos para Tabla de Ingresos Mejorada
+ * Control de Gastos Familiares - Versión 1.0.0
+ * 
+ * 🎯 CARACTERÍSTICAS:
+ * ✅ Diseño moderno y profesional
+ * ✅ Responsive design
+ * ✅ Hover effects suaves
+ * ✅ Barras de progreso animadas
+ * ✅ Botones de acción intuitivos
+ * ✅ Compatible con temas light/dark
+ */
+
+/* ===== HEADER MEJORADO DE INGRESOS ===== */
+
+.income-header-enhanced {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 5px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.header-content {
+    flex: 1;
+    min-width: 200px;
+}
+
+.income-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary, #1e293b);
+    margin: 0 0 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.income-subtitle {
+    font-size: 14px;
+    color: var(--text-tertiary, #64748b);
+    margin: 0;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.search-container {
+    position: relative;
+}
+
+.search-input {
+    padding: 10px 16px;
+    border: 1px solid var(--border-medium, #d1d5db);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--bg-primary, #ffffff);
+    color: var(--text-primary, #1e293b);
+    min-width: 200px;
+    transition: all 0.2s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-600, #3b82f6);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-input::placeholder {
+    color: var(--text-muted, #9ca3af);
+}
+
+.btn-add-income {
+    background: var(--primary-600, #3b82f6);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-add-income:hover {
+    background: var(--primary-700, #1d4ed8);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* ===== TABLA MEJORADA ===== */
+
+.table-wrapper {
+    background: var(--bg-primary, #ffffff);
+    border: 1px solid var(--border-normal, #e2e8f0);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.income-table-enhanced {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.income-table-enhanced thead {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-bottom: 2px solid var(--border-normal, #e2e8f0);
+}
+
+.income-table-enhanced th {
+    padding: 16px 20px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-secondary, #475569);
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    transition: background-color 0.2s ease;
+}
+
+.income-table-enhanced th:hover {
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.income-table-enhanced th.sortable {
+    cursor: pointer;
+}
+
+.sort-indicator {
+    opacity: 0.6;
+    margin-left: 8px;
+    font-size: 12px;
+    transition: opacity 0.2s ease;
+}
+
+.income-table-enhanced th:hover .sort-indicator {
+    opacity: 1;
+}
+
+/* Columnas específicas */
+.amount-col {
+    width: 150px;
+    text-align: right;
+}
+
+.percentage-col {
+    width: 180px;
+}
+
+.actions-col {
+    width: 140px;
+    text-align: center;
+}
+
+/* ===== FILAS DE LA TABLA ===== */
+
+.income-table-enhanced tbody tr {
+    border-bottom: 1px solid var(--border-light, #f1f5f9);
+    transition: all 0.2s ease;
+}
+
+.income-table-enhanced tbody tr:nth-child(even) {
+    background: rgba(248, 250, 252, 0.5);
+}
+
+.income-table-enhanced tbody tr:hover {
+    background: rgba(240, 249, 255, 0.8);
+    transform: scale(1.001);
+}
+
+.income-table-enhanced tbody tr.inactive {
+    opacity: 0.6;
+    background: #f8f9fa;
+}
+
+.income-table-enhanced td {
+    padding: 2px 20px;
+    vertical-align: middle;
+}
+
+/* ===== CELDAS ESPECÍFICAS ===== */
+
+.source-cell {
+    max-width: 200px;
+}
+
+.source-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.source-name {
+    font-weight: 500;
+    color: var(--text-primary, #1e293b);
+    line-height: 1.4;
+}
+
+.status-badge {
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.status-badge.inactive {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.amount-cell {
+    text-align: right;
+}
+
+.amount-value {
+    font-weight: 600;
+    color: var(--success-600, #059669);
+    font-size: 16px;
+}
+
+/* ===== BARRAS DE PROGRESO ===== */
+
+.percentage-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.progress-bar {
+    background: var(--border-light, #f1f5f9);
+    border-radius: 20px;
+    height: 6px;
+    width: 80px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 20px;
+    transition: width 0.5s ease;
+}
+
+.progress-high {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.progress-medium {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.progress-low {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+}
+
+.percentage-text {
+    font-size: 13px;
+    color: var(--text-secondary, #475569);
+    font-weight: 500;
+    min-width: 35px;
+}
+
+/* ===== BOTONES DE ACCIÓN ===== */
+
+.actions-cell {
+    text-align: center;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.btn-edit {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.btn-edit:hover {
+    background: #dbeafe;
+    transform: scale(1.1);
+}
+
+.btn-view {
+    background: #f8fafc;
+    color: #64748b;
+}
+
+.btn-view:hover {
+    background: #f1f5f9;
+    transform: scale(1.1);
+}
+
+.btn-delete {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.btn-delete:hover {
+    background: #fee2e2;
+    transform: scale(1.1);
+}
+
+/* ===== FILA DE TOTAL ===== */
+
+.total-row {
+    background: linear-gradient(135deg, #e9f6fe 0%, #e9f6fe 100%) !important;
+    border-top: 2px solid var(--success-600, #97bbff) !important;
+    font-weight: 600;
+}
+
+.total-row td {
+    padding: 20px !important;
+    color: var(--text-primary, #1e293b);
+}
+
+.total-amount {
+    color: var(--success-600, #05961d) !important;
+    font-size: 18px;
+}
+
+/* ===== ESTADO VACÍO ===== */
+
+.empty-row {
+    background: rgba(248, 250, 252, 0.5) !important;
+}
+
+.empty-message {
+    text-align: center !important;
+    padding: 40px 20px !important;
+}
+
+.empty-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.empty-icon {
+    font-size: 48px;
+    opacity: 0.5;
+}
+
+.empty-text {
+    color: var(--text-muted, #9ca3af);
+    font-size: 16px;
+}
+
+.btn-add-first {
+    background: var(--primary-600, #3b82f6);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-add-first:hover {
+    background: var(--primary-700, #1d4ed8);
+}
+
+/* ===== BARRA DE ESTADÍSTICAS ===== */
+
+.income-stats-bar {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 1px solid #bae6fd;
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.stats-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #0369a1;
+    font-size: 14px;
+}
+
+.stats-icon {
+    font-size: 16px;
+}
+
+.stats-label {
+    font-weight: 500;
+}
+
+.stats-value {
+    font-weight: 600;
+    color: #0c4a6e;
+}
+
+/* ===== TEMA OSCURO ===== */
+
+.dark-theme .income-header-enhanced {
+    background: linear-gradient(135deg, #334155 0%, #475569 100%);
+    border-color: var(--border-medium);
+}
+
+.dark-theme .income-title {
+    color: var(--text-primary);
+}
+
+.dark-theme .income-subtitle {
+    color: var(--text-tertiary);
+}
+
+.dark-theme .search-input {
+    background: var(--bg-secondary);
+    border-color: var(--border-medium);
+    color: var(--text-primary);
+}
+
+.dark-theme .table-wrapper {
+    background: var(--bg-secondary);
+    border-color: var(--border-medium);
+}
+
+.dark-theme .income-table-enhanced thead {
+    background: linear-gradient(135deg, #334155 0%, #475569 100%);
+}
+
+.dark-theme .income-table-enhanced tbody tr:nth-child(even) {
+    background: rgba(71, 85, 105, 0.2);
+}
+
+.dark-theme .income-table-enhanced tbody tr:hover {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.dark-theme .income-stats-bar {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-color: #475569;
+}
+
+.dark-theme .stats-item {
+    color: #94a3b8;
+}
+
+.dark-theme .stats-value {
+    color: #e2e8f0;
+}
+
+/* ===== TEMA PASTEL ===== */
+
+.pastel-theme .income-header-enhanced {
+    background: linear-gradient(135deg, #fefcff 0%, #fdf2f8 100%);
+    border-color: #f3e8ff;
+}
+
+.pastel-theme .search-input:focus {
+    border-color: #ec4899;
+    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+}
+
+.pastel-theme .btn-add-income {
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+}
+
+.pastel-theme .btn-add-income:hover {
+    background: linear-gradient(135deg, #db2777 0%, #be185d 100%);
+}
+
+.pastel-theme .table-wrapper {
+    background: linear-gradient(135deg, #ffffff 0%, #fefcff 100%);
+    border-color: #f3e8ff;
+}
+
+.pastel-theme .income-table-enhanced thead {
+    background: linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 100%);
+}
+
+.pastel-theme .income-table-enhanced tbody tr:hover {
+    background: linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 100%);
+}
+
+.pastel-theme .btn-edit {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
+
+.pastel-theme .btn-view {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.pastel-theme .btn-delete {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+}
+
+.pastel-theme .income-stats-bar {
+    background: linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 100%);
+    border-color: #e9d5ff;
+}
+
+.pastel-theme .stats-item {
+    color: #a855f7;
+}
+
+.pastel-theme .stats-value {
+    color: #7c3aed;
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 768px) {
+    .income-header-enhanced {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+    
+    .header-controls {
+        justify-content: center;
+    }
+    
+    .search-input {
+        min-width: 150px;
+    }
+    
+    .income-table-enhanced {
+        font-size: 12px;
+    }
+    
+    .income-table-enhanced th,
+    .income-table-enhanced td {
+        padding: 12px 8px;
+    }
+    
+    .percentage-container {
+        flex-direction: column;
+        gap: 4px;
+        align-items: flex-start;
+    }
+    
+    .progress-bar {
+        width: 60px;
+    }
+    
+    .income-stats-bar {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+    
+    .stats-item {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .table-wrapper {
+        overflow-x: auto;
+    }
+    
+    .income-table-enhanced {
+        min-width: 600px;
+    }
+    
+    .actions-cell .action-buttons {
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+    
+    .source-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .percentage-container {
+        flex-direction: row;
+        gap: 8px;
+    }
+    
+    .progress-bar {
+        width: 50px;
+    }
+}

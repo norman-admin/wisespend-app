@@ -1,0 +1,910 @@
+/**
+ * 📝 NOTAS.CSS - Estilos para Interfaz Original de 2 Columnas
+ * Control de Gastos Familiares - WiseSpend
+ * Versión: 2.1.0 - Estilo Original Restaurado
+ * 
+ * 🎯 FUNCIONALIDADES:
+ * ✅ Layout original de 2 columnas (Tareas | Recordatorios)
+ * ✅ Colores exactos de la captura original
+ * ✅ Tarjetas con colores específicos (rosa, naranja, verde, etc.)
+ * ✅ Modal de dictado por voz integrado
+ * ✅ Indicador de conexión WebSocket
+ * ✅ Filtros horizontales de categorías
+ * ✅ Compatible con funcionalidad de voz
+ */
+
+/* ===== VARIABLES ESPECÍFICAS DE NOTAS ===== */
+
+:root {
+    /* Colores originales exactos de la captura */
+    --task-high-priority: #ff9999;
+    --task-medium-priority: #ffcc99;
+    --task-low-priority: #98d8c8;
+    --task-completed: #98d8c8;
+    --task-personal: #d8a7ca;
+    --task-work: #a8c68f;
+    --task-family: #ffcc99;
+    --task-financial: #ff9999;
+    
+    /* Recordatorios */
+    --reminder-urgent: #ff9999;
+    --reminder-warning: #ffcc99;
+    --reminder-ok: #98d8c8;
+    
+    /* Backgrounds suaves */
+    --bg-blue-light: #e8f1fc;
+    --bg-mint-light: #e8f5f0;
+    
+    /* Textos y bordes */
+    --text-dark: #2d3748;
+    --text-medium: #4a5568;
+    --text-light: #718096;
+    --border-color: #e2e8f0;
+}
+
+/* ===== CONTENEDOR PRINCIPAL - LAYOUT ORIGINAL ===== */
+
+.notas-main-container {
+    display: grid;
+    grid-template-columns: 1fr 24px 1fr;
+    gap: 16;
+    min-height: 500px;
+    background: #f7fafc;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 8px 0;
+}
+
+/* ===== DIVISOR CENTRAL ===== */
+
+.notas-divider {
+    background: transparent;
+    margin: 32px 0;
+}
+
+/* ===== SECCIONES PRINCIPALES ===== */
+
+.notas-section,
+.recordatorios-section {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+.notas-section {
+    background: var(--bg-blue-light);
+}
+
+.recordatorios-section {
+    background: var(--bg-mint-light);
+}
+
+/* ===== HEADERS DE SECCIÓN ===== */
+
+.section-header-notas {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(123, 167, 217, 0.2);
+}
+
+.section-title-notas {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-actions-notas {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ===== BOTONES DE ACCIÓN ===== */
+
+.btn-notas {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-notas.primary {
+    background: #4299e1;
+    color: white;
+}
+
+.btn-notas.primary:hover {
+    background: #3182ce;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(66, 153, 225, 0.3);
+}
+
+.btn-notas.mint {
+    background: #48bb78;
+    color: white;
+}
+
+.btn-notas.mint:hover {
+    background: #38a169;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+}
+
+/* ===== MENÚ DE OPCIONES ===== */
+
+.options-menu-notas {
+    position: relative;
+    display: inline-block;
+}
+
+.options-trigger-notas {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.options-trigger-notas:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-medium);
+}
+
+.dropdown-menu-notas {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 4px 0;
+    min-width: 180px;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+}
+
+.dropdown-menu-notas.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.menu-item-notas {
+    display: block;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    color: var(--text-medium);
+    text-decoration: none;
+}
+
+.menu-item-notas:hover {
+    background: #f7fafc;
+    color: var(--text-dark);
+}
+
+.menu-item-notas.danger {
+    color: #e53e3e;
+}
+
+.menu-item-notas.danger:hover {
+    background: #fed7d7;
+    color: #c53030;
+}
+
+/* ===== FILTROS DE CATEGORÍAS (HORIZONTALES) ===== */
+
+.filters-container {
+    margin-bottom: 20px;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    background: white;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-medium);
+}
+
+.filter-btn:hover {
+    border-color: #4299e1;
+    color: #4299e1;
+}
+
+.filter-btn.active {
+    background: #4299e1;
+    border-color: #4299e1;
+    color: white;
+}
+
+/* ===== LISTA DE TAREAS (FORMATO ORIGINAL) ===== */
+
+.tasks-list-original {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+
+.task-item-original {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.task-item-original:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Colores específicos por prioridad */
+.task-item-original.high-priority {
+    border-left: 4px solid var(--task-high-priority);
+    background: linear-gradient(to right, rgba(255, 153, 153, 0.1), white);
+}
+
+.task-item-original.medium-priority {
+    border-left: 4px solid var(--task-medium-priority);
+    background: linear-gradient(to right, rgba(255, 204, 153, 0.1), white);
+}
+
+.task-item-original.low-priority {
+    border-left: 4px solid var(--task-low-priority);
+    background: linear-gradient(to right, rgba(152, 216, 200, 0.1), white);
+}
+
+.task-item-original.completed-task {
+    opacity: 0.6;
+    background: linear-gradient(to right, rgba(152, 216, 200, 0.1), white);
+}
+
+.task-checkbox-original {
+    margin-top: 2px;
+}
+
+.task-checkbox-original input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.task-content-original {
+    flex: 1;
+}
+
+.task-title-original {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+
+.task-meta-original {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.category-tag {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.category-tag.personal {
+    background: var(--task-personal);
+    color: white;
+}
+
+.category-tag.work {
+    background: var(--task-work);
+    color: white;
+}
+
+.category-tag.family {
+    background: var(--task-family);
+    color: white;
+}
+
+.category-tag.financial {
+    background: var(--task-financial);
+    color: white;
+}
+
+.date-tag {
+    font-size: 11px;
+    color: var(--text-light);
+    background: #edf2f7;
+    padding: 2px 6px;
+    border-radius: 8px;
+}
+
+.task-actions-original {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.task-item-original:hover .task-actions-original {
+    opacity: 1;
+}
+
+.btn-icon-small {
+    background: none;
+    border: none;
+    padding: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.btn-icon-small:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* ===== FECHA ACTUAL ===== */
+
+.current-date {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.month-year {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+
+.today {
+    font-size: 14px;
+    color: var(--text-medium);
+}
+
+/* ===== LISTA DE RECORDATORIOS (FORMATO ORIGINAL) ===== */
+
+.reminders-list-original {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+
+.reminder-item-original {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.reminder-item-original:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estados de recordatorios */
+.reminder-item-original.urgent {
+    border-left: 4px solid var(--reminder-urgent);
+    background: linear-gradient(to right, rgba(255, 153, 153, 0.1), white);
+}
+
+.reminder-item-original.warning {
+    border-left: 4px solid var(--reminder-warning);
+    background: linear-gradient(to right, rgba(255, 204, 153, 0.1), white);
+}
+
+.reminder-item-original.ok {
+    border-left: 4px solid var(--reminder-ok);
+    background: linear-gradient(to right, rgba(152, 216, 200, 0.1), white);
+}
+
+.reminder-content-original {
+    flex: 1;
+}
+
+.reminder-header-original {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.reminder-title-original {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.reminder-amount-original {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.reminder-footer-original {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.reminder-date-original {
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+.reminder-status-original {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.reminder-status-original.urgent {
+    background: #fed7d7;
+    color: #c53030;
+}
+
+.reminder-status-original.warning {
+    background: #faf5e4;
+    color: #d69e2e;
+}
+
+.reminder-status-original.ok {
+    background: #c6f6d5;
+    color: #2f855a;
+}
+
+.reminder-actions-original {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.reminder-item-original:hover .reminder-actions-original {
+    opacity: 1;
+}
+
+/* ===== ESTADOS VACÍOS ===== */
+
+.empty-state-original {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-light);
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.empty-state-original p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-light);
+}
+
+/* ===== MODALES (DISEÑO MINIMALISTA) ===== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content-voice,
+.modal-content-reminder {
+    background: white;
+    border-radius: 12px;
+    padding: 0;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header-voice,
+.modal-header-reminder {
+    background: #4299e1;
+    padding: 20px 24px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header-voice h3,
+.modal-header-reminder h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.close-btn-voice,
+.close-btn-reminder {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.close-btn-voice:hover,
+.close-btn-reminder:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.modal-body-voice,
+.modal-body-reminder {
+    padding: 24px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+/* ===== ESTADO DE CONEXIÓN EN MODAL ===== */
+
+.voice-connection-status {
+    background: #f7fafc;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.status-indicator {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.status-indicator.connected {
+    color: #2f855a;
+}
+
+.status-indicator.disconnected {
+    color: #c53030;
+}
+
+/* ===== CONTROLES DEL MODAL DE VOZ ===== */
+
+.voice-transcript {
+    margin-bottom: 20px;
+}
+
+.voice-transcript label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.voice-transcript textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.form-controls-voice {
+    margin-bottom: 20px;
+}
+
+.form-row-voice {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.form-group-voice {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.form-group-voice label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.form-group-voice select,
+.form-group-voice input {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.voice-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.btn-voice {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-voice.primary {
+    background: #4299e1;
+    color: white;
+}
+
+.btn-voice.secondary {
+    background: #48bb78;
+    color: white;
+}
+
+.btn-voice.outline {
+    background: white;
+    color: var(--text-medium);
+    border: 1px solid var(--border-color);
+}
+
+.btn-voice:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.voice-status {
+    background: #f7fafc;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+}
+
+.status-title {
+    display: block;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+
+.status-detail {
+    display: block;
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+.modal-footer-voice,
+.modal-footer-reminder {
+    background: #f7fafc;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn-voice.success,
+.btn-reminder.success {
+    background: #48bb78;
+    color: white;
+}
+
+.btn-voice.cancel,
+.btn-reminder.cancel {
+    background: #e2e8f0;
+    color: var(--text-medium);
+}
+
+/* ===== CONTROLES DEL MODAL DE RECORDATORIO ===== */
+
+.form-group-reminder {
+    margin-bottom: 16px;
+}
+
+.form-group-reminder label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.form-group-reminder input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.btn-reminder {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+@media (max-width: 768px) {
+    .notas-main-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+    }
+    
+    .notas-divider {
+        display: none;
+    }
+    
+    .notas-section,
+    .recordatorios-section {
+        padding: 16px;
+        max-height: none;
+    }
+    
+    .section-header-notas {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+    
+    .filter-buttons {
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+    
+    .form-row-voice {
+        grid-template-columns: 1fr;
+    }
+    
+    .voice-actions {
+        flex-direction: column;
+    }
+}
+
+/* ===== NOTIFICACIONES BÁSICAS ===== */
+
+.notification-basic {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 3000;
+    max-width: 300px;
+}
+
+.notification-content-basic strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--text-dark);
+}
+
+.notification-content-basic p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-medium);
+}
+
+/* ===== LOG ===== */
+
+/*
+📝 NOTAS.CSS v2.1.0 - INTERFAZ ORIGINAL RESTAURADA
+========================================================
+✅ Layout original de 2 columnas implementado
+✅ Colores exactos de la captura original aplicados
+✅ Tarjetas con colores específicos por categoría/prioridad
+✅ Filtros horizontales de categorías funcionales
+✅ Modal de dictado por voz minimalista integrado
+✅ Indicador de conexión WebSocket sutil
+✅ Estados vacíos y responsive design
+✅ Compatible con funcionalidad de voz + servidor Python
+
+🎯 INTERFAZ EXACTAMENTE COMO LA CAPTURA ORIGINAL
+*/

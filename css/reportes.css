@@ -1,0 +1,731 @@
+/**
+ * REPORTES.CSS - Estilos para Sistema de Reportes Modular
+ * Control de Gastos Familiares - Versión 2.1.0
+ * 
+ * 🎯 CARACTERÍSTICAS:
+ * ✅ Layout 3 columnas inteligente
+ * ✅ Panel de navegación lateral
+ * ✅ Área de detalles dinámicos
+ * ✅ Responsive design completo
+ * ✅ Estilos para gráficos
+ * ✅ Componentes modulares
+ * ✅ Compatible con table-filter.css
+ * 🆕 Layout 3+2 para tarjetas optimizado
+ * 🆕 Tabla simple para desglose con hover gris suave
+ */
+
+/* ===== LAYOUT 3 COLUMNAS REPORTES ===== */
+
+.reports-3col-layout {
+    display: grid;
+    grid-template-columns: 310px 1fr;
+    gap: 20px;
+    min-height: 600px;
+    width: 100%;
+}
+
+/* ===== PANEL DE NAVEGACIÓN (COLUMNA 2) ===== */
+
+.reports-navigation-panel {
+    background: white;
+    border-radius: 12px;
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+}
+
+.navigation-header {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px 12px 0 0;
+    text-align: center;
+}
+
+.navigation-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.navigation-menu {
+    padding: 12px;
+}
+
+.nav-report-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border: none;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 8px;
+    text-align: left;
+    border-left: 4px solid transparent;
+}
+
+.nav-report-item:hover {
+    background: #f8fafc;
+    transform: translateX(4px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-report-item.active {
+    background: #eff6ff;
+    border-left-color: #3b82f6;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+}
+
+.nav-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    width: 24px;
+    text-align: center;
+}
+
+.nav-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.nav-title {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+    color: #374151;
+    margin-bottom: 4px;
+    line-height: 1.3;
+}
+
+.nav-subtitle {
+    display: block;
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.3;
+    opacity: 0.8;
+}
+
+.nav-report-item.active .nav-title {
+    color: #1d4ed8;
+}
+
+.nav-report-item.active .nav-subtitle {
+    color: #3b82f6;
+    opacity: 1;
+}
+
+/* ===== LAYOUT 3+2 PARA TARJETAS DE RESUMEN ===== */
+
+.summary-grid {
+    display: grid;
+    grid-template-areas: 
+        "ingresos gastos balance"
+        "ahorro presupuesto .";
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+/* Posicionamiento específico de tarjetas */
+.summary-card:nth-child(1) { grid-area: ingresos; }   /* Ingresos Totales */
+.summary-card:nth-child(2) { grid-area: gastos; }     /* Gastos Totales */
+.summary-card:nth-child(3) { grid-area: balance; }    /* Balance */
+.summary-card:nth-child(4) { grid-area: ahorro; }     /* % Ahorro */
+.summary-card:nth-child(5) { grid-area: presupuesto; } /* Presupuesto Extra */
+
+.summary-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    text-align: center;
+    transition: transform 0.2s ease;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.summary-card.positive {
+    border-left: 4px solid #10b981;
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+}
+
+.summary-card.negative {
+    border-left: 4px solid #f87171;
+    background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+}
+
+.summary-card.neutral {
+    border-left: 4px solid #6b7280;
+    background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+}
+
+.summary-label {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 8px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+}
+
+.summary-value {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    font-family: 'Inter', monospace;
+    line-height: 1.1;
+    word-break: break-word;
+}
+
+.summary-value.positive { color: #10b981; }
+.summary-value.negative { color: #f87171; }
+.summary-value.neutral { color: #374151; }
+
+/* 🎨 ESTILOS PARA TARJETA PRESUPUESTO GASTO EXTRA (ROSADO) */
+
+.summary-card.presupuesto-extra {
+    background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+    border: 2px solid #ffe0f0;
+    box-shadow: 0 4px 12px rgba(240, 162, 201, 0);
+    border-left: 1px solid #f9bbda;
+}
+
+.summary-card.presupuesto-extra:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(212, 166, 189, 0.3);
+}
+
+.summary-value.presupuesto-extra {
+    color: #be185d !important;
+    font-weight: 700;
+}
+
+/* ===== TABLA SIMPLE PARA DESGLOSE DE GASTOS ===== */
+
+.summary-breakdown {
+    margin-top: 40px;
+}
+
+.summary-breakdown h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Contenedor de la tabla */
+.breakdown-grid {
+    /* Eliminar estilos de grid anterior - ahora es una tabla */
+    display: block;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    border: none;
+}
+
+/* TABLA SIMPLE */
+.breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+.breakdown-table th {
+    background: #f9fafb;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+}
+
+.breakdown-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #000000; /* NEGRO para todos los elementos */
+    font-weight: 500;
+}
+
+.breakdown-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* HOVER GRIS SUAVE */
+.breakdown-table tbody tr:hover {
+    background: #f8f9fa; /* Gris muy suave */
+}
+
+/* Columna de concepto */
+.breakdown-concepto {
+    font-weight: 500;
+    color: #000000; /* NEGRO */
+}
+
+/* Columna de monto - alineada a la derecha */
+.breakdown-monto {
+    text-align: right;
+    font-family: 'Inter', monospace;
+    font-weight: 600;
+    color: #000000; /* NEGRO */
+}
+
+/* Fila de presupuesto extra con fondo rosado suave */
+.breakdown-table .row-presupuesto-extra {
+    background: #fdf2f8;
+}
+
+.breakdown-table .row-presupuesto-extra:hover {
+    background: #fce7f3; /* Hover ligeramente más intenso para fila rosada */
+}
+
+.breakdown-table .row-presupuesto-extra .breakdown-concepto {
+    color: #000000; /* NEGRO también para presupuesto extra */
+    font-weight: 600;
+}
+
+.breakdown-table .row-presupuesto-extra .breakdown-monto {
+    color: #be185d; /* Solo el monto en rosado */
+    font-weight: 700;
+}
+
+/* Fila de total */
+.breakdown-table .row-total {
+    background: #f3f4f6;
+    border-top: 2px solid #d1d5db;
+}
+
+.breakdown-table .row-total:hover {
+    background: #e5e7eb; /* Hover gris para fila total */
+}
+
+.breakdown-table .row-total .breakdown-concepto {
+    color: #000000; /* NEGRO */
+    font-weight: 700;
+}
+
+.breakdown-table .row-total .breakdown-monto {
+    color: #dc2626; /* Rojo para total */
+    font-weight: 700;
+    font-size: 16px;
+}
+
+/* ===== INSIGHTS RÁPIDOS ===== */
+
+.quick-insights {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 24px;
+    border: 1px solid #e2e8f0;
+}
+
+.quick-insights h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.insights-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.insight-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+}
+
+.insight-item:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.insight-item.positive {
+    border-left: 4px solid #10b981;
+}
+
+.insight-item.negative {
+    border-left: 4px solid #f87171;
+}
+
+.insight-item strong {
+    color: #374151;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.insight-item span {
+    color: #6b7280;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+/* ===== GRÁFICOS ===== */
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    transition: transform 0.2s ease;
+}
+
+.chart-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.chart-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    justify-content: center;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+/* ===== TABLAS GENERALES (NO CATEGORIES) ===== */
+
+/* Solo aplicar estilos generales a tablas que NO sean la de categorías */
+.table:not(#categories-table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.table:not(#categories-table) th,
+.table:not(#categories-table) td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.table:not(#categories-table) th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table:not(#categories-table) tbody tr:hover {
+    background: #f8fafc;
+}
+
+.table:not(#categories-table) tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ===== CONTENEDOR DE CATEGORÍAS (SIN CONFLICTOS) ===== */
+
+/* Solo estilos que no interfieren con table-filter.css */
+
+/* Para tablas de categorías que NO tienen filtros */
+.categories-table:not(:has(#categories-table)) {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+/* ===== BADGES PARA TODAS LAS TABLAS ===== */
+
+.tipo-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: capitalize;
+    letter-spacing: 0.3px;
+}
+
+.tipo-badge.fijos { 
+    background: #dbeafe; 
+    color: #1d4ed8; 
+}
+
+.tipo-badge.variables { 
+    background: #fef3c7; 
+    color: #d97706; 
+}
+
+.tipo-badge.extras { 
+    background: #fce7f3; 
+    color: #be185d; 
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+.status-badge.pagado { 
+    background: #d1fae5; 
+    color: #065f46; 
+}
+
+.status-badge.pendiente { 
+    background: #fef3c7; 
+    color: #92400e; 
+}
+
+/* ===== BOTONES Y ACCIONES ===== */
+
+.actions-section {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    margin-top: 24px;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.action-button {
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.action-button.primary {
+    background: #3b82f6;
+    color: white;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.action-button.primary:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.action-button.secondary {
+    background: white;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.action-button.secondary:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+    transform: translateY(-1px);
+}
+
+/* ===== RESPONSIVE DESIGN MEJORADO ===== */
+
+@media (max-width: 1200px) {
+    .summary-grid {
+        grid-template-areas: 
+            "ingresos gastos balance"
+            "ahorro presupuesto presupuesto";
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .reports-3col-layout {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .reports-navigation-panel {
+        position: static;
+        order: 1;
+    }
+    
+    .reports-details-area {
+        max-height: none;
+        order: 2;
+    }
+    
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    .summary-grid {
+        grid-template-areas: 
+            "ingresos gastos"
+            "balance ahorro"
+            "presupuesto presupuesto";
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+    
+    .reports-3col-layout {
+        gap: 12px;
+    }
+    
+    .reports-navigation-panel,
+    .reports-details-area {
+        padding: 16px;
+    }
+    
+    .navigation-header {
+        padding: 16px;
+    }
+    
+    .nav-report-item {
+        padding: 12px;
+    }
+    
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-container {
+        height: 200px;
+    }
+    
+    .summary-value {
+        font-size: 20px;
+    }
+    
+    .breakdown-table th,
+    .breakdown-table td {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .summary-grid {
+        grid-template-areas: 
+            "ingresos"
+            "gastos"
+            "balance"
+            "ahorro"
+            "presupuesto";
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .summary-card {
+        padding: 16px 12px;
+    }
+    
+    .summary-value {
+        font-size: 18px;
+    }
+    
+    .breakdown-table th,
+    .breakdown-table td {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+}
+
+/* ===== ESTADOS ESPECIALES ===== */
+
+.loading-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #6b7280;
+}
+
+.error-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #ef4444;
+    background: #fef2f2;
+    border-radius: 8px;
+    border: 1px solid #fecaca;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #6b7280;
+    text-align: center;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}

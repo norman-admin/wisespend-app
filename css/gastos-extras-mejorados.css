@@ -1,0 +1,417 @@
+/**
+ * GASTOS-EXTRAS-MEJORADOS.CSS - LAYOUT REDISEÑADO
+ * Control de Gastos Familiares - Sección Gastos Extras Rediseñada
+ * Versión: 2.0.0 - LAYOUT SEGÚN BORRADOR
+ * 
+ * 🎯 FUNCIONALIDAD:
+ * - Layout: Lista izquierda (50%) + 2 cajas derecha (50%)
+ * - Colores del borrador aplicados
+ * - Tema claro compatible
+ * - Integración con tarjetas dinámicas
+ */
+
+/* ===== LAYOUT PRINCIPAL - 3% MÁS PEQUEÑO ===== */
+.gastos-extras-layout {
+    padding: 4px 16px 16px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 15px; /* Gap reducido 3% (16px → 15px) */
+    height: 437px; /* Altura reducida 3% (450px → 437px) */
+    grid-template-areas: 
+        "expenses budget"
+        "expenses config";
+}
+
+/* ===== POSICIONAMIENTO DE CAJAS ===== */
+.extras-expenses-box {
+    grid-area: expenses;
+}
+
+.extras-budget-box {
+    grid-area: budget;
+}
+
+.extras-config-box {
+    grid-area: config;
+}
+
+/* ===== ESTILOS COMUNES - 3% MÁS PEQUEÑO ===== */
+.extras-column-card {
+    background: #ffffff;
+    border: 0.2px solid #d7e3fc;
+    border-radius: 8px;
+    padding: 11px; /* Padding reducido 3% (12px → 11px) */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.extras-column-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.extras-column-title {
+    text-align: center;
+    font-size: 13px; /* Fuente reducida 3% (14px → 13px) */
+    font-weight: 600;
+    color: #4a90e2;
+    margin-bottom: 11px; /* Margen reducido 3% (12px → 11px) */
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* ===== CAJA 1: LISTA DE GASTOS - 3% MÁS PEQUEÑO ===== */
+.extras-expenses-box {
+    grid-area: expenses;
+    border-color: #4a90e2;
+}
+
+.extras-expenses-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px; /* Fuente reducida 3% (14px → 13px) */
+    font-weight: 600;
+    color: #4a90e2;
+    margin-bottom: 11px; /* Margen reducido 3% (12px → 11px) */
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.extras-add-button {
+    background: #4a90e2;
+    color: white;
+    border: none;
+    width: 23px; /* Botón reducido 3% (24px → 23px) */
+    height: 23px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px; /* Fuente reducida 3% (14px → 13px) */
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.extras-add-button:hover {
+    transform: scale(1.05);
+    background: #3a7bc8;
+}
+
+.extras-expenses-list {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 9px; /* Padding reducido 3% (10px → 9px) */
+    margin-bottom: 11px; /* Margen reducido 3% (12px → 11px) */
+    flex: 1;
+    overflow-y: auto;
+    max-height: 271px; /* Altura reducida 3% (280px → 271px) */
+    min-height: 194px; /* Altura reducida 3% (200px → 194px) */
+}
+
+/* Scrollbar igual */
+.extras-expenses-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.extras-expenses-list::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.extras-expenses-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.extras-expense-item {
+    display: flex;
+    align-items: center;
+    padding: 7px 0; /* Padding reducido 3% (8px → 7px) */
+    border-bottom: 1px solid #f9fafb;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.extras-expense-item:last-child {
+    border-bottom: none;
+}
+
+.extras-expense-item:hover {
+    background: #f8fafc;
+    margin: 0 -6px;
+    padding: 7px 6px; /* Padding reducido 3% (8px → 7px) */
+    border-radius: 4px;
+}
+
+.extras-expense-checkbox {
+    margin-right: 7px; /* Margen reducido 3% (8px → 7px) */
+}
+
+.extras-expense-checkbox input {
+    width: 15px; /* Checkbox reducido 3% (16px → 15px) */
+    height: 15px;
+    cursor: pointer;
+    accent-color: #4a90e2;
+}
+
+.extras-expense-details {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.extras-expense-name {
+    font-size: 12px; /* Fuente reducida 3% (13px → 12px) */
+    color: #374151;
+    font-weight: 500;
+}
+
+.extras-expense-amount {
+    font-size: 12px; /* Fuente reducida 3% (13px → 12px) */
+    font-weight: 700;
+    color: #dc2626;
+}
+
+.extras-total-box {
+    background: #d7e3fc;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 9px; /* Padding reducido 3% (10px → 9px) */
+    text-align: center;
+}
+
+.extras-total-label {
+    font-size: 11px; /* Fuente reducida 3% (12px → 11px) */
+    color: #1e40af;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.extras-total-amount {
+    font-size: 17px; /* Fuente reducida 3% (18px → 17px) */
+    font-weight: 700;
+    color: #333333;
+}
+
+/* ===== CAJA 2: PRESUPUESTO - TAMAÑO EXACTO SEGÚN IMAGEN ===== */
+.extras-budget-box {
+    grid-area: budget;
+    border-color: #4a90e2;
+}
+
+.extras-budget-amount-box {
+    background: #d7e3fc;
+    border-radius: 8px;
+    padding: 20px; /* Padding aumentado para la caja principal */
+    text-align: center;
+    margin-bottom: 10px;
+    flex: 0 0 auto; /* No se encoge ni crece */
+    height: 80px; /* Altura fija para la caja principal azul */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.extras-budget-amount {
+    font-size: 28px; /* Fuente más grande para el monto principal */
+    font-weight: 700;
+    color: #333333;
+    margin-bottom: 4px;
+}
+
+.extras-budget-subtitle {
+    font-size: 16px; /* Fuente ligeramente más grande */
+    color: rgb(58, 123, 200);
+    font-weight: 450;
+}
+
+.extras-summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px; /* Gap reducido 3% (8px → 7px) */
+    flex: 1; /* Toma el espacio restante */
+}
+
+.extras-summary-card {
+    border-radius: 6px;
+    padding: 9px; /* Padding reducido 3% (10px → 9px) */
+    text-align: center;
+    height: 60px; /* Altura fija para las cajas pequeñas */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.extras-summary-card.gastos {
+    background: #f9f6f2;    
+}
+
+.extras-summary-card.disponible {
+    background: #dff3d7
+}
+
+.extras-summary-label {
+    font-size: 11px; /* Fuente reducida 3% (10px → 9px) */
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.extras-summary-card.gastos .extras-summary-label {
+    color: #3a7bc8;
+}
+
+.extras-summary-card.disponible .extras-summary-label {
+    color: #3a7bc8;
+}
+
+.extras-summary-amount {
+    font-size: 24px; /* Fuente reducida 3% (16px → 15px) */
+    font-weight: 700;
+}
+
+.extras-summary-card.gastos .extras-summary-amount {
+    color: #e53e3e;
+}
+
+.extras-summary-card.disponible .extras-summary-amount {
+    color: #38a169;
+}
+
+/* ===== CAJA 3: CONFIGURACIÓN - 3% MÁS PEQUEÑO ===== */
+.extras-config-box {
+    grid-area: config;
+    border-color: #4a90e2;
+}
+
+.extras-config-main {
+    background: #d7e3fc;
+    border-radius: 8px;
+    padding: 11px; /* Padding reducido 3% (12px → 11px) */
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.extras-config-amount {
+    font-size: 20px; /* Fuente reducida 3% (18px → 17px) */
+    font-weight: 700;
+    color: #333333;
+    margin-bottom: 9px; /* Margen reducido 3% (10px → 9px) */
+}
+
+.extras-percentage-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px; /* Gap reducido 3% (10px → 9px) */
+}
+
+.extras-percentage-display {
+    background: #60a5fa;
+    color: #333333;
+    padding: 5px 11px; /* Padding reducido 3% (6px 12px → 5px 11px) */
+    border-radius: 6px;
+    font-size: 14px; /* Fuente reducida 3% (14px → 13px) */
+    font-weight: 700;
+    min-width: 43px; /* Ancho reducido 3% (45px → 43px) */
+}
+
+.extras-percentage-slider {
+    flex: 1;
+    height: 5px; /* Slider reducido 3% (6px → 5px) */
+    border-radius: 3px;
+    background: rgb(249, 246, 242);
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    max-width: 116px; /* Ancho reducido 3% (120px → 116px) */
+}
+
+.extras-percentage-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px; /* Thumb reducido 3% (16px → 15px) */
+    height: 15px;
+    border-radius: 50%;
+    background: #3a7bc8;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+}
+
+.extras-percentage-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+}
+
+.extras-percentage-slider::-moz-range-thumb {
+    width: 15px; /* Thumb reducido 3% (16px → 15px) */
+    height: 15px;
+    border-radius: 50%;
+    background: #ffffff;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== RESPONSIVE - ULTRA-COMPACTO ===== */
+@media (max-width: 1200px) {
+    .gastos-extras-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        grid-template-areas: 
+            "expenses"
+            "budget"
+            "config";
+        height: auto;
+    }
+    
+    .extras-column-card {
+        min-height: 150px; /* Altura mínima muy reducida */
+    }
+    
+    .extras-expenses-box {
+        min-height: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .gastos-extras-layout {
+        padding: 4px 8px 8px 8px;
+        gap: 8px;
+    }
+    
+    .extras-column-card {
+        padding: 6px;
+    }
+    
+    .extras-column-title {
+        font-size: 10px;
+        margin-bottom: 6px;
+    }
+    
+    .extras-budget-amount,
+    .extras-config-amount {
+        font-size: 14px;
+    }
+    
+    .extras-total-amount {
+        font-size: 12px;
+    }
+    
+    .extras-summary-grid {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+    
+    .extras-percentage-control {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .extras-percentage-slider {
+        max-width: 100%;
+    }
+}

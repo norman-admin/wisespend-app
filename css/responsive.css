@@ -1,0 +1,766 @@
+/**
+ * 📱 RESPONSIVE.CSS - CONSOLIDADO Y OPTIMIZADO PARA MÓVIL
+ * Control de Gastos Familiares - Versión 1.1.0
+ * 
+ * 🎯 BREAKPOINTS ESTANDARIZADOS:
+ * - Mobile Small: 480px
+ * - Mobile: 768px  
+ * - Tablet: 1024px
+ * - Desktop: 1280px+
+ * 
+ * 🚀 NUEVA OPTIMIZACIÓN v1.1.0:
+ * ✅ Tarjetas 70% más compactas en móvil
+ * ✅ Máximo espacio para contenido principal
+ * ✅ PC mantiene diseño original intacto
+ */
+
+/* ===== VARIABLES RESPONSIVE ===== */
+
+:root {
+    /* 📏 Breakpoints centralizados */
+    --breakpoint-sm: 480px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 1024px;
+    --breakpoint-xl: 1280px;
+    
+    /* 📱 Espaciado responsive */
+    --spacing-mobile: 12px;
+    --spacing-tablet: 16px;
+    --spacing-desktop: 24px;
+    
+    /* 📝 Tipografía responsive */
+    --font-size-mobile-sm: 13px;
+    --font-size-mobile-md: 14px;
+    --font-size-mobile-lg: 16px;
+}
+
+/* ===== TABLET (1024px y menor) ===== */
+
+@media (max-width: 1024px) {
+    
+    /* 📊 Stats Cards - Tablet */
+    .stats-container {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+    
+    /* 🏗️ Layout Principal - Tablet */
+    .main-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    /* 🎯 Sidebar - Tablet */
+    .sidebar,
+    
+    /* 💸 Gastos Grid - Tablet */
+    .expenses-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    
+    /* 📈 Reportes - Tablet */
+    .reports-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    /* 🔧 Config Sections - Tablet */
+    .config-sections {
+        grid-template-columns: 1fr;
+    }
+    
+    /* 📱 Login - Tablet */
+    .login-wrapper {
+        max-width: 380px;
+    }
+    
+    .login-header {
+        padding: 35px 25px 25px;
+    }
+    
+    .login-content {
+        padding: 0 25px 35px;
+    }
+}
+
+/* ===== MOBILE (768px y menor) - OPTIMIZACIÓN DRÁSTICA ===== */
+
+@media (max-width: 768px) {
+    
+    /* 🔓 FORZAR DESFIJADO EN MÓVIL - OVERRIDE AGRESIVO */
+    
+    /* Header no fijo en móvil */
+    .dashboard-header {
+        position: relative !important;
+        top: auto !important;
+        z-index: auto !important;
+        position: static !important;
+        padding: 8px 12px; /* Reducido 33% */
+    }
+    
+    /* Stats section no fija en móvil */
+    .stats-section {
+        position: relative !important;
+        top: auto !important;
+        z-index: auto !important;
+        position: static !important;
+        padding: 8px 12px; /* Reducido 50% de 16px */
+    }
+    
+    /* Asegurar scroll natural del body */
+    body.dashboard-body {
+        overflow-y: auto !important;
+        height: auto !important;
+        min-height: 100vh !important;
+    }
+    
+    /* El contenido principal también debe ser scrolleable */
+    .main-content {
+        position: static !important;
+        overflow: visible !important;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        gap: 8px; /* Reducido de 12px */
+        align-items: stretch;
+    }
+    
+    .header-right {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px; /* Reducido 40% de 10px */
+    }
+    
+    /* 🎯 TARJETAS ULTRA-COMPACTAS - 70% REDUCCIÓN */
+    .stat-card {
+        padding: 4px 6px;          /* 70% menos padding */
+        min-height: 45px;          /* Altura súper reducida */
+        border-radius: 4px;        /* Bordes más pequeños */
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Sombra mínima */
+    }
+    
+    .stat-header {
+        margin-bottom: 2px;        /* Mínimo espacio */
+    }
+    
+    .stat-title {
+        font-size: 8px;            /* Título muy pequeño */
+        margin-bottom: 1px;        /* Margen mínimo */
+        letter-spacing: 0.2px;     /* Menos espaciado */
+        line-height: 1;            /* Sin espacio extra */
+    }
+    
+    .stat-subtitle {
+        font-size: 7px;            /* Subtítulo micro */
+        margin: 0;                 /* Sin margen */
+        line-height: 1;            /* Sin espacio extra */
+    }
+    
+    .stat-value {
+        font-size: 11px;           /* 50% del tamaño original */
+        line-height: 1;            /* Sin espacio extra */
+        margin: 2px 0 0 0;         /* Margen mínimo */
+        font-weight: 600;          /* Menos bold para menor altura */
+    }
+    
+    /* 🏗️ Layout Principal - Mobile */
+    .main-content {
+        grid-template-columns: 1fr;
+        padding: 0 12px 12px;      /* Padding reducido */
+    }
+    
+    /* 🎯 Sidebar - Mobile Sliding */
+    .sidebar {
+        position: fixed;
+        left: -300px;
+        top: 0;
+        height: 100vh;
+        z-index: 999;
+        transition: left 0.3s ease;
+        background: white;
+        width: 280px;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+
+    .sidebar.mobile-open {
+        left: 0;
+    }
+            
+    /* 📄 Content Section - Mobile */
+    .content-section {
+        padding: 12px;             /* Reducido de 16px */
+    }
+    
+    .section-header {
+        flex-direction: column;
+        gap: 10px;                 /* Reducido de 12px */
+        align-items: stretch;
+    }
+    
+    /* 📝 Formularios - Mobile */
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 12px;                 /* Reducido de 16px */
+    }
+    
+    .add-expense-btn-container {
+        gap: 6px;                  /* Reducido de 8px */
+    }
+    
+    /* 💰 Modal de Ingresos - Mobile */
+    .income-modal .modal-content {
+        width: 95%;
+        margin: 15px;              /* Reducido de 20px */
+    }
+    
+    .income-modal .modal-footer {
+        flex-direction: column;
+        gap: 6px;                  /* Reducido de 8px */
+    }
+    
+    /* 👁️ Breakdown Actions - Mobile */
+    .breakdown-actions {
+        opacity: 1; /* Siempre visible en móvil */
+    }
+    
+    /* 🎭 Modal Universal - Mobile */
+    .modern-modal {
+        width: 95% !important;
+        margin: 15px !important;   /* Reducido de 20px */
+    }
+    
+    .modal-header-modern,
+    .modal-body-modern,
+    .modal-footer-modern {
+        padding-left: 20px !important;  /* Reducido de 24px */
+        padding-right: 20px !important;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 15px;              /* Reducido de 20px */
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: var(--spacing-md); /* Usando spacing menor */
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    /* 🔘 Botones - Mobile */
+    .btn {
+        padding: var(--spacing-sm) var(--spacing-md); /* Más compactos */
+        font-size: var(--font-size-mobile-md);
+    }
+    
+    /* 🎯 Menú Contextual - Mobile */
+    .contextual-menu {
+        min-width: 140px;          /* Reducido de 160px */
+    }
+    
+    /* 📱 Login Específico - Mobile */
+    body.login-body {
+        padding: 12px;             /* Reducido de 16px */
+    }
+    
+    .login-wrapper {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .login-container {
+        border-radius: 10px;       /* Reducido de 12px */
+    }
+    
+    .login-header {
+        padding: 25px 16px 16px;   /* Reducido padding top */
+    }
+    
+    .logo h1 {
+        font-size: 20px;           /* Reducido de 22px */
+    }
+    
+    .login-content {
+        padding: 0 16px 25px;      /* Reducido de 20px */
+    }
+    
+    .form-input {
+        padding: 12px 12px 12px 40px; /* Reducido padding */
+        font-size: 16px; /* Evita zoom en iOS */
+    }
+    
+    .btn-primary {
+        padding: 14px 18px;        /* Reducido de 16px 20px */
+        font-size: 15px;           /* Reducido de 16px */
+    }
+    
+    .floating-element {
+        width: 120px;              /* Reducido de 150px */
+        height: 120px;
+    }
+    
+    /* 🧰 Utilidades - Mobile */
+    .hidden-mobile {
+        display: none !important;
+    }
+}
+
+/* ===== MOBILE SMALL (480px y menor) - EXTREMA COMPACTACIÓN ===== */
+
+@media (max-width: 480px) {
+    
+    /* 📊 Stats - Mobile Small ULTRA-COMPACTO */
+    .stats-section {
+        padding: 6px 8px;          /* Mínimo padding */
+    }
+    
+    .stats-container {
+        grid-template-columns: 1fr;
+        gap: 4px;                  /* Gap mínimo */
+    }
+    
+    /* 🎯 TARJETAS EXTREMADAMENTE COMPACTAS */
+    .stat-card {
+        padding: 3px 5px;          /* Padding extremo */
+        min-height: 35px;          /* Altura mínima */
+        border-radius: 3px;        /* Bordes mínimos */
+    }
+    
+    .stat-title {
+        font-size: 7px;            /* Título micro */
+        margin-bottom: 1px;
+    }
+    
+    .stat-subtitle {
+        font-size: 6px;            /* Subtítulo nano */
+        margin: 0;
+    }
+    
+    .stat-value {
+        font-size: 10px;           /* Valor súper pequeño */
+        margin: 1px 0 0 0;
+        font-weight: 500;
+    }
+    
+    /* 🎨 Header - Mobile Small */
+    .dashboard-header {
+        padding: 6px 8px;          /* Padding mínimo */
+    }
+    
+    .dashboard-title {
+        font-size: 14px;           /* Reducido de 16px */
+        text-align: center;
+    }
+    
+    .header-right {
+        flex-direction: column;
+        gap: 6px;                  /* Reducido de 8px */
+    }
+    
+    /* 💰 Modal - Mobile Small (Fullscreen) */
+    .income-modal .modal-content {
+        width: 100%;
+        height: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+        margin: 0;
+    }
+    
+    .modern-modal {
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* 📱 Login - Mobile Small */
+    .login-header {
+        padding: 20px 12px 12px;   /* Reducido */
+    }
+    
+    .login-content {
+        padding: 0 12px 20px;      /* Reducido */
+    }
+    
+    .login-footer {
+        padding: 12px 16px;        /* Reducido */
+    }
+    
+    /* 🔘 Botones - Mobile Small */
+    .section-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;                  /* Reducido de 8px */
+    }
+    
+    .section-actions .btn {
+        width: 100%;
+        text-align: center;
+        padding: 10px 12px;        /* Más compactos */
+    }
+}
+
+/* ===== LANDSCAPE MÓVIL - OPTIMIZADO ===== */
+
+@media (max-width: 768px) and (orientation: landscape) {
+    
+    /* 📱 Login en landscape */
+    .login-container {
+        max-height: 85vh;          /* Reducido de 90vh */
+        overflow-y: auto;
+    }
+    
+    .login-header {
+        padding: 15px 16px 10px;   /* Más compacto */
+    }
+    
+    .login-content {
+        padding: 0 16px 15px;      /* Más compacto */
+    }
+    
+    /* 🎨 Dashboard en landscape - SÚPER COMPACTO */
+    .stats-section {
+        padding: 6px 12px;         /* Mínimo padding */
+    }
+    
+    .stats-container {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4px;                  /* Gap mínimo */
+    }
+    
+    .stat-card {
+        padding: 3px 4px;          /* Extremadamente compacto */
+        min-height: 30px;          /* Altura mínima */
+    }
+    
+    .stat-value {
+        font-size: 9px;            /* Texto muy pequeño */
+    }
+    
+    .stat-title {
+        font-size: 6px;            /* Título micro */
+        margin-bottom: 1px;
+    }
+    
+    .stat-subtitle {
+        font-size: 5px;            /* Subtítulo nano */
+    }
+}
+
+/* ===== TOUCH DEVICES ===== */
+
+@media (hover: none) and (pointer: coarse) {
+    
+    /* 👆 Elementos táctiles más grandes */
+    .btn {
+        min-height: 40px;          /* Reducido de 44px */
+        padding: 10px 14px;        /* Más compacto */
+    }
+    
+    .btn-icon {
+        width: 36px;               /* Reducido de 40px */
+        height: 36px;
+    }
+    
+    .nav-item {
+        padding: 14px 20px;        /* Más compacto */
+    }
+    
+    .contextual-menu-item {
+        padding: 12px 14px;        /* Más compacto */
+        font-size: 15px;           /* Reducido de 16px */
+    }
+    
+    /* 👁️ Siempre mostrar controles en táctil */
+    .breakdown-actions {
+        opacity: 1 !important;
+    }
+    
+    .expense-item .expense-actions {
+        opacity: 1 !important;
+    }
+    
+    /* 🎯 Tooltips deshabilitados en táctil */
+    .breakdown-item:hover .breakdown-name::after,
+    .breakdown-item:hover .breakdown-amount::after {
+        display: none !important;
+    }
+}
+
+/* ===== HIGH DPI / RETINA ===== */
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    
+    /* 🎨 Íconos más nítidos */
+    .logo-icon svg,
+    .input-icon svg,
+    .contextual-icon {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+    
+    /* 📏 Bordes más finos */
+    .stat-card,
+    .content-area,
+    .sidebar {
+        border-width: 0.5px;
+    }
+}
+
+/* ===== MOTION PREFERENCES ===== */
+
+@media (prefers-reduced-motion: reduce) {
+    
+    /* 🔄 Animaciones reducidas */
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    /* 🌊 Mantener transiciones críticas */
+    .sidebar {
+        transition: left 0.1ms ease !important;
+    }
+    
+    .modal-overlay {
+        transition: opacity 0.1ms ease !important;
+    }
+}
+
+/* ===== CONTRAST PREFERENCES ===== */
+
+@media (prefers-contrast: high) {
+    
+    /* 🎨 Alto contraste */
+    .stat-card,
+    .content-area,
+    .sidebar {
+        border-width: 2px;
+        border-color: #000;
+    }
+    
+    .btn-primary {
+        background: #000;
+        border-color: #000;
+    }
+    
+    .btn-secondary {
+        background: #fff;
+        color: #000;
+        border-color: #000;
+    }
+    
+    .form-input:focus {
+        border-color: #000;
+        box-shadow: 0 0 0 3px #000;
+    }
+}
+
+/* ===== PRINT OPTIMIZATIONS ===== */
+
+@media print {
+    
+    /* 🖨️ Ocultar elementos no imprimibles */
+    .dashboard-header,
+    .sidebar,
+    .section-actions,
+    .floating-element,
+    .login-footer,
+    .modal-overlay {
+        display: none !important;
+    }
+    
+    /* 📄 Layout para impresión */
+    .main-content {
+        grid-template-columns: 1fr !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .content-area {
+        box-shadow: none !important;
+        border: 1px solid #000 !important;
+        border-radius: 0 !important;
+    }
+    
+    .stat-card {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        break-inside: avoid;
+    }
+    
+    /* 🎨 Colores para impresión */
+    .stat-value,
+    .breakdown-amount,
+    .total-amount {
+        color: #000 !important;
+    }
+    
+    /* 📝 Tipografía para impresión */
+    body {
+        font-size: 12pt !important;
+        line-height: 1.4 !important;
+    }
+    
+    h1, h2, h3 {
+        page-break-after: avoid;
+    }
+    
+    .breakdown-item,
+    .expense-item {
+        page-break-inside: avoid;
+    }
+}
+
+/* ===== DARK MODE RESPONSIVE ===== */
+
+@media (prefers-color-scheme: dark) {
+    
+    /* 🌙 Sidebar móvil en dark mode */
+    @media (max-width: 768px) {
+        .sidebar {
+            background: #1e293b;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+        }
+    }
+    
+    /* 🎭 Modales en dark mode mobile */
+    @media (max-width: 480px) {
+        .modern-modal {
+            background: #1f2937 !important;
+        }
+    }
+}
+
+/* ===== UTILIDADES RESPONSIVE ===== */
+
+/* 👁️ Visibilidad por breakpoint */
+.show-mobile { display: none; }
+.show-tablet { display: none; }
+.show-desktop { display: block; }
+
+@media (max-width: 768px) {
+    .hide-mobile { display: none !important; }
+    .show-mobile { display: block; }
+    .show-tablet { display: none; }
+    .show-desktop { display: none; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .hide-tablet { display: none !important; }
+    .show-mobile { display: none; }
+    .show-tablet { display: block; }
+    .show-desktop { display: none; }
+}
+
+@media (min-width: 1025px) {
+    .hide-desktop { display: none !important; }
+    .show-mobile { display: none; }
+    .show-tablet { display: none; }
+    .show-desktop { display: block; }
+}
+
+/* 📏 Espaciado responsive */
+.p-responsive {
+    padding: var(--spacing-mobile);
+}
+
+.m-responsive {
+    margin: var(--spacing-mobile);
+}
+
+@media (min-width: 769px) {
+    .p-responsive {
+        padding: var(--spacing-tablet);
+    }
+    
+    .m-responsive {
+        margin: var(--spacing-tablet);
+    }
+}
+
+@media (min-width: 1025px) {
+    .p-responsive {
+        padding: var(--spacing-desktop);
+    }
+    
+    .m-responsive {
+        margin: var(--spacing-desktop);
+    }
+}
+
+/* 📝 Tipografía responsive */
+.text-responsive {
+    font-size: var(--font-size-mobile-md);
+}
+
+@media (min-width: 769px) {
+    .text-responsive {
+        font-size: var(--font-size-base);
+    }
+}
+
+@media (min-width: 1025px) {
+    .text-responsive {
+        font-size: var(--font-size-lg);
+    }
+}
+
+/* ===== FALLBACKS Y COMPATIBILIDAD ===== */
+
+/* 🔧 Fallback para grid no soportado */
+@supports not (display: grid) {
+    .stats-container,
+    .main-content,
+    .expenses-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    
+    .stat-card,
+    .content-area,
+    .sidebar {
+        flex: 1;
+        min-width: 280px;
+    }
+}
+
+/* 🔧 Fallback para backdrop-filter */
+@supports not (backdrop-filter: blur(4px)) {
+    .modal-overlay {
+        background: rgba(0, 0, 0, 0.8);
+    }
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+
+/* ⚡ Will-change para elementos animados */
+@media (max-width: 768px) {
+    .sidebar {
+        will-change: left;
+    }
+    
+    .modal-overlay {
+        will-change: opacity;
+    }
+    
+    .stats-container {
+        will-change: transform;
+    }
+}

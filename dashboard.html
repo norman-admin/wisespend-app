@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gastos Familiares - Junio 2025</title>
+    
+    <!-- CSS en orden optimizado para arquitectura modular -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/themes.css">
+    <link rel="stylesheet" href="css/income-table-enhanced.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="mobile/css/mobile-main.css" media="(max-width: 768px)">
+    <link rel="stylesheet" href="css/config-sections.css">
+    <link rel="stylesheet" href="css/reportes.css">
+    <link rel="stylesheet" href="css/table-filter.css">
+    <link rel="stylesheet" href="css/gastos-extras-mejorados.css">
+           
+    <!-- Fuentes -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Dashboard de control de gastos familiares">
+    <meta name="theme-color" content="#3b82f6">
+</head>
+
+<body class="dashboard-body">
+    <!-- Header Principal - Cargado dinámicamente -->
+    <div id="header-container"></div>
+
+    <!-- Tarjetas de Resumen - Cargadas dinámicamente -->
+    <div id="stats-container"></div>
+
+    <!-- Contenido Principal - LAYOUT 3 COLUMNAS -->
+    <main class="main-content">
+        <!-- Menú Lateral - Cargado dinámicamente -->
+        <div id="sidebar-container"></div>
+
+       <!-- Área de Contenido Principal -->
+        <div class="content-area" id="dynamic-content">
+            <!-- El contenido se carga directamente aquí -->
+        </div>
+    </main>
+
+    <!-- 📦 SCRIPTS EN EL ORDEN CORRECTO - ARQUITECTURA MODULAR v2.1 LIMPIA -->
+    
+    <!-- Scripts base del sistema -->
+    <script src="js/storage.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/currency.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/modal-system.js"></script>
+    <script src="js/contextual-manager.js"></script>
+    <script src="js/contextual-menu-actions.js"></script>
+    
+    <!-- Scripts de gestión de gastos -->
+    <script src="js/gastos-extras-mejorados.js"></script>             
+    <script src="js/gastos.js"></script>
+    <script src="js/income-table-enhanced.js"></script>
+    <script src="js/ingresos.js"></script>
+    
+    <!-- Scripts de reportes -->
+    <script src="js/reportes/reportes-generator.js"></script>
+    <script src="js/reportes/reportes-manager.js"></script>
+    <script src="js/reportes/reportes-charts.js"></script>
+    <script src="js/reportes/reportes-html.js"></script>
+    <script src="js/reportes/reportes-export.js"></script>
+    
+    <!-- Scripts de interfaz y componentes -->
+    <script src="js/table-filter.js"></script>
+    <script src="js/component-loader.js"></script>
+    
+    <!-- Scripts de configuración -->
+    <script src="js/config/config-core.js"></script>
+    <script src="js/config/config-currency.js"></script>
+    <script src="js/config/config-ui.js"></script>
+    <script src="js/config-manager.js"></script>
+    <script src="varios/js/varios-manager.js"></script>
+    
+    <!-- Scripts principales -->
+    <script src="js/dashboard-main.js"></script>
+    <script src="js/auth.js"></script>
+        
+<script>
+    /**
+     * 🚀 DASHBOARD INICIALIZACIÓN v2.1 - LIMPIO Y SIN ERRORES
+     * Control de Gastos Familiares - Arquitectura Modular Corregida
+     * 
+     * ✅ MEJORAS v2.1:
+     * 🧹 Eliminadas referencias obsoletas a themeLoader
+     * 🔧 Sistema de temas simplificado (theme-manager v7.0)
+     * 🎯 Solo funciones que realmente existen
+     * ⚡ Carga optimizada sin timeouts innecesarios
+     * 🐛 Sin errores de consola
+     */
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🎬 Dashboard v2.1 - Arquitectura Modular LIMPIA iniciada');
+        
+        // ✅ Verificación de sistemas disponibles (sin errores)
+        setTimeout(() => {
+            console.log('🔍 Verificando sistemas cargados...');
+            
+            // Sistema de configuración modular
+            if (window.configManager) {
+                console.log('⚙️ ConfigManager: ✅ Activo v2.0.0');
+                if (window.configDebug) {
+                    console.log('🛠️ Debug disponible: window.configDebug.testConfig()');
+                }
+            } else {
+                console.log('⚙️ ConfigManager: ⏳ Cargando...');
+            }
+            
+            // Sistema de temas simplificado
+            if (window.themeManager) {
+                console.log('🌙 ThemeManager: ✅ v7.0 Simplificado activo');
+                console.log(`🎨 Tema actual: ${window.themeManager.getCurrentTheme()}`);
+            } else {
+                console.log('🌙 ThemeManager: ⚠️ No disponible');
+            }
+            
+            // Sistema de almacenamiento
+            if (window.storageManager) {
+                console.log('💾 StorageManager: ✅ Activo');
+            } else {
+                console.log('💾 StorageManager: ⚠️ No disponible');
+            }
+            
+            // Sistema modal
+            if (window.modalSystem) {
+                console.log('🪟 ModalSystem: ✅ Activo');
+            } else {
+                console.log('🪟 ModalSystem: ⚠️ No disponible');
+            }
+            
+            // Sistema contextual
+            if (window.contextualManager) {
+                console.log('🎯 ContextualManager: ✅ Activo');
+            } else {
+                console.log('🎯 ContextualManager: ⚠️ No disponible');
+            }
+            
+            console.log('✅ Verificación de sistemas completada');
+        }, 1000);
+        
+        // 🔧 Herramientas de debug solo en desarrollo
+        if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+            // Solo funciones que realmente existen
+            window.debugDashboard = {
+                // Temas (sistema simplificado v7.0)
+                getCurrentTheme: () => window.themeManager?.getCurrentTheme() || 'No disponible',
+                switchTheme: (theme) => {
+                    if (window.themeManager?.setTheme) {
+                        window.themeManager.setTheme(theme);
+                        return `✅ Tema cambiado a: ${theme}`;
+                    }
+                    return '❌ ThemeManager no disponible';
+                },
+                getAvailableThemes: () => window.themeManager?.themes || 'No disponible',
+                
+                // Sistema general
+                getSystemStatus: () => {
+                    return {
+                        themeManager: !!window.themeManager,
+                        storageManager: !!window.storageManager,
+                        modalSystem: !!window.modalSystem,
+                        contextualManager: !!window.contextualManager,
+                        configManager: !!window.configManager,
+                        gastosManager: !!window.gastosManager,
+                        ingresosManager: !!window.ingresosManager
+                    };
+                },
+                
+                // Utilidades
+                forceReload: () => location.reload(),
+                clearStorage: () => {
+                    if (confirm('¿Estás seguro de limpiar el localStorage?')) {
+                        localStorage.clear();
+                        console.log('🧹 localStorage limpio');
+                        location.reload();
+                    }
+                }
+            };
+            
+            console.log('🧪 Modo desarrollo activo');
+            console.log('🔧 Herramientas disponibles en: window.debugDashboard');
+            console.log('📋 Comandos:');
+            console.log('  • getCurrentTheme()');
+            console.log('  • switchTheme("dark"|"light"|"pastel"|"auto")');
+            console.log('  • getSystemStatus()');
+            console.log('  • forceReload()');
+            console.log('  • clearStorage()');
+        }
+    });
+    
+    // 🚨 Error handler global para capturar errores no manejados
+    window.addEventListener('error', function(e) {
+        console.error('🚨 Error global capturado:', {
+            message: e.message,
+            filename: e.filename,
+            lineno: e.lineno,
+            colno: e.colno
+        });
+    });
+    
+ 
+    if (window.innerWidth <= 768) {
+        document.write('<script src="mobile/js/mobile-menu.js"><\/script>');
+    }
+
+</script>
+</body>
+</html>

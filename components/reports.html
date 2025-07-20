@@ -1,0 +1,380 @@
+<!-- Reportes e informes mensuales -->
+<div class="reports-container">
+    <h2>Reportes e informes mensuales</h2>
+    
+    <!-- Botones principales de reportes -->
+    <div class="reports-actions">
+        <button class="btn-reports" id="search-month-btn">
+            <i class="icon-search"></i>
+            Buscar mes/año
+        </button>
+        
+        <button class="btn-reports" id="generate-reports-btn">
+            <i class="icon-chart"></i>
+            Informes
+        </button>
+        
+        <button class="btn-reports btn-export" id="export-data-btn">
+            <i class="icon-download"></i>
+            Exportar datos
+        </button>
+    </div>
+
+    <!-- Área de búsqueda por fecha -->
+    <div class="search-section" id="search-section" style="display: none;">
+        <div class="search-form">
+            <h3>Buscar por período</h3>
+            <div class="date-inputs">
+                <label for="search-month">Mes:</label>
+                <select id="search-month">
+                    <option value="">Seleccionar mes</option>
+                    <option value="01">Enero</option>
+                    <option value="02">Febrero</option>
+                    <option value="03">Marzo</option>
+                    <option value="04">Abril</option>
+                    <option value="05">Mayo</option>
+                    <option value="06">Junio</option>
+                    <option value="07">Julio</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+                
+                <label for="search-year">Año:</label>
+                <select id="search-year">
+                    <option value="">Seleccionar año</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                </select>
+                
+                <button class="btn-search" id="execute-search">Buscar</button>
+            </div>
+        </div>
+        
+        <!-- Explicación de funcionalidad -->
+        <div class="search-info">
+            <p><strong>*Al buscar un mes que toda la aplicación cambie a ese mes</strong></p>
+        </div>
+    </div>
+
+    <!-- Área de informes detallados -->
+    <div class="reports-section" id="reports-section" style="display: none;">
+        <div class="reports-grid">
+            <div class="report-card">
+                <h3>Informe detallado por mes</h3>
+                <p>Mayores ingresos, gastos, balances</p>
+                <div class="report-content" id="monthly-report">
+                    <!-- Contenido del reporte mensual -->
+                </div>
+            </div>
+            
+            <div class="report-card">
+                <h3>Informes por año, semestre, trimestre o mensual</h3>
+                <div class="period-selector">
+                    <button class="period-btn active" data-period="monthly">Mensual</button>
+                    <button class="period-btn" data-period="quarterly">Trimestral</button>
+                    <button class="period-btn" data-period="semester">Semestral</button>
+                    <button class="period-btn" data-period="yearly">Anual</button>
+                </div>
+                <div class="report-content" id="period-report">
+                    <!-- Contenido del reporte por período -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Área de gráficos -->
+        <div class="charts-section">
+            <h3>Gráficos y análisis</h3>
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <canvas id="expenses-chart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="income-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Área de exportación -->
+    <div class="export-section" id="export-section" style="display: none;">
+        <div class="export-options">
+            <h3>Exportar datos</h3>
+            <p><strong>Los datos se deben tener opción de exportar en formato pdf, excel y json</strong></p>
+            
+            <div class="export-buttons">
+                <button class="btn-export-format" id="export-pdf">
+                    <i class="icon-pdf"></i>
+                    Exportar PDF
+                </button>
+                
+                <button class="btn-export-format" id="export-excel">
+                    <i class="icon-excel"></i>
+                    Exportar Excel
+                </button>
+                
+                <button class="btn-export-format" id="export-json">
+                    <i class="icon-json"></i>
+                    Exportar JSON
+                </button>
+            </div>
+            
+            <div class="export-options-detail">
+                <h4>Opciones de exportación:</h4>
+                <label>
+                    <input type="checkbox" id="include-charts" checked>
+                    Incluir gráficos en PDF
+                </label>
+                <label>
+                    <input type="checkbox" id="include-summary" checked>
+                    Incluir resumen ejecutivo
+                </label>
+                <label>
+                    <input type="checkbox" id="include-details" checked>
+                    Incluir detalles de transacciones
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensaje de estado -->
+    <div class="status-message" id="reports-status" style="display: none;">
+        <p>Procesando...</p>
+    </div>
+</div>
+
+<style>
+.reports-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.reports-container h2 {
+    color: #333;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.reports-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.btn-reports {
+    padding: 12px 24px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-reports:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+}
+
+.btn-export {
+    background: #28a745;
+}
+
+.btn-export:hover {
+    background: #1e7e34;
+}
+
+.search-section, .reports-section, .export-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 20px;
+    border: 1px solid #e9ecef;
+}
+
+.search-form h3 {
+    color: #495057;
+    margin-bottom: 20px;
+}
+
+.date-inputs {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.date-inputs label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.date-inputs select {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background: white;
+}
+
+.btn-search {
+    padding: 8px 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.search-info {
+    margin-top: 20px;
+    padding: 15px;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    color: #856404;
+}
+
+.reports-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.report-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.report-card h3 {
+    color: #495057;
+    margin-bottom: 15px;
+}
+
+.period-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.period-btn {
+    padding: 8px 16px;
+    background: #e9ecef;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.period-btn.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.charts-section {
+    margin-top: 30px;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.chart-container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    height: 300px;
+}
+
+.export-buttons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.btn-export-format {
+    padding: 12px 20px;
+    border: 2px solid #6c757d;
+    background: white;
+    color: #6c757d;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-export-format:hover {
+    background: #6c757d;
+    color: white;
+}
+
+.export-options-detail {
+    background: white;
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+.export-options-detail h4 {
+    margin-bottom: 15px;
+    color: #495057;
+}
+
+.export-options-detail label {
+    display: block;
+    margin-bottom: 10px;
+    color: #6c757d;
+}
+
+.export-options-detail input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.status-message {
+    background: #d1ecf1;
+    color: #0c5460;
+    padding: 15px;
+    border-radius: 6px;
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .reports-grid, .charts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .reports-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .date-inputs {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>

@@ -1,0 +1,795 @@
+/**
+ * 🌸 PASTEL.CSS - TEMA PASTEL
+ * Control de Gastos Familiares - Arquitectura Modular v2.0
+ * 
+ * 🎨 CONCEPTO DE DISEÑO:
+ * ✅ Rosas y púrpuras suaves
+ * ✅ Gradientes delicados y femeninos
+ * ✅ Colores cálidos y acogedores
+ * ✅ Diseño elegante y romántico
+ * ✅ Ideal para usuarios que prefieren tonos suaves
+ */
+
+/* ===== PASTEL THEME VARIABLES ===== */
+
+.pastel-theme {
+    /* 🎨 Colores primarios (rosas y púrpuras) */
+    --primary-50: #fdf2f8;
+    --primary-100: #fce7f3;
+    --primary-200: #fbcfe8;
+    --primary-300: #f9a8d4;
+    --primary-400: #f472b6;
+    --primary-500: #ec4899;
+    --primary-600: #db2777;
+    --primary-700: #be185d;
+    --primary-800: #9d174d;
+    --primary-900: #831843;
+    
+    /* 🌈 Paleta extendida pastel */
+    --pastel-pink-50: #fdf2f8;
+    --pastel-pink-100: #fce7f3;
+    --pastel-pink-200: #fbcfe8;
+    --pastel-pink-300: #f9a8d4;
+    
+    --pastel-purple-50: #faf5ff;
+    --pastel-purple-100: #f3e8ff;
+    --pastel-purple-200: #e9d5ff;
+    --pastel-purple-300: #d8b4fe;
+    
+    --pastel-blue-50: #eff6ff;
+    --pastel-blue-100: #dbeafe;
+    --pastel-blue-200: #bfdbfe;
+    --pastel-blue-300: #93c5fd;
+    
+    /* 📄 Fondos pastel suaves */
+    --bg-primary: #fefcff;
+    --bg-secondary: #fdf2f8;
+    --bg-tertiary: #f3e8ff;
+    --bg-accent: #faf8ff;
+    --bg-overlay: rgba(236, 72, 153, 0.6);
+    --bg-surface: #fefcff;
+    --bg-card: #ffffff;
+    
+    /* Fondos especiales con gradientes pastel */
+    --bg-header: linear-gradient(135deg, #fefcff 0%, #fdf2f8 100%);
+    --bg-sidebar: linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 100%);
+    --bg-stats: linear-gradient(135deg, #ffffff 0%, #fdf2f8 100%);
+    
+    /* 📝 Textos con tonos cálidos */
+    --text-primary: #831843;
+    --text-secondary: #be185d;
+    --text-tertiary: #ec4899;
+    --text-muted: #f9a8d4;
+    --text-inverse: #ffffff;
+    --text-on-primary: #ffffff;
+    --text-on-surface: #831843;
+    
+    /* Textos con color */
+    --text-accent: #ec4899;
+    --text-link: #db2777;
+    --text-hover: #be185d;
+    
+    /* 🎯 Bordes pastel */
+    --border-light: #f3e8ff;
+    --border-normal: #e9d5ff;
+    --border-medium: #d8b4fe;
+    --border-strong: #c084fc;
+    --border-focus: #ec4899;
+    --border-accent: #f472b6;
+    
+    /* 🌊 Sombras pastel suaves */
+    --shadow-xs: 0 1px 1px 0 rgba(236, 72, 153, 0.05);
+    --shadow-sm: 0 1px 2px 0 rgba(236, 72, 153, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(236, 72, 153, 0.1), 0 2px 4px -1px rgba(236, 72, 153, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(236, 72, 153, 0.1), 0 4px 6px -2px rgba(236, 72, 153, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(236, 72, 153, 0.1), 0 10px 10px -5px rgba(236, 72, 153, 0.04);
+    
+    /* Sombras con color */
+    --shadow-primary: 0 4px 6px -1px rgba(236, 72, 153, 0.2);
+    --shadow-colored: 0 8px 25px -8px rgba(236, 72, 153, 0.3);
+    
+    /* 🎮 Estados interactivos */
+    --hover-overlay: rgba(236, 72, 153, 0.08);
+    --focus-ring: rgba(236, 72, 153, 0.15);
+    --active-overlay: rgba(236, 72, 153, 0.12);
+    --disabled-overlay: rgba(236, 72, 153, 0.05);
+    
+    /* 🎨 Estados específicos de componentes */
+    --stat-income: var(--component-success-600);
+    --stat-expense: var(--component-error-600);
+    --stat-balance: #ec4899;
+    --stat-pending: var(--component-warning-600);
+    --stat-neutral: #c084fc;
+}
+
+/* ===== APLICACIÓN ESPECÍFICA A COMPONENTES ===== */
+
+/* Dashboard y estructura principal */
+.pastel-theme body,
+.pastel-theme .dashboard-body {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+/* ===== HEADER ===== */
+.pastel-theme .dashboard-header {
+    background: var(--bg-header);
+    border-bottom: 1px solid var(--border-normal);
+    box-shadow: var(--shadow-md);
+}
+
+.pastel-theme .dashboard-title {
+    color: var(--text-primary);
+    font-weight: var(--font-weight-semibold);
+}
+
+.pastel-theme .header-right select {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-medium);
+    color: var(--text-primary);
+    border-radius: var(--border-radius-md);
+}
+
+/* ===== TARJETAS DE ESTADÍSTICAS ===== */
+.pastel-theme .stat-card {
+    background: var(--bg-stats);
+    border: 1px solid var(--border-normal);
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+.pastel-theme .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.03) 0%, rgba(147, 197, 253, 0.03) 100%);
+    pointer-events: none;
+}
+
+.pastel-theme .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--border-accent);
+}
+
+.pastel-theme .stat-title {
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-medium);
+}
+
+.pastel-theme .stat-value {
+    color: var(--text-primary);
+    font-weight: var(--font-weight-bold);
+}
+
+/* ===== MENÚ LATERAL ===== */
+.pastel-theme .sidebar-container,
+.pastel-theme #sidebar-container {
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-normal);
+}
+
+.pastel-theme .nav-item {
+    background: linear-gradient(135deg, rgba(254, 252, 255, 0.9) 0%, rgba(253, 242, 248, 0.9) 100%);
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+    border-radius: var(--border-radius-md);
+    transition: all var(--transition-normal);
+    backdrop-filter: blur(10px);
+}
+
+.pastel-theme .nav-item:hover {
+    background: linear-gradient(135deg, var(--pastel-pink-100) 0%, var(--pastel-purple-100) 100%);
+    color: var(--primary-700);
+    border-color: var(--primary-400);
+    transform: translateX(3px);
+    box-shadow: var(--shadow-primary);
+}
+
+.pastel-theme .nav-item.active {
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    color: white;
+    border-color: #be185d;
+    box-shadow: var(--shadow-colored);
+}
+
+/* Header del menú */
+.pastel-theme .sidebar-container h2,
+.pastel-theme #sidebar-container h2,
+.pastel-theme .menu-title {
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    color: white;
+    padding: var(--spacing-xl);
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+    font-weight: var(--font-weight-semibold);
+    text-shadow: 0 1px 2px rgba(190, 24, 93, 0.3);
+}
+
+/* ===== FORMULARIOS ===== */
+.pastel-theme .form-input,
+.pastel-theme .form-select,
+.pastel-theme .form-textarea {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-medium);
+    color: var(--text-primary);
+    border-radius: var(--border-radius-md);
+}
+
+.pastel-theme .form-input:focus,
+.pastel-theme .form-select:focus,
+.pastel-theme .form-textarea:focus {
+    border-color: #ec4899;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+    background: var(--bg-surface);
+}
+
+.pastel-theme .form-input::placeholder,
+.pastel-theme .form-textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.pastel-theme .form-label {
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-medium);
+}
+
+/* ===== BOTONES ===== */
+.pastel-theme .btn-primary {
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    border-color: #db2777;
+    color: white;
+    box-shadow: var(--shadow-primary);
+}
+
+.pastel-theme .btn-primary:hover {
+    background: linear-gradient(135deg, #db2777 0%, #be185d 100%);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-colored);
+}
+
+.pastel-theme .btn-secondary {
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--pastel-pink-50) 100%);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-medium);
+}
+
+.pastel-theme .btn-secondary:hover {
+    background: linear-gradient(135deg, var(--pastel-pink-50) 0%, var(--pastel-purple-50) 100%);
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+}
+
+/* ===== TABLAS ===== */
+.pastel-theme .table-wrapper {
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--pastel-pink-50) 100%);
+    border: 1px solid var(--border-normal);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+}
+
+.pastel-theme .income-table-enhanced thead {
+    background: linear-gradient(135deg, var(--pastel-pink-100) 0%, var(--pastel-purple-100) 100%);
+    border-bottom: 1px solid var(--border-normal);
+}
+
+.pastel-theme .income-table-enhanced th {
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-semibold);
+}
+
+.pastel-theme .income-table-enhanced tbody tr:hover {
+    background: linear-gradient(135deg, var(--pastel-pink-50) 0%, var(--pastel-purple-50) 100%);
+}
+
+.pastel-theme .income-table-enhanced tbody tr:nth-child(even) {
+    background: rgba(253, 242, 248, 0.3);
+}
+
+/* ===== MODALES ===== */
+.pastel-theme .modal-overlay {
+    background: var(--bg-overlay);
+}
+
+.pastel-theme .modal-content {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-normal);
+    box-shadow: var(--shadow-xl);
+    border-radius: var(--border-radius-xl);
+}
+
+.pastel-theme .modal-header {
+    background: linear-gradient(135deg, var(--pastel-pink-50) 0%, var(--pastel-purple-50) 100%);
+    border-bottom: 1px solid var(--border-normal);
+}
+
+.pastel-theme .modal-header h2 {
+    color: var(--text-primary);
+}
+
+.pastel-theme .modal-close {
+    background: var(--pastel-purple-100);
+    color: var(--text-secondary);
+    border-radius: var(--border-radius-md);
+}
+
+.pastel-theme .modal-close:hover {
+    background: var(--pastel-purple-200);
+    color: var(--text-primary);
+}
+
+/* ===== CONFIGURACIÓN ===== */
+.pastel-theme .config-layout {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-normal);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+}
+
+.pastel-theme .config-sidebar {
+    background: linear-gradient(135deg, var(--pastel-pink-50) 0%, var(--pastel-purple-50) 100%);
+    border-right: 1px solid var(--border-normal);
+}
+
+.pastel-theme .config-sidebar-header {
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-normal);
+}
+
+.pastel-theme .config-menu-item {
+    color: var(--text-secondary);
+    border-radius: var(--border-radius-md);
+}
+
+.pastel-theme .config-menu-item:hover {
+    background: var(--hover-overlay);
+    color: var(--text-primary);
+}
+
+.pastel-theme .config-menu-item.active {
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    color: white;
+    border-right: 3px solid #be185d;
+}
+
+/* ===== REPORTES ===== */
+.pastel-theme .reports-navigation-panel {
+    background: linear-gradient(135deg, var(--pastel-pink-50) 0%, var(--pastel-purple-50) 100%);
+    border: 1px solid var(--border-normal);
+    border-radius: var(--border-radius-lg);
+}
+
+.pastel-theme .chart-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-normal);
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--border-radius-lg);
+}
+
+.pastel-theme .chart-card:hover {
+    box-shadow: var(--shadow-xl);
+    border-color: var(--border-accent);
+}
+
+/* ===== INCOME TABLE ENHANCED ===== */
+.pastel-theme .income-header-enhanced {
+    background: var(--bg-header);
+    border: 1px solid var(--border-normal);
+    border-radius: var(--border-radius-lg);
+}
+
+.pastel-theme .search-input {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-medium);
+    color: var(--text-primary);
+    border-radius: var(--border-radius-md);
+}
+
+.pastel-theme .search-input:focus {
+    border-color: #ec4899;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.pastel-theme .btn-add-income {
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    box-shadow: var(--shadow-primary);
+    border-radius: var(--border-radius-md);
+}
+
+.pastel-theme .btn-add-income:hover {
+    background: linear-gradient(135deg, #db2777 0%, #be185d 100%);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-colored);
+}
+
+.pastel-theme .income-stats-bar {
+    background: linear-gradient(135deg, var(--pastel-pink-50) 0%, var(--pastel-purple-50) 100%);
+    border: 1px solid var(--pastel-purple-200);
+    border-radius: var(--border-radius-lg);
+}
+
+.pastel-theme .stats-item {
+    color: #a855f7;
+}
+
+.pastel-theme .stats-value {
+    color: #7c3aed;
+}
+
+/* ===== PROGRESS BARS ===== */
+.pastel-theme .progress-bar {
+    background: var(--pastel-purple-100);
+    border-radius: var(--border-radius-full);
+}
+
+.pastel-theme .progress-fill.progress-high {
+    background: linear-gradient(135deg, var(--component-success-500), var(--component-success-600));
+}
+
+.pastel-theme .progress-fill.progress-medium {
+    background: linear-gradient(135deg, var(--component-warning-500), var(--component-warning-600));
+}
+
+.pastel-theme .progress-fill.progress-low {
+    background: linear-gradient(135deg, #c084fc, #a855f7);
+}
+
+/* ===== ACTION BUTTONS ===== */
+.pastel-theme .btn-edit {
+    background: linear-gradient(135deg, var(--pastel-blue-50) 0%, var(--pastel-blue-100) 100%);
+    color: var(--component-info-700);
+    border-radius: var(--border-radius-md);
+}
+
+.pastel-theme .btn-edit:hover {
+    background: linear-gradient(135deg, var(--pastel-blue-100) 0%, var(--pastel-blue-200) 100%);
+    transform: scale(1.05);
+}
+
+.pastel-theme .btn-view {
+    background: linear-gradient(135deg, var(--pastel-purple-50) 0%, var(--pastel-purple-100) 100%);
+    color: var(--text-secondary);
+    border-radius: var(--border-radius-md);
+}
+
+.pastel-theme .btn-view:hover {
+    background: linear-gradient(135deg, var(--pastel-purple-100) 0%, var(--pastel-purple-200) 100%);
+    color: var(--text-primary);
+    transform: scale(1.05);
+}
+
+.pastel-theme .btn-delete {
+    background: linear-gradient(135deg, var(--component-error-50) 0%, var(--component-error-100) 100%);
+    color: var(--component-error-700);
+    border-radius: var(--border-radius-md);
+}
+
+.pastel-theme .btn-delete:hover {
+    background: linear-gradient(135deg, var(--component-error-100) 0%, var(--component-error-200) 100%);
+    transform: scale(1.05);
+}
+
+/* ===== EXPENSES COLUMNS ===== */
+.pastel-theme .expenses-column {
+    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--pastel-pink-50) 100%);
+    border: 1px solid var(--border-normal);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+}
+
+.pastel-theme .expenses-header {
+    background: linear-gradient(135deg, var(--pastel-pink-100) 0%, var(--pastel-purple-100) 100%);
+    border-bottom: 1px solid var(--border-normal);
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+}
+
+.pastel-theme .expenses-header h3 {
+    color: var(--text-primary);
+    font-weight: var(--font-weight-semibold);
+}
+
+.pastel-theme .expense-item {
+    border-bottom: 1px solid var(--border-light);
+}
+
+.pastel-theme .expense-item:hover {
+    background: var(--hover-overlay);
+}
+
+.pastel-theme .expense-name {
+    color: var(--text-secondary);
+}
+
+.pastel-theme .expense-amount {
+    color: var(--component-error-600);
+    font-weight: var(--font-weight-semibold);
+}
+
+/* ===== CHECKBOXES Y CONTROLES ===== */
+.pastel-theme .checkbox-wrapper input[type="checkbox"] {
+    accent-color: #ec4899;
+}
+
+.pastel-theme .checkbox-wrapper input[type="checkbox"]:checked {
+    background: #ec4899;
+    border-color: #ec4899;
+}
+
+/* ===== SCROLLBARS PERSONALIZADOS ===== */
+.pastel-theme ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.pastel-theme ::-webkit-scrollbar-track {
+    background: var(--pastel-purple-100);
+    border-radius: var(--border-radius-sm);
+}
+
+.pastel-theme ::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    border-radius: var(--border-radius-sm);
+}
+
+.pastel-theme ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+}
+
+/* ===== LOADING STATES ===== */
+.pastel-theme .spinner {
+    border-color: var(--pastel-purple-200);
+    border-top-color: #ec4899;
+}
+
+.pastel-theme .loading-state {
+    background: var(--pastel-pink-50);
+    border: 1px solid var(--border-normal);
+    border-radius: var(--border-radius-lg);
+}
+
+/* ===== CONTEXTUAL MENU ===== */
+.pastel-theme .contextual-menu {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-normal);
+    box-shadow: var(--shadow-xl);
+    border-radius: var(--border-radius-lg);
+}
+
+.pastel-theme .contextual-menu-header {
+    background: linear-gradient(135deg, var(--pastel-pink-50) 0%, var(--pastel-purple-50) 100%);
+    border-bottom: 1px solid var(--border-normal);
+}
+
+.pastel-theme .contextual-menu-item {
+    color: var(--text-secondary);
+    border-radius: var(--border-radius-md);
+}
+
+.pastel-theme .contextual-menu-item:hover {
+    background: var(--pastel-purple-100);
+    color: var(--text-primary);
+}
+
+.pastel-theme .contextual-menu-item.edit-action:hover {
+    background: linear-gradient(135deg, var(--pastel-blue-50) 0%, var(--pastel-blue-100) 100%);
+    color: var(--component-info-700);
+}
+
+.pastel-theme .contextual-menu-item.delete-action:hover {
+    background: linear-gradient(135deg, var(--component-error-50) 0%, var(--component-error-100) 100%);
+    color: var(--component-error-700);
+}
+
+/* ===== EFECTOS ESPECIALES PASTEL ===== */
+
+/* Efecto de brillo suave en cards */
+.pastel-theme .stat-card:hover::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+    transition: opacity var(--transition-normal);
+}
+
+/* Efecto de ondas en nav items */
+.pastel-theme .nav-item:hover::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 0.15), transparent);
+    animation: pastelWave 0.8s ease-in-out;
+}
+
+@keyframes pastelWave {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Efecto de partículas flotantes */
+.pastel-theme .dashboard-body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(circle at 20% 80%, rgba(236, 72, 153, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(147, 197, 253, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(196, 181, 253, 0.02) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* ===== ANIMACIONES ESPECIALES ===== */
+.pastel-theme .stat-card,
+.pastel-theme .nav-item,
+.pastel-theme .btn-primary {
+    transition: all var(--transition-normal) var(--ease-out);
+}
+
+.pastel-theme .stat-card:hover,
+.pastel-theme .nav-item:hover,
+.pastel-theme .btn-primary:hover {
+    transform: translateY(-2px) scale(1.01);
+}
+
+/* ===== LOGIN PAGE PASTEL ===== */
+.pastel-theme .login-body {
+    background: linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 100%);
+}
+
+.pastel-theme .login-container {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-normal);
+    box-shadow: var(--shadow-xl);
+}
+
+.pastel-theme .login-header {
+    background: linear-gradient(135deg, var(--pastel-pink-50) 0%, var(--pastel-purple-50) 100%);
+    border-bottom: 1px solid var(--border-normal);
+}
+
+.pastel-theme .logo h1 {
+    color: var(--text-primary);
+    background: linear-gradient(135deg, #ec4899, #db2777);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.pastel-theme .login-subtitle {
+    color: var(--text-secondary);
+}
+
+/* ===== THEME SELECTOR ESPECÍFICO ===== */
+.pastel-theme .theme-config-section {
+    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--pastel-pink-50) 100%);
+    border: 1px solid var(--border-normal);
+    box-shadow: var(--shadow-lg);
+}
+
+.pastel-theme .theme-config-section:hover {
+    border-color: #ec4899;
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.15);
+}
+
+.pastel-theme .config-section-header {
+    background: linear-gradient(135deg, var(--pastel-pink-50) 0%, var(--pastel-purple-50) 100%);
+    border-bottom: 1px solid var(--border-normal);
+}
+
+.pastel-theme .theme-selector {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-medium);
+    color: var(--text-primary);
+}
+
+.pastel-theme .theme-selector:hover,
+.pastel-theme .theme-selector:focus {
+    border-color: #ec4899;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.pastel-theme .theme-info {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-light);
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+@media (max-width: 768px) {
+    .pastel-theme .stat-card {
+        box-shadow: var(--shadow-md);
+    }
+    
+    .pastel-theme .nav-item:hover {
+        transform: translateX(1px);
+    }
+    
+    .pastel-theme .sidebar-container,
+    .pastel-theme #sidebar-container {
+        background: var(--bg-surface);
+    }
+    
+    /* Reducir efectos en móvil para mejor rendimiento */
+    .pastel-theme .dashboard-body::before {
+        display: none;
+    }
+}
+
+/* ===== ACCESIBILIDAD ESPECÍFICA PASTEL ===== */
+
+/* Mejores contrastes para usuarios con baja visión */
+@media (prefers-contrast: more) {
+    .pastel-theme {
+        --text-primary: #831843;
+        --text-secondary: #be185d;
+        --border-normal: #c084fc;
+        --border-medium: #a855f7;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .pastel-theme {
+        --border-normal: #831843;
+        --border-medium: #831843;
+        --text-primary: #831843;
+        --bg-primary: #ffffff;
+        --shadow-sm: none;
+        --shadow-md: none;
+        --shadow-lg: none;
+        --shadow-xl: none;
+    }
+}
+
+/* Reducir efectos para usuarios sensibles al movimiento */
+@media (prefers-reduced-motion: reduce) {
+    .pastel-theme .nav-item:hover::before {
+        animation: none;
+    }
+    
+    .pastel-theme .stat-card:hover,
+    .pastel-theme .nav-item:hover,
+    .pastel-theme .btn-primary:hover {
+        transform: none;
+    }
+    
+    .pastel-theme .dashboard-body::before {
+        display: none;
+    }
+}
+
+/* ===== EFECTOS DE CRISTAL (GLASSMORPHISM) ===== */
+.pastel-theme .stat-card,
+.pastel-theme .modal-content,
+.pastel-theme .nav-item {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* ===== PRINT STYLES PARA PASTEL ===== */
+@media print {
+    .pastel-theme {
+        --bg-primary: white !important;
+        --bg-secondary: white !important;
+        --text-primary: #831843 !important;
+        --text-secondary: #be185d !important;
+        --shadow-sm: none !important;
+        --shadow-md: none !important;
+        --shadow-lg: none !important;
+        --shadow-xl: none !important;
+    }
+}

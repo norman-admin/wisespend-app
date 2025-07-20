@@ -544,34 +544,55 @@ class NotasManager {
      * 📅 Renderizar item de recordatorio (formato original)
      */
     renderOriginalReminderItem(reminder) {
-        const statusClass = reminder.status;
-        const statusLabel = reminder.status === 'urgent' ? 'URGENTE' : 
-                          reminder.status === 'warning' ? 'PRÓXIMO' : 'OK';
-        
-        return `
-            <div class="reminder-item-original ${statusClass}" data-id="${reminder.id}">
-                <div class="reminder-content-original">
-                    <div class="reminder-header-original">
-                        <div class="reminder-title-original inline-editable" data-original-text="${reminder.title}">
-                            ${reminder.title}
-                        </div>
-                        <div class="reminder-amount-original inline-editable" data-original-text="${this.formatCurrency(reminder.amount)}">
-                            ${this.formatCurrency(reminder.amount)}
-                        </div>
+    const statusClass = reminder.status;
+    const statusLabel = reminder.status === 'urgent' ? 'URGENTE' : 
+                      reminder.status === 'warning' ? 'PRÓXIMO' : 'OK';
+    const isPaid = reminder.paid || false;
+    
+    return `
+        <div class="reminder-item-original ${statusClass} ${isPaid ? 'paid-reminder' : ''}" data-id="${reminder.id}">
+            <div class="reminder-checkbox-original">
+                <input type="checkbox" ${isPaid ? 'checked' : ''} 
+                       onchange="window.notasManager.toggleReminderPaid('${reminder.id}')">
+            </div>
+            <div class="reminder-content-original">
+                <div class="reminder-header-original">
+                    <div class="reminder-title-original inline-editable" data-original-text="${reminder.title}">
+                        ${reminder.title}
                     </div>
-                    <div class="reminder-footer-original">
-                        <div class="reminder-date-original">Vence: ${this.formatOriginalDate(reminder.dueDate)}</div>
-                        <div class="reminder-status-original ${statusClass}">${statusLabel}</div>
+                    <div class="reminder-amount-original inline-editable" data-original-text="${this.formatCurrency(reminder.amount)}">
+                        ${this.formatCurrency(reminder.amount)}
                     </div>
                 </div>
-                <div class="reminder-actions-original">
-                    <button class="btn-icon-small" onclick="window.notasManager.markAsPaid('${reminder.id}')" title="Marcar como pagado">✅</button>
-                    <button class="btn-icon-small" onclick="window.notasManager.editReminder('${reminder.id}')" title="Editar">✏️</button>
-                    <button class="btn-icon-small" onclick="window.notasManager.deleteReminder('${reminder.id}')" title="Eliminar">🗑️</button>
+                <div class="reminder-footer-original">
+                    <div class="reminder-date-original">Vence: ${this.formatOriginalDate(reminder.dueDate)}</div>
+                    <div class="reminder-status-original ${statusClass}">${statusLabel}</div>
                 </div>
             </div>
-        `;
+            <div class="reminder-actions-original">
+                <button class="btn-icon-small" onclick="window.notasManager.editReminder('${reminder.id}')" title="Editar">✏️</button>
+                <button class="btn-icon-small" onclick="window.notasManager.deleteReminder('${reminder.id}')" title="Eliminar">🗑️</button>
+            </div>
+        </div>
+    `;
+}
+
+    /**
+ * ✅ Toggle estado pagado del recordatorio
+ */
+toggleReminderPaid(reminderId) {
+    const reminder = this.reminders.find(r => r.id === reminderId);
+    if (reminder) {
+        reminder.paid = !reminder.paid;
+        reminder.updatedAt = new Date().toISOString();
+        
+        this.saveData();
+        this.refreshRemindersList();
+        
+        const status = reminder.paid ? 'pagado' : 'pendiente';
+        this.showNotification('💳 Recordatorio actualizado', `Marcado como ${status}`, 'success');
     }
+}
 
     /**
      * 🎤 Renderizar modal de dictado de voz (minimalista)

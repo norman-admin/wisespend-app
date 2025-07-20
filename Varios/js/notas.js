@@ -42,8 +42,8 @@ class NotasManager {
         this.serverUrl = 'http://127.0.0.1:5000';
         this.connectionAttempts = 0;
         this.maxConnectionAttempts = 3;
-        this.useWebSocket = true;
-        
+        this.useWebSocket = false; // Usar WebSocket si está conectado
+                
         console.log('📝 NotasManager v2.1.0: Interfaz Original + WebSocket...');
     }
 
@@ -75,11 +75,8 @@ class NotasManager {
         // 5. PROCESOS EN PARALELO (no bloquean)
         Promise.allSettled([
             this.loadNotasCSS().catch(e => console.warn('CSS:', e)),
-            this.initWebSocketOptimized().catch(e => console.warn('WebSocket:', e)),
-            this.initSpeechRecognitionOptimized().catch(e => console.warn('Speech:', e))
         ]).then(() => {
             console.log('✅ Background processes completed');
-            this.updateConnectionStatus();
         });
         
             console.log('🎯 NotasManager: Inicialización COMPLETA < 100ms');

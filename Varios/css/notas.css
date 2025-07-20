@@ -438,7 +438,7 @@
 .reminder-item-original {
     background: white;
     border-radius: 8px;
-    padding: 16px;
+    padding: 12px 16px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--border-color);
     transition: all 0.2s ease;
@@ -474,7 +474,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 8px;
+    margin-bottom: 4px;               /* ✅ Reducido de 8px a 4px para compactar */
 }
 
 .reminder-title-original {

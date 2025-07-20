@@ -258,7 +258,7 @@
 .tasks-list-original {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 6px;        /* Cambio de 12px a 6px */
     flex: 1;
 }
 
@@ -271,7 +271,7 @@
     border-radius: 8px;   /* Reducido de 12px a 8px */
     border-left: 4px solid transparent;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    margin-bottom: 8px;   /* Reducido de 12px a 8px */
+    margin-bottom: 4px;   /* Reducido de 12px a 4px */
     transition: all 0.2s ease;
     min-height: auto;     /* Permitir altura automática */
 }

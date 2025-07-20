@@ -303,7 +303,7 @@ class NotasManager {
                 createdAt: new Date().toISOString()
             };
             
-            this.reminders.push(newReminder);
+            this.reminders.unshift(newReminder);
             this.saveData();
             this.refreshRemindersList();
             
@@ -505,8 +505,6 @@ class NotasManager {
                 </div>
                 <div class="task-content-original">
                     <div class="task-title-original inline-editable" data-original-text="${task.title}">${task.title}</div>
-                        <div class="inline-tooltip">Doble clic para editar</div>
-                    </div>
                     <div class="task-meta-original">
                         <span class="category-tag ${task.category}">${this.getCategoryName(task.category)}</span>
                         <span class="date-tag">${this.formatOriginalDate(task.dueDate)}</span>
@@ -1024,7 +1022,7 @@ class NotasManager {
             createdAt: new Date().toISOString()
         };
         
-        this.tasks.push(newTask);
+        this.tasks.unshift(newTask);
         this.saveData();
         this.refreshTasksList();
         this.closeVoiceModal();
@@ -1054,7 +1052,7 @@ class NotasManager {
             createdAt: new Date().toISOString()
         };
         
-        this.reminders.push(newReminder);
+        this.reminders.unshift(newReminder);
         this.saveData();
         this.refreshRemindersList();
         this.closeReminderModal();
@@ -1072,9 +1070,14 @@ class NotasManager {
         task.completedAt = task.completed ? new Date().toISOString() : null;
         task.updatedAt = new Date().toISOString();
         
-        // Si se completa y estamos en "mi orden", mover al final
-        if (task.completed && this.currentSort === 'mi-orden') {
-            this.moveCompletedToBottom();
+        if (this.currentSort === 'mi-orden') {
+            if (task.completed) {
+                // ✅ COMPLETAR: Mover al final
+                this.moveCompletedToBottom();
+            } else {
+                // ⚪ DESMARCAR: Mover al inicio
+                this.moveTaskToTop(taskId);
+            }
         } else {
             this.saveData();
             this.refreshTasksList();
@@ -1088,19 +1091,19 @@ class NotasManager {
     /**
      * ✏️ Editar tarea
      */
-    editTask(taskId) {
-        const task = this.tasks.find(t => t.id === taskId);
-        if (!task) return;
-        
-        const newTitle = prompt('Editar tarea:', task.title);
-        if (newTitle && newTitle.trim() !== task.title) {
-            task.title = newTitle.trim();
-            task.modifiedAt = new Date().toISOString();
-            this.saveData();
-            this.refreshTasksList();
-            this.showNotification('✏️ Tarea actualizada', task.title, 'success');
-        }
+    async editTask(taskId) {
+    const task = this.tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    const newTitle = await this.showEditModal('Editar Tarea', task.title, 'Ingresa el nuevo título');
+    if (newTitle && newTitle.trim() !== task.title) {
+        task.title = newTitle.trim();
+        task.modifiedAt = new Date().toISOString();
+        this.saveData();
+        this.refreshTasksList();
+        this.showNotification('✏️ Tarea actualizada', task.title, 'success');
     }
+}
 
     /**
      * 🗑️ Eliminar tarea
@@ -1151,19 +1154,19 @@ class NotasManager {
     /**
      * ✏️ Editar recordatorio
      */
-    editReminder(reminderId) {
-        const reminder = this.reminders.find(r => r.id === reminderId);
-        if (!reminder) return;
-        
-        const newTitle = prompt('Editar recordatorio:', reminder.title);
-        if (newTitle && newTitle.trim() !== reminder.title) {
-            reminder.title = newTitle.trim();
-            reminder.modifiedAt = new Date().toISOString();
-            this.saveData();
-            this.refreshRemindersList();
-            this.showNotification('✏️ Recordatorio actualizado', reminder.title, 'success');
-        }
+    async editReminder(reminderId) {
+    const reminder = this.reminders.find(r => r.id === reminderId);
+    if (!reminder) return;
+    
+    const newTitle = await this.showEditModal('Editar Recordatorio', reminder.title, 'Ingresa el nuevo título');
+    if (newTitle && newTitle.trim() !== reminder.title) {
+        reminder.title = newTitle.trim();
+        reminder.modifiedAt = new Date().toISOString();
+        this.saveData();
+        this.refreshRemindersList();
+        this.showNotification('✏️ Recordatorio actualizado', reminder.title, 'success');
     }
+}
 
     /**
      * 🗑️ Eliminar recordatorio
@@ -1277,7 +1280,7 @@ class NotasManager {
             createdAt: new Date().toISOString()
         };
         
-        this.reminders.push(newReminder);
+        this.reminders.unshift(newReminder);
         this.saveData();
         this.refreshRemindersList();
         
@@ -1783,6 +1786,23 @@ moveCompletedToBottom() {
 }
 
 /**
+ * ⬆️ MOVER TAREA AL INICIO
+ */
+moveTaskToTop(taskId) {
+    const taskIndex = this.tasks.findIndex(task => task.id === taskId);
+    if (taskIndex === -1) return;
+    
+    // Extraer la tarea
+    const [task] = this.tasks.splice(taskIndex, 1);
+    
+    // Agregar al inicio
+    this.tasks.unshift(task);
+    
+    this.saveData();
+    this.refreshTasksList();
+}
+
+/**
  * 👁️ TOGGLE VISIBILIDAD DE COMPLETADAS
  */
 toggleCompletedVisibility() {
@@ -1843,6 +1863,103 @@ toggleTaskCompletion(taskId) {
     
     const status = task.completed ? 'completada' : 'pendiente';
     this.showNotification('✅ Tarea actualizada', `Tarea marcada como ${status}`, 'success');
+}
+
+/**
+ * ✏️ MOSTRAR MODAL DE EDICIÓN PERSONALIZADO
+ */
+showEditModal(title, currentValue, placeholder = '') {
+    return new Promise((resolve) => {
+        // Crear modal si no existe
+        let modal = document.getElementById('edit-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'edit-modal';
+            modal.className = 'confirm-modal-overlay';
+            document.body.appendChild(modal);
+        }
+
+        modal.innerHTML = `
+            <div class="confirm-modal">
+                <div class="confirm-modal-header">
+                    <h3 class="confirm-modal-title">
+                        ✏️ ${title}
+                    </h3>
+                </div>
+                <div class="confirm-modal-body">
+                    <p class="confirm-modal-message">Ingresa el nuevo texto:</p>
+                    <input type="text" id="editInput" value="${currentValue}" 
+                           placeholder="${placeholder}" 
+                           style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; margin-top: 12px; box-sizing: border-box;">
+                </div>
+                <div class="confirm-modal-actions">
+                    <button class="confirm-btn confirm-btn-cancel" data-action="cancel">
+                        Cancelar
+                    </button>
+                    <button class="confirm-btn confirm-btn-primary" data-action="confirm">
+                        Guardar
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Mostrar modal
+        setTimeout(() => modal.classList.add('active'), 10);
+        
+        // Focus y seleccionar texto
+        setTimeout(() => {
+            const input = modal.querySelector('#editInput');
+            if (input) {
+                input.focus();
+                input.select();
+            }
+        }, 100);
+
+        // Event listeners
+        const handleClick = (e) => {
+            const action = e.target.dataset.action;
+            if (action) {
+                let result = null;
+                if (action === 'confirm') {
+                    const input = modal.querySelector('#editInput');
+                    result = input ? input.value.trim() : null;
+                }
+                
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    if (modal.parentNode) {
+                        modal.parentNode.removeChild(modal);
+                    }
+                }, 300);
+                resolve(result);
+            }
+        };
+
+        // Enter para guardar, Escape para cancelar
+        modal.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const input = modal.querySelector('#editInput');
+                const result = input ? input.value.trim() : null;
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    if (modal.parentNode) {
+                        modal.parentNode.removeChild(modal);
+                    }
+                }, 300);
+                resolve(result);
+            } else if (e.key === 'Escape') {
+                handleClick({ target: { dataset: { action: 'cancel' } } });
+            }
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                handleClick({ target: { dataset: { action: 'cancel' } } });
+            }
+        });
+
+        modal.addEventListener('click', handleClick);
+    });
 }
 
 /**

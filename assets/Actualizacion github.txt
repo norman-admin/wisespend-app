@@ -1,0 +1,5 @@
+PS H:\Otros ordenadores\Mi Portátil\Documents\Norman\presupuesto-familiar>
+git status
+git add .
+git commit -m "actualizacion "
+git push origin main

@@ -24,6 +24,9 @@ class NotasManager {
         this.currentFilter = 'all';
         this.currentSort = 'mi-orden';
         this.showCompleted = true;
+        // Variables para recordatorios
+        this.showPaid = true;
+        this.currentReminderSort = 'fecha';
         this.recognition = null;
         this.isListening = false;
         this.finalTranscript = '';
@@ -331,8 +334,9 @@ class NotasManager {
                                 🎤 Nueva Tarea
                             </button>
                             <div class="options-menu-notas">
-                                <button class="options-trigger-notas">⋮</button>
-                                <div class="dropdown-menu-notas">
+                            <button class="options-trigger-notas">⋮</button>
+                            <div class="dropdown-menu-notas">
+                                    <div class="sort-menu-header">⚙️ OPCIONES</div>
                                     <div class="menu-item-notas" onclick="window.notasManager.showSortMenu()">
                                         📋 Ordenar por
                                     </div>
@@ -380,6 +384,24 @@ class NotasManager {
                             <button class="btn-notas mint" onclick="window.notasManager.openReminderModal()">
                                 ➕ Recordatorio
                             </button>
+                            <div class="options-menu-notas" id="remindersOptionsMenu">
+                            <button class="options-trigger-notas">⋮</button>
+                            <div class="dropdown-menu-notas">
+                            <div class="sort-menu-header">⚙️ OPCIONES</div>
+                            <div class="menu-item-notas" onclick="window.notasManager.showRemindersSortMenu()">
+                                        📋 Ordenar por
+                                    </div>
+                                    <div class="menu-item-notas" onclick="window.notasManager.togglePaidVisibility()">
+                                        👁️ Mostrar/Ocultar pagados
+                                    </div>
+                                    <div class="menu-item-notas" onclick="window.notasManager.clearPaidReminders()">
+                                        🧹 Limpiar pagados
+                                    </div>
+                                    <div class="menu-item-notas danger" onclick="window.notasManager.clearAllReminders()">
+                                        🗑️ Limpiar todas
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -434,21 +456,61 @@ class NotasManager {
         };
     });
 
-    // Menú de opciones
-    const optionsMenu = document.querySelector('.options-menu-notas');
-    if (optionsMenu) {
-        const trigger = optionsMenu.querySelector('.options-trigger-notas');
-        const dropdown = optionsMenu.querySelector('.dropdown-menu-notas');
+    // Cerrar menús al hacer click fuera
+    document.addEventListener('click', (e) => {
+        // Solo procesar si el click no es en un menú o botón de opciones
+        if (!e.target.closest('.options-menu-notas') && !e.target.closest('.sort-submenu')) {
+            // Cerrar todos los menús principales
+            document.querySelectorAll('.dropdown-menu-notas.active').forEach(menu => {
+                menu.classList.remove('active');
+            });
+            
+            // Cerrar todos los submenús de ordenamiento
+            document.querySelectorAll('.sort-submenu').forEach(submenu => {
+                submenu.remove();
+            });
+        }
+    });
+    
+    // Menú de opciones de tareas
+    const tasksOptionsMenu = document.querySelector('.notas-section .options-menu-notas');
+    if (tasksOptionsMenu) {
+        const trigger = tasksOptionsMenu.querySelector('.options-trigger-notas');
+        const dropdown = tasksOptionsMenu.querySelector('.dropdown-menu-notas');
         
+        console.log('🔍 Debug tareas:', { tasksOptionsMenu, trigger, dropdown });
+        
+        if (trigger && dropdown) {
+            console.log('✅ Configurando eventos para tareas...');
+            trigger.onclick = (e) => {
+                console.log('🎯 Click en menú tareas');
+                e.stopPropagation();
+                dropdown.classList.toggle('active');
+            };
+            console.log('✅ Evento click asignado');
+        } else {
+            console.error('❌ No se encontraron elementos:', { trigger, dropdown });
+        }
+    }
+
+// Menú de opciones de recordatorios
+const remindersOptionsMenu = document.getElementById('remindersOptionsMenu');
+if (remindersOptionsMenu) {
+    const trigger = remindersOptionsMenu.querySelector('.options-trigger-notas');
+    const dropdown = remindersOptionsMenu.querySelector('.dropdown-menu-notas');
+    
+    console.log('🔍 Debug recordatorios:', { remindersOptionsMenu, trigger, dropdown });
+    
+    if (trigger && dropdown) {
+        console.log('✅ Configurando eventos para recordatorios...');
         trigger.onclick = (e) => {
+            console.log('🎯 Click en menú recordatorios');
             e.stopPropagation();
             dropdown.classList.toggle('active');
         };
-
-        document.onclick = () => {
-            dropdown.classList.remove('active');
-        };
+        console.log('✅ Evento click asignado para recordatorios');
     }
+}
     
     // 🎨 INICIALIZAR EDICIÓN INLINE
     this.initInlineEditing();
@@ -531,11 +593,27 @@ class NotasManager {
             return;
         }
 
-        // Ordenar por estado y fecha
-        const sortedReminders = [...this.reminders].sort((a, b) => {
+        // Filtrar recordatorios según preferencia de mostrar pagados
+    let filteredReminders = this.showPaid ? 
+        this.reminders : 
+        this.reminders.filter(reminder => !reminder.paid);
+
+        // Ordenar según preferencia del usuario
+        const sortedReminders = [...filteredReminders].sort((a, b) => {
+    switch(this.currentReminderSort) {
+        case 'fecha':
+            return new Date(a.dueDate) - new Date(b.dueDate);
+        case 'estado':
             const statusOrder = { urgent: 0, warning: 1, ok: 2 };
             return statusOrder[a.status] - statusOrder[b.status];
-        });
+        case 'monto':
+            return (b.amount || 0) - (a.amount || 0);
+        case 'titulo':
+            return a.title.localeCompare(b.title);
+        default:
+            return new Date(a.dueDate) - new Date(b.dueDate);
+    }
+});
 
         container.innerHTML = sortedReminders.map(reminder => this.renderOriginalReminderItem(reminder)).join('');
     }
@@ -721,23 +799,35 @@ toggleReminderPaid(reminderId) {
      * 📅 Formatear fecha (formato original)
      */
     formatOriginalDate(dateString) {
-        const date = new Date(dateString);
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        
-        if (date.toDateString() === today.toDateString()) {
-            return 'Hoy';
-        } else if (date.toDateString() === tomorrow.toDateString()) {
-            return 'Mañana';
-        } else {
-            return date.toLocaleDateString('es-CL', { 
-                day: 'numeric', 
-                month: 'short' 
-            });
-        }
+    if (!dateString) return 'Sin fecha';
+    
+    const date = new Date(dateString + 'T00:00:00'); // Forzar timezone local
+    const today = new Date();
+    
+    // Normalizar fechas solo con día/mes/año
+    const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const tomorrowDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    
+    console.log('🔍 Formato fecha:', { 
+        original: dateString, 
+        parsed: targetDate, 
+        today: todayDate,
+        isToday: targetDate.getTime() === todayDate.getTime(),
+        isTomorrow: targetDate.getTime() === tomorrowDate.getTime()
+    });
+    
+    if (targetDate.getTime() === todayDate.getTime()) {
+        return 'Hoy';
+    } else if (targetDate.getTime() === tomorrowDate.getTime()) {
+        return 'Mañana';
+    } else {
+        return date.toLocaleDateString('es-CL', { 
+            day: 'numeric', 
+            month: 'short'
+        });
     }
-
+}
     // =================================================================
     // 🆕 MÉTODOS WebSocket Y VOZ (MANTENIDOS INTACTOS)
     // =================================================================
@@ -1029,24 +1119,30 @@ toggleReminderPaid(reminderId) {
             this.showNotification('⚠️ Campo requerido', 'Debes escribir o dictar una tarea', 'warning');
             return;
         }
+
+
+    // 🔍 DEBUG: Ver qué fecha se está capturando
+    console.log('🔍 Fecha capturada:', dueDateInput ? dueDateInput.value : 'NO ENCONTRADO');
+
+    const newTask = {
+        id: this.generateId(),
+        title: textarea.value.trim(),
+        category: categorySelect ? categorySelect.value : 'personal',
+        priority: prioritySelect ? prioritySelect.value : 'medium',
+        completed: false,
+        dueDate: dueDateInput ? dueDateInput.value : new Date().toISOString().split('T')[0],
+        createdAt: new Date().toISOString()
+    };
+    
+    // 🔍 DEBUG: Ver el objeto completo
+    console.log('🔍 Tarea creada:', newTask);
+    
+    this.tasks.unshift(newTask);
+    this.saveData();
+    this.refreshTasksList();
+    this.closeVoiceModal();    
         
-        const newTask = {
-            id: this.generateId(),
-            title: textarea.value.trim(),
-            category: categorySelect ? categorySelect.value : 'personal',
-            priority: prioritySelect ? prioritySelect.value : 'medium',
-            completed: false,
-            dueDate: dueDateInput ? dueDateInput.value : new Date().toISOString().split('T')[0],
-            createdAt: new Date().toISOString()
-        };
-        
-        this.tasks.unshift(newTask);
-        this.saveData();
-        this.refreshTasksList();
-        this.closeVoiceModal();
-        
-        this.showNotification('✅ Tarea creada', newTask.title, 'success');
-    }
+}
 
     /**
      * 💾 Guardar recordatorio desde modal
@@ -1427,6 +1523,9 @@ moveReminderToTop(reminderId) {
             // Cargar preferencia de mostrar completadas
             const showCompletedPref = localStorage.getItem('wisespend_show_completed');
             this.showCompleted = showCompletedPref !== null ? showCompletedPref === 'true' : true;
+            // Cargar preferencia de mostrar pagados
+            const showPaidPref = localStorage.getItem('wisespend_show_paid');
+            this.showPaid = showPaidPref !== null ? JSON.parse(showPaidPref) : true;
             
             console.log(`📚 Datos cargados: ${this.tasks.length} tareas, ${this.reminders.length} recordatorios`);
         } catch (error) {
@@ -1758,7 +1857,7 @@ showSortMenu() {
         <div class="sort-option ${this.currentSort === 'mi-orden' ? 'active' : ''}" onclick="window.notasManager.setSortOrder('mi-orden')">
             ✓ Mi orden
         </div>
-        <div class="sort-option ${this.currentSort === 'fecha' ? 'active' : ''}" onclick="window.notasManager.setSortOrder('fecha')">
+        <div class="sort-option" onclick="console.log('🎯 Click detectado en Fecha'); window.notasManager.setSortOrder('fecha')">
             📅 Fecha
         </div>
         <div class="sort-option ${this.currentSort === 'recientes' ? 'active' : ''}" onclick="window.notasManager.setSortOrder('recientes')">
@@ -1773,26 +1872,117 @@ showSortMenu() {
         </div>
     `;
    
-
-    optionsMenu.appendChild(sortMenu);
+        optionsMenu.appendChild(sortMenu); 
+        setTimeout(() => {
+            sortMenu.classList.add('active');
+        }, 10);
     
     // Cerrar al hacer click fuera
     setTimeout(() => {
         document.addEventListener('click', function closeSortMenu(e) {
             if (!sortMenu.contains(e.target)) {
-                sortMenu.remove();
+                sortMenu.classList.remove('active');
+    setTimeout(() => {
+        if (sortMenu.parentNode) {
+            sortMenu.remove();
+        }
+    }, 300);
                 document.removeEventListener('click', closeSortMenu);
             }
         });
-    }, 100);
+    }, 100);    
+}
 
+/**
+ * 📋 MOSTRAR MENÚ DE ORDENAMIENTO DE RECORDATORIOS
+ */
+showRemindersSortMenu() {
+    const existingMenu = document.querySelector('.sort-submenu-reminders');
+    if (existingMenu) {
+        existingMenu.remove();
+        return;
+    }
+
+    const optionsMenu = document.querySelector('#remindersOptionsMenu .dropdown-menu-notas');
+    if (!optionsMenu) return;
+
+    const sortMenu = document.createElement('div');
+    sortMenu.className = 'sort-submenu sort-submenu-reminders';
+    sortMenu.innerHTML = `
+        <div class="sort-menu-header">📋 Ordenar recordatorios por</div>
+        <div class="sort-option ${this.currentReminderSort === 'fecha' ? 'active' : ''}" onclick="window.notasManager.setReminderSortOrder('fecha')">
+            📅 Fecha de vencimiento
+        </div>
+        <div class="sort-option ${this.currentReminderSort === 'estado' ? 'active' : ''}" onclick="window.notasManager.setReminderSortOrder('estado')">
+            🚨 Estado (urgente primero)
+        </div>
+        <div class="sort-option ${this.currentReminderSort === 'monto' ? 'active' : ''}" onclick="window.notasManager.setReminderSortOrder('monto')">
+            💰 Monto (mayor primero)
+        </div>
+        <div class="sort-option ${this.currentReminderSort === 'titulo' ? 'active' : ''}" onclick="window.notasManager.setReminderSortOrder('titulo')">
+            🔤 Título (A-Z)
+        </div>
+    `;
+
+        optionsMenu.appendChild(sortMenu);
+        setTimeout(() => {
+            sortMenu.classList.add('active');
+        }, 10);
     
+    // Cerrar al hacer click fuera
+    setTimeout(() => {
+        document.addEventListener('click', function closeSortMenu(e) {
+            if (!sortMenu.contains(e.target)) {
+                sortMenu.classList.remove('active');
+    setTimeout(() => {
+        if (sortMenu.parentNode) {
+            sortMenu.remove();
+        }
+    }, 300);
+                document.removeEventListener('click', closeSortMenu);
+            }
+        });
+    }, 10);
+}
+
+/**
+ * 🔄 ESTABLECER ORDEN DE RECORDATORIOS
+ */
+setReminderSortOrder(sortType) {
+    this.currentReminderSort = sortType;
+    this.refreshRemindersList();
+    
+    // Guardar preferencia
+    localStorage.setItem('wisespend_reminder_sort', sortType);
+    
+     // Cerrar menús
+        const sortMenu = document.querySelector('.sort-submenu-reminders');
+        const optionsMenu = document.querySelector('#remindersOptionsMenu .dropdown-menu-notas');
+    if (sortMenu) {
+        sortMenu.classList.remove('active');
+        setTimeout(() => {
+            if (sortMenu.parentNode) {
+                sortMenu.remove();
+            }
+        }, 300);
+    }
+    if (optionsMenu) optionsMenu.classList.remove('active');
+    
+    const sortNames = {
+        'fecha': 'Fecha de vencimiento',
+        'estado': 'Estado',
+        'monto': 'Monto',
+        'titulo': 'Título'
+    };
+    
+    this.showNotification('📋 Orden cambiado', `Recordatorios ordenados por: ${sortNames[sortType]}`, 'info');
 }
 
 /**
  * 🔄 ESTABLECER ORDEN DE CLASIFICACIÓN
  */
 setSortOrder(sortType) {
+    console.log('🔄 Ordenando por:', sortType); 
     this.currentSort = sortType;
     this.sortTasks();
     this.refreshTasksList();
@@ -1800,7 +1990,14 @@ setSortOrder(sortType) {
     
     // Cerrar menú
     const sortMenu = document.querySelector('.sort-submenu');
-    if (sortMenu) sortMenu.remove();
+    if (sortMenu) {
+    sortMenu.classList.remove('active');
+    setTimeout(() => {
+        if (sortMenu.parentNode) {
+            sortMenu.remove();
+        }
+    }, 300);
+}
     
     this.showNotification('📋 Ordenamiento aplicado', `Ordenado por: ${this.getSortDisplayName(sortType)}`, 'info');
 }
@@ -1824,13 +2021,13 @@ getSortDisplayName(sortType) {
 sortTasks() {
     switch (this.currentSort) {
         case 'fecha':
-            this.tasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            this.tasks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate)); // ✅ Orden cronológico correcto
             break;
         case 'recientes':
             this.tasks.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
             break;
         case 'titulo':
-            this.tasks.sort((a, b) => a.text.localeCompare(b.text));
+            this.tasks.sort((a, b) => a.title.localeCompare(b.title));  // ✅ CORRECTO
             break;
         case 'mi-orden':
         default:
@@ -1911,6 +2108,86 @@ async clearCompleted() {
         this.showNotification('🗑️ Completadas eliminadas', `${completedCount} tareas eliminadas`, 'success');
     }
 }
+
+/**
+ * 👁️ TOGGLE VISIBILIDAD DE RECORDATORIOS PAGADOS
+ */
+togglePaidVisibility() {
+    this.showPaid = !this.showPaid;
+    this.refreshRemindersList();
+    
+    // Guardar preferencia
+    localStorage.setItem('wisespend_show_paid', this.showPaid.toString());
+    
+    const message = this.showPaid ? 'Mostrando recordatorios pagados' : 'Ocultando recordatorios pagados';
+    this.showNotification('👁️ Visibilidad cambiada', message, 'info');
+    
+    // Cerrar menú
+    const menu = document.getElementById('remindersOptionsMenu');
+    if (menu) menu.classList.remove('active');
+}
+
+/**
+ * 🧹 LIMPIAR RECORDATORIOS PAGADOS
+ */
+async clearPaidReminders() {
+    const paidCount = this.reminders.filter(reminder => reminder.paid).length;
+    
+    if (paidCount === 0) {
+        this.showNotification('ℹ️ Sin recordatorios pagados', 'No hay recordatorios pagados para eliminar', 'info');
+        return;
+    }
+    
+    const confirmed = await this.showConfirmModal(
+        'Limpiar Pagados',
+        `¿Eliminar ${paidCount} recordatorio${paidCount > 1 ? 's' : ''} pagado${paidCount > 1 ? 's' : ''}?`,
+        'Eliminar',
+        'Cancelar',
+        'danger'
+    );
+    
+    if (confirmed) {
+        this.reminders = this.reminders.filter(reminder => !reminder.paid);
+        this.saveData();
+        this.refreshRemindersList();
+        this.showNotification('🧹 Pagados eliminados', `${paidCount} recordatorios eliminados`, 'success');
+    }
+    
+    // Cerrar menú
+    const menu = document.getElementById('remindersOptionsMenu');
+    if (menu) menu.classList.remove('active');
+}
+
+/**
+ * 🗑️ LIMPIAR TODOS LOS RECORDATORIOS
+ */
+async clearAllReminders() {
+    const totalCount = this.reminders.length;
+    
+    if (totalCount === 0) {
+        this.showNotification('ℹ️ Sin recordatorios', 'No hay recordatorios para eliminar', 'info');
+        return;
+    }
+    
+    const confirmed = await this.showConfirmModal(
+        'Eliminar Todos los Recordatorios',
+        `¿Estás seguro de eliminar TODOS los ${totalCount} recordatorios? Esta acción no se puede deshacer.`,
+        'Eliminar Todo',
+        'Cancelar',
+        'danger'
+    );
+    
+    if (confirmed) {
+        this.reminders = [];
+        this.saveData();
+        this.refreshRemindersList();
+        this.showNotification('🗑️ Recordatorios eliminados', 'Todos los recordatorios han sido borrados', 'info');
+    }
+    
+    // Cerrar menú
+    const menu = document.getElementById('remindersOptionsMenu');
+    if (menu) menu.classList.remove('active');
+}  
 
 /**
  * ✅ TOGGLE COMPLETAR TAREA

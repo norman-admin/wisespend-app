@@ -1077,8 +1077,8 @@ toggleReminderPaid(reminderId) {
         }
     }
 
-    /**
-     * 📅 Abrir modal de recordatorio
+        /**
+     * 📅 Abrir modal de recordatorio CON NAVEGACIÓN ENTER
      */
     openReminderModal() {
         const modal = document.getElementById('reminderModal');
@@ -1093,8 +1093,112 @@ toggleReminderPaid(reminderId) {
             if (titleInput) titleInput.value = '';
             if (amountInput) amountInput.value = '';
             if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+            
+            // 🆕 CONFIGURAR NAVEGACIÓN CON ENTER
+            this.setupReminderEnterNavigation();
+            
+            // Focus en el primer campo
+            setTimeout(() => {
+                if (titleInput) {
+                    titleInput.focus();
+                }
+            }, 100);
         }
     }
+
+    /**
+ * 🆕 CONFIGURAR NAVEGACIÓN CON ENTER EN MODAL RECORDATORIOS
+ */
+setupReminderEnterNavigation() {
+    const titleInput = document.getElementById('reminderTitle');
+    const amountInput = document.getElementById('reminderAmount');
+    
+    // Limpiar event listeners anteriores para evitar duplicados
+    if (titleInput) {
+        titleInput.replaceWith(titleInput.cloneNode(true));
+    }
+    if (amountInput) {
+        amountInput.replaceWith(amountInput.cloneNode(true));
+    }
+    
+    // Obtener referencias actualizadas
+    const newTitleInput = document.getElementById('reminderTitle');
+    const newAmountInput = document.getElementById('reminderAmount');
+    
+    if (!newTitleInput || !newAmountInput) {
+        console.warn('⚠️ No se encontraron campos del modal de recordatorios');
+        return;
+    }
+    
+    // 🎯 EVENTO ENTER EN TÍTULO
+    newTitleInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            
+            // Validar que el título no esté vacío
+            const titleValue = newTitleInput.value.trim();
+            if (!titleValue) {
+                // Mantener focus en título si está vacío
+                newTitleInput.focus();
+                this.showNotification('⚠️ Campo requerido', 'El título es obligatorio', 'warning');
+                return;
+            }
+            
+            // Cambiar foco al campo de monto
+            newAmountInput.focus();
+            newAmountInput.select(); // Seleccionar contenido actual si lo hay
+        }
+    });
+    
+    // 🎯 EVENTO ENTER EN MONTO
+    newAmountInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            
+            // Guardar automáticamente
+            this.saveReminderFromEnter();
+        }
+    });
+    
+    console.log('✅ Navegación Enter configurada para modal recordatorios');
+}
+
+    /**
+ * 🆕 GUARDAR RECORDATORIO DESDE NAVEGACIÓN ENTER
+ */
+saveReminderFromEnter() {
+    const titleInput = document.getElementById('reminderTitle');
+    const amountInput = document.getElementById('reminderAmount');
+    const dateInput = document.getElementById('reminderDate');
+    
+    // Validar campos requeridos
+    if (!titleInput || !titleInput.value.trim()) {
+        this.showNotification('⚠️ Campo requerido', 'El título es obligatorio', 'warning');
+        if (titleInput) titleInput.focus();
+        return;
+    }
+    
+    // Crear recordatorio
+    const newReminder = {
+        id: this.generateId(),
+        title: titleInput.value.trim(),
+        amount: amountInput ? parseFloat(amountInput.value) || 0 : 0,
+        dueDate: dateInput ? dateInput.value : new Date().toISOString().split('T')[0],
+        status: this.calculateReminderStatus(dateInput ? dateInput.value : new Date().toISOString().split('T')[0]),
+        createdAt: new Date().toISOString()
+    };
+    
+    // Guardar y actualizar
+    this.reminders.unshift(newReminder);
+    this.saveData();
+    this.refreshRemindersList();
+    this.closeReminderModal();
+    
+    // Mostrar confirmación
+    this.showNotification('✅ Recordatorio creado', `"${newReminder.title}" agregado exitosamente`, 'success');
+    
+    console.log('✅ Recordatorio guardado desde navegación Enter:', newReminder);
+}
 
     /**
      * 🔒 Cerrar modal de recordatorio
@@ -1780,20 +1884,20 @@ moveReminderToTop(reminderId) {
      */
     async clearAllData() {
     const confirmed = await this.showConfirmModal(
-        'Eliminar Todos los Datos',
-        '¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.',
-        'Eliminar Todo',
+        'Eliminar Todas las Tareas',
+        '¿Estás seguro de eliminar todas las tareas? Esta acción no se puede deshacer.',
+        'Eliminar',
         'Cancelar',
         'danger'
     );
     
     if (confirmed) {
-        this.tasks = [];
-        this.reminders = [];
+        this.tasks = [];                    // ✅ Solo borrar tareas
+        // NO tocar this.reminders           // ✅ Mantener recordatorios intactos
         this.saveData();
-        this.refreshTasksList();
-        this.refreshRemindersList();
-        this.showNotification('🗑️ Datos eliminados', 'Todos los datos han sido borrados', 'info');
+        this.refreshTasksList();            // ✅ Solo refrescar tareas
+        // NO llamar this.refreshRemindersList() 
+        this.showNotification('🗑️ Tareas eliminadas', 'Todas las tareas han sido borradas.', 'info');
     }
 }
 

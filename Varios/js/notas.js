@@ -27,10 +27,7 @@ class NotasManager {
         // Variables para recordatorios
         this.showPaid = true;
         this.currentReminderSort = 'fecha';
-        this.recognition = null;
-        this.isListening = false;
-        this.finalTranscript = '';
-        
+                
         // Configuración
         this.storageKey = 'wisespend_notas';
         this.remindersKey = 'wisespend_recordatorios';
@@ -38,16 +35,8 @@ class NotasManager {
         // Estados
         this.initialized = false;
         this.container = null;
-        
-        // 🆕 WEBSOCKET PROPERTIES
-        this.socket = null;
-        this.isConnected = false;
-        this.serverUrl = 'http://127.0.0.1:5000';
-        this.connectionAttempts = 0;
-        this.maxConnectionAttempts = 3;
-        this.useWebSocket = false; // Usar WebSocket si está conectado
-                
-        console.log('📝 NotasManager v2.1.0: Interfaz Original + WebSocket...');
+
+        console.log('📝 NotasManager v2.1.0: Sistema simplificado...');
     }
 
     /**
@@ -92,226 +81,7 @@ class NotasManager {
             this.showError('Error al cargar el sistema de notas');
         }
     }
-
-    /**
-     * 🆕 INICIALIZAR CONEXIÓN WEBSOCKET
-     */
-    async initWebSocket() {
-        try {
-            console.log('🔌 Inicializando conexión WebSocket...');
-            
-            // Verificar si Socket.IO está disponible
-            if (typeof io === 'undefined') {
-                console.log('📦 Cargando Socket.IO...');
-                await this.loadSocketIO();
-            }
-            
-            // Crear conexión
-            this.socket = io(this.serverUrl, {
-                transports: ['websocket', 'polling'],
-                timeout: 5000,
-                reconnection: true,
-                reconnectionAttempts: 3,
-                reconnectionDelay: 2000
-            });
-            
-            // Configurar eventos
-            this.setupSocketEvents();
-            
-            // Esperar conexión
-            return new Promise((resolve, reject) => {
-                const timeout = setTimeout(() => {
-                    console.warn('⏰ Timeout de conexión WebSocket - usando modo local');
-                    this.useWebSocket = false;
-                    resolve();
-                }, 5000);
-                
-                this.socket.on('connect', () => {
-                    clearTimeout(timeout);
-                    this.isConnected = true;
-                    this.connectionAttempts = 0;
-                    console.log('✅ WebSocket conectado al servidor Python');
-                    resolve();
-                });
-                
-                this.socket.on('connect_error', (error) => {
-                    clearTimeout(timeout);
-                    console.warn('⚠️ Error de conexión WebSocket:', error.message);
-                    this.useWebSocket = false;
-                    resolve();
-                });
-            });
-            
-        } catch (error) {
-            console.warn('⚠️ WebSocket no disponible, usando modo local:', error);
-            this.useWebSocket = false;
-        }
-    }
-
-    /**
-     * 🆕 CARGAR SOCKET.IO DINÁMICAMENTE
-     */
-    async loadSocketIO() {
-        return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js';
-            script.onload = () => {
-                console.log('✅ Socket.IO cargado');
-                resolve();
-            };
-            script.onerror = () => {
-                console.warn('⚠️ No se pudo cargar Socket.IO');
-                reject(new Error('Socket.IO no disponible'));
-            };
-            document.head.appendChild(script);
-        });
-    }
-
-    /**
-     * 🆕 CONFIGURAR EVENTOS DE WEBSOCKET
-     */
-    setupSocketEvents() {
-        if (!this.socket) return;
-        
-        this.socket.on('connect', () => {
-            this.isConnected = true;
-            console.log('🔗 Conectado al servidor de voz');
-        });
-        
-        this.socket.on('disconnect', () => {
-            this.isConnected = false;
-            console.log('🔌 Desconectado del servidor de voz');
-        });
-        
-        this.socket.on('connection_status', (data) => {
-            console.log('📊 Estado de conexión:', data);
-        });
-        
-        this.socket.on('voice_response', (data) => {
-            this.handleVoiceResponse(data);
-        });
-        
-        this.socket.on('test_response', (data) => {
-            console.log('🧪 Respuesta de prueba:', data);
-        });
-    }
-
-    /**
-     * 🆕 MANEJAR RESPUESTA DEL SERVIDOR
-     */
-    handleVoiceResponse(data) {
-        console.log('📥 Respuesta del servidor:', data);
-        
-        if (data.status === 'success' && data.result) {
-            const result = data.result;
-            
-            // Procesar según el tipo de acción
-            switch (result.action) {
-                case 'add_expense':
-                    this.handleExpenseFromVoice(result);
-                    break;
-                case 'add_task':
-                    this.handleTaskFromVoice(result);
-                    break;
-                case 'add_reminder':
-                    this.handleReminderFromVoice(result);
-                    break;
-                default:
-                    this.updateVoiceStatus('🤖 Servidor procesó', `Comando: ${result.action}`);
-            }
-            
-            // Actualizar UI con el texto reconocido
-            const textarea = document.getElementById('taskTextarea');
-            if (textarea) {
-                textarea.value = result.recognized_text || '';
-            }
-            
-        } else if (data.status === 'error') {
-            console.error('❌ Error del servidor:', data.error);
-            this.updateVoiceStatus('❌ Error del servidor', data.error);
-        }
-    }
-
-    /**
-     * 🆕 PROCESAR TAREA DESDE SERVIDOR
-     */
-    handleTaskFromVoice(result) {
-        if (result.details) {
-            const details = result.details;
-            
-            // Llenar campos del formulario
-            if (details.title) {
-                const textarea = document.getElementById('taskTextarea');
-                if (textarea) textarea.value = details.title;
-            }
-            
-            if (details.priority) {
-                const prioritySelect = document.getElementById('prioritySelect');
-                if (prioritySelect) prioritySelect.value = details.priority;
-            }
-            
-            if (details.type && details.type !== 'tarea') {
-                const categorySelect = document.getElementById('categorySelect');
-                if (categorySelect) {
-                    const categoryMap = {
-                        'trabajo': 'work',
-                        'familia': 'family',
-                        'personal': 'personal',
-                        'financiera': 'financial'
-                    };
-                    categorySelect.value = categoryMap[details.type] || 'personal';
-                }
-            }
-            
-            this.updateVoiceStatus('🎯 Tarea procesada por servidor', 'Revisa los campos y guarda');
-        }
-    }
-
-    /**
-     * 🆕 PROCESAR GASTO DESDE SERVIDOR
-     */
-    handleExpenseFromVoice(result) {
-        if (result.details) {
-            const details = result.details;
-            this.updateVoiceStatus('💰 Gasto detectado', `Monto: ${details.amount}, Categoría: ${details.category}`);
-            
-            const confirmMsg = `¿Crear tarea para recordar este gasto?\nMonto: $${details.amount}\nCategoría: ${details.category}`;
-            if (confirm(confirmMsg)) {
-                const taskText = `Revisar gasto de $${details.amount} en ${details.category}`;
-                const textarea = document.getElementById('taskTextarea');
-                if (textarea) textarea.value = taskText;
-                
-                const categorySelect = document.getElementById('categorySelect');
-                if (categorySelect) categorySelect.value = 'financial';
-            }
-        }
-    }
-
-    /**
-     * 🆕 PROCESAR RECORDATORIO DESDE SERVIDOR
-     */
-    handleReminderFromVoice(result) {
-        if (result.details) {
-            const details = result.details;
-            
-            const newReminder = {
-                id: this.generateId(),
-                title: details.title || 'Recordatorio por voz',
-                amount: details.amount || 0,
-                dueDate: details.due_date || new Date().toISOString().split('T')[0],
-                status: this.calculateReminderStatus(details.due_date || new Date().toISOString().split('T')[0]),
-                createdAt: new Date().toISOString()
-            };
-            
-            this.reminders.unshift(newReminder);
-            this.saveData();
-            this.refreshRemindersList();
-            
-            this.showNotification('📅 Recordatorio creado', details.title, 'success');
-            this.updateVoiceStatus('📅 Recordatorio guardado', details.title);
-        }
-    }
-
+  
     /**
      * 🎨 RENDERIZAR INTERFAZ ORIGINAL DE 2 COLUMNAS
      */
@@ -330,9 +100,9 @@ class NotasManager {
                             ✅ Tareas y Notas
                         </div>
                         <div class="section-actions-notas">
-                            <button class="btn-notas primary" onclick="window.notasManager.openVoiceModal()">
-                                🎤 Nueva Tarea
-                            </button>
+                           <button class="btn-notas primary" onclick="window.notasManager.openTaskModal()">
+                            ➕ Nueva Tarea
+                        </button>
                             <div class="options-menu-notas">
                             <button class="options-trigger-notas">⋮</button>
                             <div class="dropdown-menu-notas">
@@ -418,8 +188,8 @@ class NotasManager {
                 </div>
             </div>
 
-            <!-- Modal de dictado de voz -->
-            ${this.renderVoiceModal()}
+            <!-- Modal de tarea -->
+            ${this.renderTaskModal()}
 
             <!-- Modal de recordatorio -->
             ${this.renderReminderModal()}
@@ -672,82 +442,7 @@ toggleReminderPaid(reminderId) {
     }
 }
 
-    /**
-     * 🎤 Renderizar modal de dictado de voz (minimalista)
-     */
-    renderVoiceModal() {
-        return `
-            <div class="modal-overlay" id="voiceModal" style="display: none;">
-                <div class="modal-content-voice">
-                    <div class="modal-header-voice">
-                        <h3>🎤 Nueva Tarea por Voz</h3>
-                        <button class="close-btn-voice" onclick="window.notasManager.closeVoiceModal()">&times;</button>
-                    </div>
-                    
-                    <div class="modal-body-voice">
-
-                        <!-- Texto reconocido -->
-                        <div class="voice-transcript">
-                            <label for="taskTextarea">📝 Texto reconocido:</label>
-                            <textarea id="taskTextarea" 
-                            placeholder="Dí algo como: 'Dicta tu nota de voz o bien escribe tu nota normalmente'"></textarea>
-                        </div>
-
-                        <!-- Controles de formulario -->
-                        <div class="form-controls-voice">
-                            <div class="form-row-voice">
-                                <div class="form-group-voice">
-                                    <label for="categorySelect">📁 Categoría:</label>
-                                    <select id="categorySelect">
-                                        <option value="personal">👤 Personal</option>
-                                        <option value="work">💼 Trabajo</option>
-                                        <option value="family">👨‍👩‍👧‍👦 Familia</option>
-                                        <option value="financial">💰 Financiera</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group-voice">
-                                    <label for="prioritySelect">🎯 Prioridad:</label>
-                                    <select id="prioritySelect">
-                                        <option value="low">🟢 Baja</option>
-                                        <option value="medium">🟡 Media</option>
-                                        <option value="high">🔴 Alta</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="form-row-voice">
-                                <div class="form-group-voice">
-                                    <label for="dueDateInput">📅 Fecha límite:</label>
-                                    <input type="date" id="dueDateInput" value="${new Date().toISOString().split('T')[0]}">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Botones de acción -->
-                            <div class="voice-actions">
-                                <button class="btn-voice primary" onclick="window.notasManager.startLocalRecognition()">🎙️ Dictado por Voz</button>
-                            </div>
-
-                        <!-- Estado del reconocimiento -->
-                        <div class="voice-status" id="voiceStatus">
-                            <div class="status-text">
-                                <span class="status-title">🎯 Listo para usar</span>
-                                <span class="status-detail">Selecciona una opción para comenzar</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="modal-footer-voice">
-                        <button class="btn-voice primary" onclick="window.notasManager.saveTask()">💾 Guardar Tarea</button>
-                        <button class="btn-voice secondary" onclick="window.notasManager.closeVoiceModal()">Cancelar</button>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    /**
+   /**
      * 📅 Renderizar modal de recordatorio
      */
     renderReminderModal() {
@@ -776,9 +471,9 @@ toggleReminderPaid(reminderId) {
                         </div>
                     </div>
 
-                    <div class="modal-footer-reminder">
-                        <button class="btn-voice primary" onclick="window.notasManager.saveReminder()">📅 Guardar Recordatorio</button>
-                        <button class="btn-voice secondary" onclick="window.notasManager.closeReminderModal()">Cancelar</button>
+                   <div class="modal-footer-reminder">
+                        <button class="btn-reminder primary" onclick="window.notasManager.saveReminder()">📅 Guardar Recordatorio</button>
+                        <button class="btn-reminder secondary" onclick="window.notasManager.closeReminderModal()">Cancelar</button>
                     </div>
                 </div>
             </div>
@@ -828,256 +523,8 @@ toggleReminderPaid(reminderId) {
         });
     }
 }
-    // =================================================================
-    // 🆕 MÉTODOS WebSocket Y VOZ (MANTENIDOS INTACTOS)
-    // =================================================================
 
     /**
-     * 🆕 ENVIAR COMANDO AL SERVIDOR
-     */
-    async sendVoiceCommand(text, type = 'text') {
-        if (!this.useWebSocket || !this.socket || !this.isConnected) {
-            console.log('🎭 Usando procesamiento local');
-            return this.processVoiceCommandsLocal(text);
-        }
-        
-        try {
-            const commandData = {
-                type: type,
-                text: text,
-                timestamp: new Date().toISOString(),
-                client_info: {
-                    user_agent: navigator.userAgent,
-                    language: 'es-CL'
-                }
-            };
-            
-            console.log('📤 Enviando comando al servidor:', commandData);
-            this.socket.emit('voice_command', commandData);
-            
-            this.updateVoiceStatus('🌐 Enviando al servidor...', 'Procesando comando con IA');
-            
-        } catch (error) {
-            console.error('❌ Error enviando comando:', error);
-            this.updateVoiceStatus('⚠️ Error de conexión', 'Usando procesamiento local');
-            return this.processVoiceCommandsLocal(text);
-        }
-    }
-
-    /**
-     * 🆕 PROCESAR COMANDOS LOCALMENTE (FALLBACK)
-     */
-    processVoiceCommandsLocal(text) {
-        console.log('🎭 Procesando localmente:', text);
-        this.processVoiceCommands(text);
-        this.updateVoiceStatus('🎭 Procesado localmente', 'Comandos aplicados sin servidor');
-    }
-
-    /**
-     * 🆕 PROBAR CONEXIÓN CON SERVIDOR
-     */
-    testServerConnection() {
-        if (this.socket && this.isConnected) {
-            console.log('🧪 Probando conexión con servidor...');
-            this.socket.emit('test_connection');
-            this.updateVoiceStatus('🧪 Probando servidor...', 'Verificando conexión');
-        } else {
-            this.updateVoiceStatus('⚠️ Sin conexión', 'Servidor no disponible');
-        }
-    }
-
-    /**
-     * 🎭 Simular entrada de voz (para pruebas)
-     */
-    simulateVoiceInput() {
-        const examples = [
-            "Crear tarea revisar facturas pendientes para mañana alta prioridad",
-            "Recordar llamar al banco el viernes",
-            "Tarea personal comprar regalo cumpleaños mamá",
-            "Agregar recordatorio pagar internet 25 mil pesos",
-            "Crear tarea trabajo preparar presentación para el lunes",
-            "Recordar cita médico jueves 3 de la tarde",
-            "Tarea familia organizar fin de semana",
-            "Agregar gastos supermercado 45 mil pesos ayer"
-        ];
-
-        const randomExample = examples[Math.floor(Math.random() * examples.length)];
-        const textarea = document.getElementById('taskTextarea');
-        
-        if (textarea) {
-            textarea.value = randomExample;
-            
-            // 🆕 Decidir entre servidor y local
-            if (this.isConnected) {
-                this.sendVoiceCommand(randomExample, 'simulation');
-            } else {
-                this.processVoiceCommands(randomExample);
-            }
-            
-            this.updateVoiceStatus('🎭 Ejemplo simulado', 'Texto generado automáticamente');
-        }
-    }
-
-    /**
-     * 🆕 INICIAR RECONOCIMIENTO CON SERVIDOR
-     */
-    startServerRecognition() {
-        if (!this.isConnected) {
-            this.updateVoiceStatus('⚠️ Sin conexión', 'Servidor no disponible');
-            return;
-        }
-              
-        // Usar Web Speech API pero enviar al servidor
-        if (this.recognition) {
-            this.isListening = true;
-            this.finalTranscript = '';
-            
-            this.recognition.onresult = (event) => {
-                let interimTranscript = '';
-                
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const transcript = event.results[i][0].transcript;
-                    
-                    if (event.results[i].isFinal) {
-                        this.finalTranscript += transcript;
-                    } else {
-                        interimTranscript += transcript;
-                    }
-                }
-                
-                // Actualizar textarea en tiempo real
-                const textarea = document.getElementById('taskTextarea');
-                if (textarea) {
-                    textarea.value = this.finalTranscript + interimTranscript;
-                }
-            };
-            
-            this.recognition.onend = () => {
-                this.isListening = false;
-                if (this.finalTranscript.trim()) {
-                    // Enviar al servidor para procesamiento con IA
-                    this.sendVoiceCommand(this.finalTranscript.trim(), 'voice');
-                } else {
-                    this.updateVoiceStatus('🔇 Sin reconocimiento', 'No se detectó voz');
-                }
-            };
-            
-            this.recognition.start();
-        } else {
-            this.updateVoiceStatus('❌ Micrófono no disponible', 'Web Speech API no soportada');
-        }
-    }
-
-    /**
-     * 🎙️ Iniciar reconocimiento local
-     */
-    startLocalRecognition() {
-        if (!this.recognition) {
-            this.updateVoiceStatus('❌ No disponible', 'Web Speech API no soportada en este navegador');
-            return;
-        }
-
-        if (this.isListening) {
-            this.recognition.stop();
-            return;
-        }
-
-        this.updateVoiceStatus('🎙️ Escuchando...', 'Habla ahora...');
-        this.isListening = true;
-        this.finalTranscript = '';
-
-        this.recognition.onresult = (event) => {
-            let interimTranscript = '';
-            
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                const transcript = event.results[i][0].transcript;
-                
-                if (event.results[i].isFinal) {
-                    this.finalTranscript += transcript;
-                } else {
-                    interimTranscript += transcript;
-                }
-            }
-            
-            const textarea = document.getElementById('taskTextarea');
-            if (textarea) {
-                textarea.value = this.finalTranscript + interimTranscript;
-            }
-        };
-
-        this.recognition.onend = () => {
-            this.isListening = false;
-            if (this.finalTranscript.trim()) {
-                this.processVoiceCommands(this.finalTranscript.trim());
-                this.updateVoiceStatus('✅ Procesado', 'Comando aplicado localmente');
-            } else {
-                this.updateVoiceStatus('🔇 Sin voz detectada', 'Intenta de nuevo');
-            }
-        };
-
-        try {
-            this.recognition.start();
-        } catch (error) {
-            console.error('❌ Error iniciando reconocimiento:', error);
-            this.updateVoiceStatus('❌ Error', 'No se pudo iniciar el micrófono');
-            this.isListening = false;
-        }
-    }
-
-    /**
-     * 🆕 ACTUALIZAR ESTADO DE VOZ EN UI
-     */
-    updateVoiceStatus(title, detail) {
-        const statusElement = document.getElementById('voiceStatus');
-        if (statusElement) {
-            statusElement.innerHTML = `
-                <div class="status-text">
-                    <span class="status-title">${title}</span>
-                    <span class="status-detail">${detail}</span>
-                </div>
-            `;
-        }
-    }
-
-    /**
-     * 🎤 Abrir modal de voz
-     */
-    openVoiceModal() {
-        const modal = document.getElementById('voiceModal');
-        if (modal) {
-            modal.style.display = 'flex';
-            
-            // Limpiar campos
-            const textarea = document.getElementById('taskTextarea');
-            if (textarea) textarea.value = '';
-            
-            // Resetear selects
-            const categorySelect = document.getElementById('categorySelect');
-            const prioritySelect = document.getElementById('prioritySelect');
-            if (categorySelect) categorySelect.value = 'personal';
-            if (prioritySelect) prioritySelect.value = 'medium';
-            
-            this.updateVoiceStatus('🎯 Listo para usar', 'Selecciona una opción para comenzar');
-        }
-    }
-
-    /**
-     * 🔒 Cerrar modal de voz
-     */
-    closeVoiceModal() {
-        const modal = document.getElementById('voiceModal');
-        if (modal) {
-            modal.style.display = 'none';
-        }
-        
-        // Detener reconocimiento si está activo
-        if (this.isListening && this.recognition) {
-            this.recognition.stop();
-            this.isListening = false;
-        }
-    }
-
-        /**
      * 📅 Abrir modal de recordatorio CON NAVEGACIÓN ENTER
      */
     openReminderModal() {
@@ -1244,7 +691,8 @@ saveReminderFromEnter() {
     this.tasks.unshift(newTask);
     this.saveData();
     this.refreshTasksList();
-    this.closeVoiceModal();    
+    this.closeTaskModal();    // ✅ Ahora cierra el modal correcto
+    this.showNotification('✅ Tarea creada', newTask.title, 'success');   
         
 }
 
@@ -1277,6 +725,105 @@ saveReminderFromEnter() {
         
         this.showNotification('📅 Recordatorio creado', newReminder.title, 'success');
     }
+
+        /**
+     * ➕ ABRIR MODAL COMPLETO DE TAREA (sin voz)
+     */
+    openTaskModal() {
+        const modal = document.getElementById('taskModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            
+            // Limpiar campos
+            const textarea = document.getElementById('taskTextarea');
+            const categorySelect = document.getElementById('categorySelect');
+            const prioritySelect = document.getElementById('prioritySelect');
+            const dueDateInput = document.getElementById('dueDateInput');
+            
+            if (textarea) textarea.value = '';
+            if (categorySelect) categorySelect.value = 'personal';
+            if (prioritySelect) prioritySelect.value = 'medium';
+            if (dueDateInput) dueDateInput.value = new Date().toISOString().split('T')[0];
+            
+            // Focus en el primer campo
+            setTimeout(() => {
+                if (textarea) {
+                    textarea.focus();
+                }
+            }, 100);
+        }
+    }
+
+        /**
+     * 🔒 CERRAR MODAL DE TAREA
+     */
+    closeTaskModal() {
+        const modal = document.getElementById('taskModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    /**
+ * 📝 RENDERIZAR MODAL DE TAREA (sin voz)
+ */
+renderTaskModal() {
+    return `
+        <div class="modal-overlay" id="taskModal" style="display: none;">
+            <div class="modal-content-task">
+                <div class="modal-header-task">
+                    <h3>📝 Nueva Tarea</h3>
+                    <button class="close-btn-task" onclick="window.notasManager.closeTaskModal()">&times;</button>
+                </div>
+                
+                <div class="modal-body-task">
+                    <!-- Texto de la tarea -->
+                    <div class="task-input-section">
+                        <label for="taskTextarea">📝 Descripción de la tarea:</label>
+                        <textarea id="taskTextarea" 
+                                placeholder="Escribe aquí la descripción de tu tarea..."></textarea>
+                    </div>
+
+                    <!-- Controles del formulario -->
+                    <div class="form-controls-task">
+                        <div class="form-row-task">
+                            <div class="form-group-task">
+                                <label for="categorySelect">📁 Categoría:</label>
+                                <select id="categorySelect">
+                                    <option value="personal">👤 Personal</option>
+                                    <option value="work">💼 Trabajo</option>
+                                    <option value="family">👨‍👩‍👧‍👦 Familia</option>
+                                    <option value="financial">💰 Financiera</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group-task">
+                                <label for="prioritySelect">🎯 Prioridad:</label>
+                                <select id="prioritySelect">
+                                    <option value="low">🟢 Baja</option>
+                                    <option value="medium">🟡 Media</option>
+                                    <option value="high">🔴 Alta</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row-task">
+                            <div class="form-group-task">
+                                <label for="dueDateInput">📅 Fecha límite:</label>
+                                <input type="date" id="dueDateInput" value="${new Date().toISOString().split('T')[0]}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer-task">
+                    <button class="btn-task primary" onclick="window.notasManager.saveTask()">💾 Guardar Tarea</button>
+                    <button class="btn-task secondary" onclick="window.notasManager.closeTaskModal()">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
 
     /**
      * ✅ Alternar completado de tarea
@@ -1483,106 +1030,6 @@ moveReminderToTop(reminderId) {
         }
     }
 
-    /**
-     * 📝 Parsear comando de tarea
-     */
-    parseTaskCommand(text) {
-        const textarea = document.getElementById('taskTextarea');
-        if (!textarea) return;
-        
-        // Extraer información básica
-        let title = text;
-        let priority = 'medium';
-        let category = 'personal';
-        
-        // Detectar prioridad
-        if (text.toLowerCase().includes('alta prioridad') || text.toLowerCase().includes('urgente')) {
-            priority = 'high';
-            title = title.replace(/alta prioridad|urgente/gi, '').trim();
-        } else if (text.toLowerCase().includes('baja prioridad')) {
-            priority = 'low';
-            title = title.replace(/baja prioridad/gi, '').trim();
-        }
-        
-        // Detectar categoría
-        if (text.toLowerCase().includes('trabajo')) {
-            category = 'work';
-        } else if (text.toLowerCase().includes('familia')) {
-            category = 'family';
-        } else if (text.toLowerCase().includes('financiera') || text.toLowerCase().includes('dinero')) {
-            category = 'financial';
-        }
-        
-        // Limpiar texto
-        title = title.replace(/crear|tarea|agregar/gi, '').trim();
-        
-        // Actualizar campos
-        textarea.value = title;
-        
-        const categorySelect = document.getElementById('categorySelect');
-        const prioritySelect = document.getElementById('prioritySelect');
-        
-        if (categorySelect) categorySelect.value = category;
-        if (prioritySelect) prioritySelect.value = priority;
-    }
-
-    /**
-     * 📅 Parsear comando de recordatorio
-     */
-    parseReminderCommand(text) {
-        // Extraer información del recordatorio
-        const amountMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:mil|miles|pesos?)?/i);
-        const amount = amountMatch ? parseFloat(amountMatch[1]) * (text.includes('mil') ? 1000 : 1) : 0;
-        
-        let title = text.replace(/recordar|recordatorio/gi, '').trim();
-        if (amountMatch) {
-            title = title.replace(amountMatch[0], '').trim();
-        }
-        
-        // Crear recordatorio
-        const newReminder = {
-            id: this.generateId(),
-            title: title || 'Recordatorio por voz',
-            amount: amount,
-            dueDate: new Date().toISOString().split('T')[0],
-            status: 'warning',
-            createdAt: new Date().toISOString()
-        };
-        
-        this.reminders.unshift(newReminder);
-        this.saveData();
-        this.refreshRemindersList();
-        
-        this.showNotification('📅 Recordatorio creado', title, 'success');
-    }
-
-    /**
-     * 💰 Parsear comando de gasto
-     */
-    parseExpenseCommand(text) {
-        const amountMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:mil|miles|pesos?)?/i);
-        const amount = amountMatch ? parseFloat(amountMatch[1]) * (text.includes('mil') ? 1000 : 1) : 0;
-        
-        let category = 'varios';
-        if (text.toLowerCase().includes('supermercado') || text.toLowerCase().includes('comida')) {
-            category = 'alimentación';
-        } else if (text.toLowerCase().includes('transporte') || text.toLowerCase().includes('taxi')) {
-            category = 'transporte';
-        }
-        
-        // Crear tarea para revisar el gasto
-        const taskText = `Revisar gasto de ${amount.toLocaleString()} en ${category}`;
-        const textarea = document.getElementById('taskTextarea');
-        if (textarea) {
-            textarea.value = taskText;
-        }
-        
-        const categorySelect = document.getElementById('categorySelect');
-        if (categorySelect) {
-            categorySelect.value = 'financial';
-        }
-    }
-
     // =================================================================
     // 🛠️ MÉTODOS DE SOPORTE Y CONFIGURACIÓN
     // =================================================================
@@ -1776,55 +1223,32 @@ moveReminderToTop(reminderId) {
         }
     }
 
-    /**
-     * 🎙️ Inicializar Web Speech API
-     */
-    initSpeechRecognition() {
-        if ('webkitSpeechRecognition' in window) {
-            this.recognition = new webkitSpeechRecognition();
-        } else if ('SpeechRecognition' in window) {
-            this.recognition = new SpeechRecognition();
-        } else {
-            console.warn('⚠️ Web Speech API no soportada en este navegador');
-            return;
-        }
-
-        this.recognition.continuous = false;
-        this.recognition.interimResults = true;
-        this.recognition.lang = 'es-CL';
-
-        this.recognition.onerror = (event) => {
-        console.error('❌ Error en reconocimiento de voz:', event.error);
-        this.isListening = false;
-        this.updateVoiceStatus('📝 Escribe tu tarea', 'El dictado no está disponible, usa el campo de texto');
-    };
-}
-
-    /**
+        /**
      * 🎛️ Configurar eventos globales
      */
     bindEvents() {
-        // Cerrar modal con ESC
+        // Cerrar modales con ESC
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                this.closeVoiceModal();
+                this.closeTaskModal();
                 this.closeReminderModal();
             }
         });
 
-     // Guardar con Enter en textarea
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && e.target.id === 'taskTextarea') {
-                e.preventDefault();
-                this.saveTask();
-            }
-        });
-    
         // Cerrar modales clickeando fuera
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('modal-overlay')) {
-                this.closeVoiceModal();
+                this.closeTaskModal();
                 this.closeReminderModal();
+            }
+        });
+
+        // 🆕 AGREGAR ESTA SECCIÓN:
+        // Guardar tarea con Enter en textarea
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.target.id === 'taskTextarea') {
+                e.preventDefault(); // Evitar salto de línea
+                this.saveTask(); // Guardar automáticamente
             }
         });
     }

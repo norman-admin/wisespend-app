@@ -299,17 +299,6 @@ async loadNotasScript() {
     });
 }
 
-/**
- * 🆕 OBTENER ESTADO DEL SISTEMA DE NOTAS
- */
-getNotasState() {
-    if (window.notasManager) {
-        return window.notasManager.getState();
-    }
-    return { error: 'NotasManager no inicializado' };
-}
-
-
     /**
      * 📄 Cargar módulo de Documentos
      */
@@ -400,11 +389,8 @@ window.variosDebug = {
             await window.notasManager.init();
         }
     },
-    testNotasVoice: (text) => {
-        if (window.notasDebug) {
-            window.notasDebug.simulateVoice(text);
-        }
-    }
+    
 };
 
 console.log('📋 Varios-manager.js v1.0.0 cargado - Sistema de pestañas listo');
+

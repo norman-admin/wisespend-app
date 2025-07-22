@@ -24,9 +24,7 @@
 - ✅ **Reportes Avanzados**: Gráficos, análisis y exportación
 
 ### 🎤 **Funcionalidades Avanzadas**
-- 🆕 **Sistema de Notas con Dictado por Voz**: Interfaz original de 2 columnas
-- 🆕 **Servidor WebSocket**: Python Flask + Socket.IO para procesamiento IA
-- 🆕 **Comandos de Voz Inteligentes**: Procesamiento local y servidor
+- ✅ **Sistema de Notas y Tareas**: Interfaz original de 2 columnas
 - 🆕 **Recordatorios Automáticos**: Sistema de pagos y tareas
 - 🆕 **Integración Completa**: WebSocket + Web Speech API
 
@@ -34,7 +32,6 @@
 - **Interfaz Original**: Layout de 2 columnas (Tareas | Recordatorios)
 - **Dictado por Voz**: Web Speech API con fallback local
 - **Comandos Inteligentes**: Procesamiento automático de texto a tareas
-- **WebSocket Integration**: Servidor Python para IA avanzada
 - **Storage Persistente**: Datos guardados localmente
 - **Filtros y Categorías**: Organización por tipo y prioridad
 
@@ -47,10 +44,6 @@
 - **Chart.js**: Gráficos y visualizaciones
 - **Socket.IO Client**: Comunicación en tiempo real
 
-### **Backend**
-- **Python 3.8+**: Servidor de procesamiento
-- **Flask**: Framework web ligero
-- **Socket.IO**: WebSocket para tiempo real
 - **PBKDF2**: Encriptación de contraseñas
 
 ### **Arquitectura**
@@ -65,27 +58,6 @@
 - Python 3.8 o superior
 - Navegador moderno (Chrome, Firefox, Edge)
 - Conexión a internet (para tasas de cambio)
-
-### **Instalación del Servidor de Voz**
-```bash
-# Navegar al directorio del servidor
-cd voice_server
-
-# Crear entorno virtual (recomendado)
-python -m venv voice_env
-
-# Activar entorno virtual
-# Windows:
-voice_env\Scripts\activate
-# macOS/Linux:
-source voice_env/bin/activate
-
-# Instalar dependencias
-pip install flask flask-socketio flask-cors python-socketio
-
-# Ejecutar servidor
-python app.py
-```
 
 ### **Ejecución de la Aplicación**
 ```bash
@@ -114,23 +86,9 @@ python -m http.server 5500
 - **Notas**: Sistema de tareas con dictado por voz
 - **Reportes**: Análisis y exportación de datos
 
-### **3. Sistema de Notas con Voz**
-1. Ir a sección **"Varios"** → **"Notas"**
-2. Click **"🎤 Nueva Tarea"**
-3. Usar **"🎙️ Dictado por Voz"** o escribir manualmente
-4. Comandos de voz soportados:
-   - *"Crear tarea revisar facturas para mañana alta prioridad"*
-   - *"Recordar llamar al banco el viernes"*
-   - *"Tarea personal comprar regalo"*
 
 ## 🔧 Configuración
 
-### **Variables de Entorno** (Opcional)
-```bash
-# Servidor de voz
-FLASK_ENV=development
-FLASK_DEBUG=true
-VOICE_SERVER_PORT=5000
 
 # Base de datos (futuro)
 DATABASE_URL=sqlite:///wisespend.db
@@ -156,10 +114,6 @@ wisespend-app/
 │   │   └── varios-manager.js  # Gestor de pestañas
 │   └── 📁 css/
 │       └── notas.css         # Estilos del sistema de notas
-├── 📁 voice_server/           # Servidor Python para WebSocket
-│   ├── app.py                # Servidor Flask principal
-│   ├── voice_processor.py    # Procesador de comandos de voz
-│   └── voice_env/            # Entorno virtual Python
 ├── 📁 assets/                 # Recursos estáticos
 ├── 📁 themes/                 # Temas de la aplicación
 └── 📄 README.md              # Este archivo
@@ -182,16 +136,6 @@ wisespend-app/
 - 🔄 **Exportación a PDF/Excel**
 
 ## 🐛 Resolución de Problemas
-
-### **Dictado por Voz no Funciona**
-- ✅ Verificar permisos de micrófono
-- ✅ Usar HTTPS (algunos navegadores lo requieren)
-- ✅ Fallback: escribir manualmente en el textarea
-
-### **Servidor WebSocket no Conecta**
-- ✅ Verificar que `app.py` esté ejecutándose
-- ✅ Puerto 5000 disponible
-- ✅ Fallback: procesamiento local automático
 
 ### **Datos no se Guardan**
 - ✅ Verificar storage local del navegador

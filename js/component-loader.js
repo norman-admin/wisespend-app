@@ -252,51 +252,35 @@ class ComponentLoader {
     }
 
     /**
-     * 🆕 CARGAR SECCIÓN DE GASTOS
+     * 🆕 CARGAR SECCIÓN DE GASTOS - DELEGADO A GASTOS.JS
      */
     loadExpensesSection(container) {
-        console.log('💳 Cargando sección de gastos...');
+        console.log('💳 Delegando sección de gastos a gastosManager...');
         
-        container.innerHTML = `
-            <section class="content-section active">
-                <div class="section-header">
-                    <h2>Agregar Gasto</h2>
-                </div>
-
-                <div class="add-expense-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Categoría</label>
-                            <div class="category-info">
-                                <span class="category-text">Seleccionar tipo de gasto</span>
-                                <div class="add-expense-btn-container">
-                                    <button class="btn btn-primary" data-tipo="fijos">
-                                        Gasto Fijo
-                                    </button>
-                                    <button class="btn btn-primary" data-tipo="variables">
-                                        Gasto Variable
-                                    </button>
-                                    <button class="btn btn-primary" data-tipo="extras">
-                                        Gasto Extra
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+        // 🎯 DELEGAR al método correcto de gastos.js
+        if (window.gastosManager && window.gastosManager.renderExpensesSection) {
+            window.gastosManager.renderExpensesSection(container);
+        } else {
+            // Fallback temporal mientras carga gastosManager
+            container.innerHTML = `
+                <section class="content-section active">
+                    <div class="section-header">
+                        <h2>💳 Cargando gastos...</h2>
                     </div>
-                </div>
-                
-                <div class="expense-categories-info">
-                    <div class="categories-note">
-                        <p>En esta parte van dos categorías:</p>
-                        <p>1) <strong>Gastos Fijos</strong></p>
-                        <p>2) <strong>Gastos Variables</strong></p>
+                    <div style="text-align: center; padding: 40px;">
+                        <p>Cargando sistema de gastos...</p>
                     </div>
-                </div>
-            </section>
-        `;
-
-        // Configurar eventos de los botones
-        this.setupExpenseButtons();
+                </section>
+            `;
+            
+            // Reintentar después de un momento
+            setTimeout(() => {
+                if (window.gastosManager && window.gastosManager.renderExpensesSection) {
+                    window.gastosManager.renderExpensesSection(container);
+                }
+            }, 500);
+        }
+        
         this.notifySectionReady('expenses');
     }
 

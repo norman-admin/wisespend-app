@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing Debug - TemporalSystem</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        
+        .test-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .test-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+        
+        .test-section {
+            margin-bottom: 24px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+            padding: 8px 16px;
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+        
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 4px 8px 4px 0;
+            transition: background-color 0.2s;
+        }
+        
+        .test-button:hover {
+            background: #2563eb;
+        }
+        
+        .test-button.success {
+            background: #10b981;
+        }
+        
+        .test-button.warning {
+            background: #f59e0b;
+        }
+        
+        .test-button.danger {
+            background: #ef4444;
+        }
+        
+        .results {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            margin-top: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .info-card {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 12px 0;
+        }
+        
+        .info-card h4 {
+            margin: 0 0 8px 0;
+            color: #92400e;
+        }
+        
+        .info-card p {
+            margin: 0;
+            color: #92400e;
+            font-size: 14px;
+        }
+        
+        .debug-panel {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        .error-highlight {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1 class="test-title">🐛 Debug: Sistema Temporal</h1>
+            <span id="system-status" class="status error">Diagnosticando...</span>
+        </div>
+        
+        <div class="info-card">
+            <h4>🚨 Problema Detectado</h4>
+            <p>Error de inicialización: TemporalManager no puede acceder a TemporalStorage. Vamos a diagnosticar paso a paso.</p>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">🔍 1. Diagnóstico Detallado</div>
+            <button class="test-button" onclick="checkGlobalObjects()">Verificar Objetos Globales</button>
+            <button class="test-button" onclick="testTemporalStorageIsolated()">Test TemporalStorage Aislado</button>
+            <button class="test-button" onclick="debugTemporalManagerInit()">Debug Inicialización Manager</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">🔧 2. Corrección Paso a Paso</div>
+            <button class="test-button warning" onclick="createTemporalStorageManually()">Crear TemporalStorage Manual</button>
+            <button class="test-button warning" onclick="initializeManagerManually()">Inicializar Manager Manual</button>
+            <button class="test-button success" onclick="testBasicFunctionality()">Test Funcionalidad Básica</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">✅ 3. Verificación de Corrección</div>
+            <button class="test-button success" onclick="testFullWorkflow()">Test Workflow Completo</button>
+            <button class="test-button" onclick="exportDebugInfo()">Exportar Info de Debug</button>
+            <button class="test-button danger" onclick="resetEverything()">🔄 Reset Completo</button>
+        </div>
+        
+        <div id="debug-panel" class="debug-panel">
+            🔍 Panel de Debug - Información técnica aparecerá aquí...
+        </div>
+        
+        <div id="results" class="results">📝 Consola de Debug - Los resultados aparecerán aquí...\n</div>
+    </div>
+
+    <!-- Cargar dependencias -->
+    <script src="js/temporal-storage.js"></script>
+    <script src="js/temporal-manager.js"></script>
+    
+    <script>
+        let debugInfo = {};
+        let temporalStorageInstance = null;
+        let temporalManagerInstance = null;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const formattedMessage = `[${timestamp}] ${message}`;
+            
+            const resultsEl = document.getElementById('results');
+            resultsEl.textContent += formattedMessage + '\n';
+            resultsEl.scrollTop = resultsEl.scrollHeight;
+            
+            console.log(formattedMessage);
+        }
+        
+        function debugLog(obj, title = 'Debug Info') {
+            const debugPanel = document.getElementById('debug-panel');
+            debugPanel.innerHTML += `\n--- ${title} ---\n${JSON.stringify(obj, null, 2)}\n`;
+            debugPanel.scrollTop = debugPanel.scrollHeight;
+        }
+        
+        function updateStatus(status, type = 'success') {
+            const statusEl = document.getElementById('system-status');
+            statusEl.textContent = status;
+            statusEl.className = `status ${type}`;
+        }
+        
+        // 1. DIAGNÓSTICO DETALLADO
+        function checkGlobalObjects() {
+            log('🔍 Verificando objetos globales...');
+            
+            debugInfo.globalObjects = {
+                TemporalStorage: typeof TemporalStorage,
+                TemporalManager: typeof TemporalManager,
+                window_TemporalStorage: typeof window.TemporalStorage,
+                window_TemporalManager: typeof window.TemporalManager,
+                localStorage_available: typeof localStorage !== 'undefined',
+                localStorage_works: false
+            };
+            
+            // Test localStorage
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                debugInfo.globalObjects.localStorage_works = true;
+                log('✅ localStorage funciona correctamente');
+            } catch (e) {
+                log('❌ localStorage no funciona: ' + e.message);
+            }
+            
+            // Log disponibilidad de clases
+            if (typeof TemporalStorage !== 'undefined') {
+                log('✅ TemporalStorage está disponible globalmente');
+                try {
+                    const testInstance = new TemporalStorage();
+                    log('✅ TemporalStorage puede instanciarse');
+                    testInstance.destroy();
+                } catch (e) {
+                    log('❌ Error instanciando TemporalStorage: ' + e.message);
+                    debugInfo.temporalStorageError = e.message;
+                }
+            } else {
+                log('❌ TemporalStorage NO está disponible');
+            }
+            
+            if (typeof TemporalManager !== 'undefined') {
+                log('✅ TemporalManager está disponible globalmente');
+            } else {
+                log('❌ TemporalManager NO está disponible');
+            }
+            
+            debugLog(debugInfo.globalObjects, 'Objetos Globales');
+            
+            if (debugInfo.globalObjects.TemporalStorage === 'function' && debugInfo.globalObjects.TemporalManager === 'function') {
+                updateStatus('Clases Disponibles', 'warning');
+            } else {
+                updateStatus('Clases Faltantes', 'error');
+            }
+        }
+        
+        function testTemporalStorageIsolated() {
+            log('🧪 Testing TemporalStorage aislado...');
+            
+            try {
+                // Crear instancia directa
+                temporalStorageInstance = new TemporalStorage();
+                log('✅ TemporalStorage instanciado exitosamente');
+                
+                // Test métodos básicos
+                const currentPeriod = temporalStorageInstance.getCurrentPeriod();
+                log(`📅 Período actual detectado: ${currentPeriod}`);
+                
+                // Test migración
+                temporalStorageInstance.checkMigrationNeeded();
+                log('✅ Verificación de migración exitosa');
+                
+                // Test obtener índice
+                const index = temporalStorageInstance.getPeriodsIndex();
+                log(`📊 Índice de períodos: ${index.periods.length} períodos`);
+                
+                // Test datos temporales
+                const temporalInfo = temporalStorageInstance.getTemporalInfo();
+                log(`🕐 Info temporal: Período ${temporalInfo.currentPeriod}, ${temporalInfo.totalPeriods} períodos`);
+                
+                debugLog({
+                    currentPeriod,
+                    periodsCount: index.periods.length,
+                    periods: index.periods,
+                    temporalInfo
+                }, 'TemporalStorage Test');
+                
+                updateStatus('TemporalStorage OK', 'success');
+                
+            } catch (error) {
+                log(`❌ Error en TemporalStorage aislado: ${error.message}`);
+                log(`📋 Stack: ${error.stack}`);
+                debugInfo.temporalStorageError = {
+                    message: error.message,
+                    stack: error.stack
+                };
+                debugLog(debugInfo.temporalStorageError, 'Error TemporalStorage');
+                updateStatus('TemporalStorage Error', 'error');
+            }
+        }
+        
+        function debugTemporalManagerInit() {
+            log('🧪 Debug inicialización TemporalManager...');
+            
+            try {
+                log('🎯 Iniciando TemporalManager...');
+                
+                // Verificar que TemporalStorage esté disponible
+                if (!window.TemporalStorage && !TemporalStorage) {
+                    throw new Error('TemporalStorage no está disponible para TemporalManager');
+                }
+                
+                // Crear instancia y interceptar el proceso
+                temporalManagerInstance = new TemporalManager();
+                
+                log('✅ TemporalManager creado, verificando inicialización...');
+                
+                // Esperar inicialización con timeout
+                let attempts = 0;
+                const maxAttempts = 50;
+                
+                const checkInit = () => {
+                    attempts++;
+                    
+                    log(`📋 Intento ${attempts}/${maxAttempts}: isInitialized = ${temporalManagerInstance.isInitialized}`);
+                    
+                    if (temporalManagerInstance.isInitialized) {
+                        log('✅ TemporalManager inicializado exitosamente');
+                        
+                        // Debug estado interno
+                        const systemState = temporalManagerInstance.getSystemState();
+                        debugLog(systemState, 'Estado del Sistema');
+                        
+                        updateStatus('Manager Inicializado', 'success');
+                        return;
+                    }
+                    
+                    if (attempts < maxAttempts) {
+                        setTimeout(checkInit, 200);
+                    } else {
+                        log('❌ Timeout: TemporalManager no se inicializó');
+                        
+                        // Debug estado interno fallido
+                        debugLog({
+                            isInitialized: temporalManagerInstance.isInitialized,
+                            temporalStorage: temporalManagerInstance.temporalStorage ? 'Existe' : 'NULL',
+                            currentActivePeriod: temporalManagerInstance.currentActivePeriod,
+                            navigationCallbacks: temporalManagerInstance.navigationCallbacks.size
+                        }, 'Estado Manager Fallido');
+                        
+                        updateStatus('Manager Timeout', 'error');
+                    }
+                };
+                
+                checkInit();
+                
+            } catch (error) {
+                log(`❌ Error en debug TemporalManager: ${error.message}`);
+                log(`📋 Stack: ${error.stack}`);
+                debugInfo.temporalManagerError = {
+                    message: error.message,
+                    stack: error.stack
+                };
+                debugLog(debugInfo.temporalManagerError, 'Error TemporalManager');
+                updateStatus('Manager Error', 'error');
+            }
+        }
+        
+        // 2. CORRECCIÓN PASO A PASO
+        async function createTemporalStorageManually() {
+            log('🔧 Creando TemporalStorage manualmente...');
+            
+            try {
+                // Asegurar que window tenga las clases
+                if (!window.TemporalStorage) {
+                    window.TemporalStorage = TemporalStorage;
+                    log('📋 TemporalStorage asignado a window');
+                }
+                
+                // Crear instancia manual
+                temporalStorageInstance = new window.TemporalStorage();
+                log('✅ TemporalStorage creado manualmente');
+                
+                // Verificar funcionamiento
+                const currentPeriod = temporalStorageInstance.getCurrentPeriod();
+                const index = temporalStorageInstance.getPeriodsIndex();
+                
+                log(`📅 Funcionando: Período ${currentPeriod}, ${index.periods.length} períodos`);
+                
+                debugLog({
+                    instanceCreated: true,
+                    currentPeriod,
+                    periodsCount: index.periods.length
+                }, 'TemporalStorage Manual');
+                
+                updateStatus('Storage Manual OK', 'success');
+                
+            } catch (error) {
+                log(`❌ Error creando TemporalStorage manual: ${error.message}`);
+                updateStatus('Storage Manual Error', 'error');
+            }
+        }
+        
+        async function initializeManagerManually() {
+            log('🔧 Inicializando Manager manualmente...');
+            
+            try {
+                // Verificar que tenemos TemporalStorage
+                if (!temporalStorageInstance) {
+                    throw new Error('Necesitas crear TemporalStorage primero');
+                }
+                
+                // Asegurar que window tenga las clases
+                if (!window.TemporalManager) {
+                    window.TemporalManager = TemporalManager;
+                    log('📋 TemporalManager asignado a window');
+                }
+                
+                // Crear Manager manual
+                temporalManagerInstance = new window.TemporalManager();
+                log('✅ TemporalManager creado manualmente');
+                
+                // Esperar inicialización manual
+                let attempts = 0;
+                while (!temporalManagerInstance.isInitialized && attempts < 30) {
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    attempts++;
+                    log(`📋 Esperando inicialización... ${attempts}/30`);
+                }
+                
+                if (temporalManagerInstance.isInitialized) {
+                    log('✅ TemporalManager inicializado manualmente');
+                    
+                    const systemState = temporalManagerInstance.getSystemState();
+                    debugLog(systemState, 'Manager Manual OK');
+                    
+                    updateStatus('Manager Manual OK', 'success');
+                } else {
+                    throw new Error('Manager no se inicializó después de 30 intentos');
+                }
+                
+            } catch (error) {
+                log(`❌ Error en Manager manual: ${error.message}`);
+                updateStatus('Manager Manual Error', 'error');
+            }
+        }
+        
+        async function testBasicFunctionality() {
+            log('🧪 Testing funcionalidad básica...');
+            
+            if (!temporalManagerInstance || !temporalManagerInstance.isInitialized) {
+                log('❌ TemporalManager no está listo');
+                return;
+            }
+            
+            try {
+                // Test 1: Listar períodos
+                const periodsInfo = temporalManagerInstance.getPeriodsInfo();
+                log(`✅ Test 1: ${periodsInfo.length} períodos listados`);
+                
+                // Test 2: Período actual
+                const currentPeriod = temporalManagerInstance.currentActivePeriod;
+                const displayName = temporalManagerInstance.formatPeriodDisplay(currentPeriod);
+                log(`✅ Test 2: Período actual ${currentPeriod} (${displayName})`);
+                
+                // Test 3: Crear período
+                const futurePeriod = '2025_08';
+                const createSuccess = await temporalManagerInstance.createNewPeriod(futurePeriod);
+                log(`✅ Test 3: Crear período ${futurePeriod}: ${createSuccess ? 'OK' : 'FAIL'}`);
+                
+                // Test 4: Navegación
+                if (createSuccess) {
+                    const switchSuccess = await temporalManagerInstance.switchToPeriod(futurePeriod);
+                    log(`✅ Test 4: Cambiar a ${futurePeriod}: ${switchSuccess ? 'OK' : 'FAIL'}`);
+                    
+                    // Volver al original
+                    await temporalManagerInstance.switchToPeriod(currentPeriod);
+                    log(`✅ Test 4b: Volver a ${currentPeriod}: OK`);
+                }
+                
+                debugLog({
+                    periodsCount: periodsInfo.length,
+                    currentPeriod,
+                    createTest: createSuccess,
+                    allTestsPassed: true
+                }, 'Tests Básicos');
+                
+                updateStatus('Tests Básicos OK', 'success');
+                
+            } catch (error) {
+                log(`❌ Error en tests básicos: ${error.message}`);
+                updateStatus('Tests Básicos Error', 'error');
+            }
+        }
+        
+        // 3. VERIFICACIÓN DE CORRECCIÓN
+        async function testFullWorkflow() {
+            log('🧪 Testing workflow completo...');
+            
+            if (!temporalManagerInstance || !temporalManagerInstance.isInitialized) {
+                log('❌ Sistema no está listo');
+                return;
+            }
+            
+            try {
+                const originalPeriod = temporalManagerInstance.currentActivePeriod;
+                log(`🏁 Iniciando workflow desde ${originalPeriod}`);
+                
+                // Paso 1: Crear período futuro
+                const newPeriod = '2025_09';
+                log(`📋 Paso 1: Creando ${newPeriod}`);
+                const createResult = await temporalManagerInstance.createNewPeriod(newPeriod);
+                
+                if (!createResult) {
+                    throw new Error('No se pudo crear período');
+                }
+                
+                // Paso 2: Verificar estado del nuevo período
+                const newPeriodState = temporalManagerInstance.temporalStorage.getPeriodState(newPeriod);
+                log(`📋 Paso 2: Estado de ${newPeriod}: ${newPeriodState}`);
+                
+                // Paso 3: Activar período
+                log(`📋 Paso 3: Activando ${newPeriod}`);
+                const activateResult = await temporalManagerInstance.activatePeriod(newPeriod);
+                
+                if (activateResult) {
+                    log(`✅ Período ${newPeriod} activado exitosamente`);
+                    
+                    // Paso 4: Verificar cambio
+                    const currentPeriod = temporalManagerInstance.currentActivePeriod;
+                    log(`📋 Paso 4: Período actual ahora es ${currentPeriod}`);
+                    
+                    // Paso 5: Volver al original
+                    log(`📋 Paso 5: Volviendo a ${originalPeriod}`);
+                    await temporalManagerInstance.switchToPeriod(originalPeriod);
+                    
+                    log('✅ Workflow completo exitoso');
+                    updateStatus('Workflow Completo OK', 'success');
+                } else {
+                    throw new Error('No se pudo activar período');
+                }
+                
+            } catch (error) {
+                log(`❌ Error en workflow completo: ${error.message}`);
+                updateStatus('Workflow Error', 'error');
+            }
+        }
+        
+        function exportDebugInfo() {
+            log('📤 Exportando información de debug...');
+            
+            const fullDebugInfo = {
+                timestamp: new Date().toISOString(),
+                globalObjects: debugInfo.globalObjects,
+                temporalStorageError: debugInfo.temporalStorageError,
+                temporalManagerError: debugInfo.temporalManagerError,
+                localStorage: {},
+                systemState: null
+            };
+            
+            // Exportar localStorage relevante
+            for (let key in localStorage) {
+                if (key.startsWith('presupuesto_') || key.startsWith('wisespend_')) {
+                    try {
+                        fullDebugInfo.localStorage[key] = JSON.parse(localStorage.getItem(key));
+                    } catch (e) {
+                        fullDebugInfo.localStorage[key] = localStorage.getItem(key);
+                    }
+                }
+            }
+            
+            // Estado del sistema si está disponible
+            if (temporalManagerInstance && temporalManagerInstance.isInitialized) {
+                fullDebugInfo.systemState = temporalManagerInstance.getSystemState();
+            }
+            
+            // Crear y descargar archivo
+            const debugBlob = new Blob([JSON.stringify(fullDebugInfo, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(debugBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `wisespend-debug-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            log('✅ Archivo de debug descargado');
+        }
+        
+        function resetEverything() {
+            if (!confirm('⚠️ ¿Estás seguro de hacer un reset completo? Esto limpiará todos los datos temporales.')) {
+                return;
+            }
+            
+            log('🔄 Iniciando reset completo...');
+            
+            // Destruir instancias
+            if (temporalManagerInstance) {
+                temporalManagerInstance.destroy();
+                temporalManagerInstance = null;
+            }
+            
+            if (temporalStorageInstance) {
+                temporalStorageInstance.destroy();
+                temporalStorageInstance = null;
+            }
+            
+            // Limpiar datos temporales
+            const keysToRemove = [];
+            for (let key in localStorage) {
+                if (key.startsWith('wisespend_')) {
+                    keysToRemove.push(key);
+                }
+            }
+            
+            keysToRemove.forEach(key => {
+                localStorage.removeItem(key);
+                log(`🗑️ Eliminado: ${key}`);
+            });
+            
+            // Reset debug info
+            debugInfo = {};
+            
+            // Limpiar paneles
+            document.getElementById('debug-panel').innerHTML = '🔍 Panel de Debug - Reset completado...';
+            document.getElementById('results').textContent = '📝 Consola de Debug - Reset completado...\n';
+            
+            updateStatus('Reset Completo', 'warning');
+            log('✅ Reset completo finalizado');
+        }
+        
+        // Inicialización automática
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                log('🚀 Debug del Sistema Temporal iniciado');
+                log('🔍 Ejecuta "Verificar Objetos Globales" primero');
+                log('');
+                
+                checkGlobalObjects();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

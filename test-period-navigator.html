@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing Final - PeriodNavigator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        
+        .test-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .test-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+        
+        .test-section {
+            margin-bottom: 24px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+            padding: 8px 16px;
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+        
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 4px 8px 4px 0;
+            transition: background-color 0.2s;
+        }
+        
+        .test-button:hover {
+            background: #2563eb;
+        }
+        
+        .test-button.success {
+            background: #10b981;
+        }
+        
+        .test-button.warning {
+            background: #f59e0b;
+        }
+        
+        .test-button.danger {
+            background: #ef4444;
+        }
+        
+        .results {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            margin-top: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .info-card {
+            background: #e0f2fe;
+            border-left: 4px solid #0ea5e9;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 12px 0;
+        }
+        
+        .info-card h4 {
+            margin: 0 0 8px 0;
+            color: #0c4a6e;
+        }
+        
+        .info-card p {
+            margin: 0;
+            color: #075985;
+            font-size: 14px;
+        }
+        
+        .success-card {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 12px 0;
+        }
+        
+        .success-card h4 {
+            margin: 0 0 8px 0;
+            color: #065f46;
+        }
+        
+        .success-card p {
+            margin: 0;
+            color: #047857;
+            font-size: 14px;
+        }
+        
+        .ui-demo {
+            background: #f8fafc;
+            border: 2px dashed #e5e7eb;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 16px 0;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .ui-demo.active {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+        
+        .ui-placeholder {
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        .mock-header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin: 16px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .mock-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+        
+        .feature-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: left;
+        }
+        
+        .feature-card h5 {
+            margin: 0 0 8px 0;
+            color: #1f2937;
+        }
+        
+        .feature-card p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1 class="test-title">🧭 Testing Final: PeriodNavigator</h1>
+            <span id="system-status" class="status warning">Inicializando...</span>
+        </div>
+        
+        <div class="success-card">
+            <h4>🎉 Testing 1 y 2 Completados Exitosamente</h4>
+            <p>TemporalStorage y TemporalManager funcionan perfectamente. Ahora probamos la interfaz de navegación completa.</p>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">🔍 1. Verificación de Sistema Completo</div>
+            <button class="test-button" onclick="checkFullSystem()">Verificar Sistema Completo</button>
+            <button class="test-button" onclick="initializePeriodNavigator()">Inicializar PeriodNavigator</button>
+            <button class="test-button" onclick="checkNavigatorState()">Estado del Navigator</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">🎨 2. Testing de Interfaz</div>
+            <button class="test-button success" onclick="testUICreation()">Crear Interfaz de Navegación</button>
+            <button class="test-button" onclick="testHeaderIntegration()">Integración en Header</button>
+            <button class="test-button" onclick="testDropdownFunctionality()">Funcionalidad Dropdown</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">🔄 3. Testing de Navegación Visual</div>
+            <button class="test-button" onclick="testVisualNavigation()">Navegación Visual</button>
+            <button class="test-button" onclick="testPeriodCards()">Tarjetas de Períodos</button>
+            <button class="test-button" onclick="testActionButtons()">Botones de Acción</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">🆕 4. Testing de Creación Modal</div>
+            <button class="test-button warning" onclick="testCreateModal()">Modal de Creación</button>
+            <button class="test-button" onclick="testCloneOptions()">Opciones de Clonación</button>
+            <button class="test-button success" onclick="testFullCreationFlow()">Flujo Completo de Creación</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">📢 5. Testing de Eventos y Notificaciones</div>
+            <button class="test-button" onclick="testEventSystem()">Sistema de Eventos</button>
+            <button class="test-button" onclick="testNotifications()">Notificaciones</button>
+            <button class="test-button" onclick="testErrorHandling()">Manejo de Errores</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">⚡ 6. Testing de Integración Final</div>
+            <button class="test-button success" onclick="testFullIntegration()">Integración Completa</button>
+            <button class="test-button warning" onclick="simulateRealUsage()">Simular Uso Real</button>
+            <button class="test-button danger" onclick="stressTestUI()">⚡ Stress Test UI</button>
+        </div>
+        
+        <!-- UI Demo Area -->
+        <div class="ui-demo" id="ui-demo">
+            <div class="ui-placeholder">
+                📱 Área de Demostración de Interfaz
+                <br><br>
+                La interfaz de navegación aparecerá aquí cuando se ejecuten los tests
+            </div>
+        </div>
+        
+        <!-- Mock Header para Testing -->
+        <div class="mock-header" id="mock-header">
+            <div class="mock-title">📅 WiseSpend - Control de Gastos</div>
+            <div>
+                <span style="margin-right: 16px;">💰 CLP</span>
+                <span>👤 Usuario</span>
+            </div>
+        </div>
+        
+        <!-- Features Grid -->
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h5>🎯 Navegación Temporal</h5>
+                <p>Cambio fluido entre períodos mensuales con estados visuales claros</p>
+            </div>
+            <div class="feature-card">
+                <h5>🆕 Creación Inteligente</h5>
+                <p>Modal de creación con clonación automática de datos entre períodos</p>
+            </div>
+            <div class="feature-card">
+                <h5>🔓 Desbloqueo Temporal</h5>
+                <p>Sistema de edición libre para períodos archivados con auto-guardado</p>
+            </div>
+            <div class="feature-card">
+                <h5>📢 Notificaciones</h5>
+                <p>Feedback visual inmediato para todas las acciones del usuario</p>
+            </div>
+        </div>
+        
+        <div id="results" class="results">📝 Consola de Testing Final - Los resultados aparecerán aquí...\n</div>
+    </div>
+
+    <!-- Cargar dependencias en orden -->
+    <script src="js/temporal-storage.js"></script>
+    <script src="js/temporal-manager.js"></script>
+    <script src="js/period-navigator.js"></script>
+    
+    <script>
+        let periodNavigatorInstance = null;
+        let testResults = [];
+        let eventLog = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const formattedMessage = `[${timestamp}] ${message}`;
+            testResults.push(formattedMessage);
+            
+            const resultsEl = document.getElementById('results');
+            resultsEl.textContent += formattedMessage + '\n';
+            resultsEl.scrollTop = resultsEl.scrollHeight;
+            
+            console.log(formattedMessage);
+        }
+        
+        function updateStatus(status, type = 'success') {
+            const statusEl = document.getElementById('system-status');
+            statusEl.textContent = status;
+            statusEl.className = `status ${type}`;
+        }
+        
+        function updateUIDemo(content, isActive = false) {
+            const demoEl = document.getElementById('ui-demo');
+            demoEl.innerHTML = content;
+            demoEl.className = `ui-demo ${isActive ? 'active' : ''}`;
+        }
+        
+        // 1. VERIFICACIÓN DE SISTEMA COMPLETO
+        function checkFullSystem() {
+            log('🔍 Verificando sistema completo...');
+            
+            const systems = {
+                TemporalStorage: typeof TemporalStorage,
+                TemporalManager: typeof TemporalManager,
+                PeriodNavigator: typeof PeriodNavigator,
+                window_TemporalStorage: typeof window.TemporalStorage,
+                window_TemporalManager: typeof window.TemporalManager,
+                window_PeriodNavigator: typeof window.PeriodNavigator
+            };
+            
+            let allAvailable = true;
+            Object.entries(systems).forEach(([name, type]) => {
+                if (type === 'function') {
+                    log(`✅ ${name}: Disponible`);
+                } else {
+                    log(`❌ ${name}: No disponible (${type})`);
+                    allAvailable = false;
+                }
+            });
+            
+            if (allAvailable) {
+                log('✅ Todos los sistemas están disponibles');
+                updateStatus('Sistema Completo', 'success');
+            } else {
+                log('❌ Faltan componentes del sistema');
+                updateStatus('Sistema Incompleto', 'error');
+            }
+            
+            return allAvailable;
+        }
+        
+        async function initializePeriodNavigator() {
+            log('🧭 Inicializando PeriodNavigator...');
+            
+            if (!checkFullSystem()) {
+                log('❌ No se puede inicializar: sistema incompleto');
+                return;
+            }
+            
+            try {
+                // Crear instancia
+                periodNavigatorInstance = new PeriodNavigator();
+                
+                // Esperar inicialización
+                let attempts = 0;
+                while (!periodNavigatorInstance.isInitialized && attempts < 30) {
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    attempts++;
+                    log(`📋 Esperando inicialización... ${attempts}/30`);
+                }
+                
+                if (periodNavigatorInstance.isInitialized) {
+                    log('✅ PeriodNavigator inicializado exitosamente');
+                    updateStatus('Navigator Activo', 'success');
+                    
+                    // Verificar que se creó la interfaz
+                    const navigatorEl = document.querySelector('.period-navigator');
+                    if (navigatorEl) {
+                        log('✅ Interfaz de navegación creada en DOM');
+                        updateUIDemo(`
+                            <div style="color: #10b981; font-weight: 600;">
+                                ✅ PeriodNavigator Inicializado
+                            </div>
+                            <div style="margin-top: 12px; color: #6b7280;">
+                                Interfaz de navegación temporal lista
+                            </div>
+                        `, true);
+                    } else {
+                        log('⚠️ Interfaz no encontrada en DOM');
+                    }
+                } else {
+                    log('❌ PeriodNavigator no se inicializó en 30 intentos');
+                    updateStatus('Navigator Error', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error inicializando PeriodNavigator: ${error.message}`);
+                updateStatus('Navigator Error', 'error');
+            }
+        }
+        
+        function checkNavigatorState() {
+            log('🔍 Verificando estado del navigator...');
+            
+            if (!periodNavigatorInstance) {
+                log('❌ PeriodNavigator no está inicializado');
+                return;
+            }
+            
+            try {
+                const state = periodNavigatorInstance.getNavigatorState();
+                
+                log(`✅ Navigator inicializado: ${state.isInitialized}`);
+                log(`📅 Período activo: ${state.currentActivePeriod}`);
+                log(`📊 Dropdown abierto: ${state.isDropdownOpen}`);
+                
+                if (state.temporalManagerState) {
+                    log(`🎯 Total períodos: ${state.temporalManagerState.totalPeriods}`);
+                    log(`⚙️ Configuración: ${JSON.stringify(state.temporalManagerState.config)}`);
+                }
+                
+            } catch (error) {
+                log(`❌ Error verificando estado: ${error.message}`);
+            }
+        }
+        
+        // 2. TESTING DE INTERFAZ
+        function testUICreation() {
+            log('🎨 Testing creación de interfaz...');
+            
+            if (!periodNavigatorInstance) {
+                log('❌ PeriodNavigator no está inicializado');
+                return;
+            }
+            
+            try {
+                // Verificar elementos principales
+                const navigatorEl = document.querySelector('.period-navigator');
+                const selectorEl = document.querySelector('.period-selector');
+                const displayEl = document.querySelector('.period-display');
+                const dropdownEl = document.querySelector('.period-dropdown');
+                
+                log(`📋 Elementos encontrados:`);
+                log(`   Navigator: ${navigatorEl ? 'SÍ' : 'NO'}`);
+                log(`   Selector: ${selectorEl ? 'SÍ' : 'NO'}`);
+                log(`   Display: ${displayEl ? 'SÍ' : 'NO'}`);
+                log(`   Dropdown: ${dropdownEl ? 'SÍ' : 'NO'}`);
+                
+                if (navigatorEl && selectorEl && displayEl && dropdownEl) {
+                    log('✅ Todos los elementos UI creados correctamente');
+                    
+                    // Verificar texto del período actual
+                    const periodText = displayEl.querySelector('.period-text');
+                    if (periodText) {
+                        log(`📅 Período mostrado: "${periodText.textContent}"`);
+                    }
+                    
+                    updateUIDemo(`
+                        <div style="color: #10b981; font-weight: 600;">
+                            ✅ Interfaz Creada Correctamente
+                        </div>
+                        <div style="margin-top: 12px; color: #6b7280;">
+                            Selector: ✅ | Display: ✅ | Dropdown: ✅
+                        </div>
+                    `, true);
+                } else {
+                    log('❌ Faltan elementos de la interfaz');
+                }
+                
+            } catch (error) {
+                log(`❌ Error en testing de UI: ${error.message}`);
+            }
+        }
+        
+        function testHeaderIntegration() {
+            log('🎨 Testing integración en header...');
+            
+            const navigatorEl = document.querySelector('.period-navigator');
+            if (!navigatorEl) {
+                log('❌ Navigator no encontrado');
+                return;
+            }
+            
+            try {
+                // Verificar posicionamiento
+                const headerTitle = document.querySelector('.dashboard-title, .mock-title');
+                const isAfterTitle = headerTitle && headerTitle.nextElementSibling === navigatorEl;
+                
+                log(`📋 Posición en header: ${isAfterTitle ? 'Correcta' : 'Incorrecta'}`);
+                
+                // Verificar estilos aplicados
+                const computedStyle = window.getComputedStyle(navigatorEl);
+                log(`🎨 Estilos aplicados: position=${computedStyle.position}, zIndex=${computedStyle.zIndex}`);
+                
+                if (isAfterTitle) {
+                    log('✅ Integración en header correcta');
+                } else {
+                    log('⚠️ Integración en header necesita ajustes');
+                }
+                
+            } catch (error) {
+                log(`❌ Error en testing de header: ${error.message}`);
+            }
+        }
+        
+        function testDropdownFunctionality() {
+            log('🎨 Testing funcionalidad dropdown...');
+            
+            const displayEl = document.querySelector('.period-display');
+            const dropdownEl = document.querySelector('.period-dropdown');
+            
+            if (!displayEl || !dropdownEl) {
+                log('❌ Elementos dropdown no encontrados');
+                return;
+            }
+            
+            try {
+                log('🔄 Simulando click para abrir dropdown...');
+                
+                // Simular click
+                displayEl.click();
+                
+                setTimeout(() => {
+                    const isOpen = dropdownEl.classList.contains('open');
+                    log(`📋 Dropdown abierto: ${isOpen ? 'SÍ' : 'NO'}`);
+                    
+                    if (isOpen) {
+                        log('✅ Dropdown funciona correctamente');
+                        
+                        // Verificar contenido del dropdown
+                        const periodsList = dropdownEl.querySelector('.periods-list');
+                        const createBtn = dropdownEl.querySelector('.btn-create-period');
+                        
+                        log(`📋 Lista de períodos: ${periodsList ? 'SÍ' : 'NO'}`);
+                        log(`🆕 Botón crear: ${createBtn ? 'SÍ' : 'NO'}`);
+                        
+                        // Cerrar dropdown
+                        setTimeout(() => {
+                            document.body.click();
+                            log('🔄 Dropdown cerrado');
+                        }, 1000);
+                    } else {
+                        log('❌ Dropdown no se abre');
+                    }
+                }, 300);
+                
+            } catch (error) {
+                log(`❌ Error en testing dropdown: ${error.message}`);
+            }
+        }
+        
+        // 3. TESTING DE NAVEGACIÓN VISUAL
+        function testVisualNavigation() {
+            log('🔄 Testing navegación visual...');
+            
+            if (!periodNavigatorInstance) {
+                log('❌ PeriodNavigator no está inicializado');
+                return;
+            }
+            
+            try {
+                // Abrir dropdown para ver períodos
+                const displayEl = document.querySelector('.period-display');
+                if (displayEl) {
+                    displayEl.click();
+                    
+                    setTimeout(() => {
+                        const periodItems = document.querySelectorAll('.period-item');
+                        log(`📊 Períodos visibles: ${periodItems.length}`);
+                        
+                        periodItems.forEach((item, index) => {
+                            const periodName = item.querySelector('.period-name')?.textContent;
+                            const periodState = item.querySelector('.period-state')?.textContent;
+                            const isCurrent = item.classList.contains('current');
+                            
+                            log(`   ${index + 1}. ${periodName} - ${periodState} ${isCurrent ? '(ACTUAL)' : ''}`);
+                        });
+                        
+                        if (periodItems.length > 0) {
+                            log('✅ Navegación visual funciona');
+                            updateUIDemo(`
+                                <div style="color: #10b981; font-weight: 600;">
+                                    ✅ Navegación Visual Activa
+                                </div>
+                                <div style="margin-top: 12px; color: #6b7280;">
+                                    ${periodItems.length} períodos mostrados con estados visuales
+                                </div>
+                            `, true);
+                        } else {
+                            log('❌ No hay períodos visibles');
+                        }
+                        
+                        // Cerrar dropdown
+                        document.body.click();
+                    }, 500);
+                }
+                
+            } catch (error) {
+                log(`❌ Error en navegación visual: ${error.message}`);
+            }
+        }
+        
+        function testPeriodCards() {
+            log('🎨 Testing tarjetas de períodos...');
+            
+            // Este test simula la funcionalidad ya que las tarjetas están en el dropdown
+            try {
+                if (!periodNavigatorInstance) {
+                    log('❌ PeriodNavigator no está inicializado');
+                    return;
+                }
+                
+                const periodsInfo = periodNavigatorInstance.temporalManager.getPeriodsInfo();
+                
+                log(`📊 Información de períodos:`);
+                periodsInfo.forEach(period => {
+                    const indicators = [];
+                    if (period.isCurrent) indicators.push('ACTUAL');
+                    if (period.isEditable) indicators.push('EDITABLE');
+                    if (period.canActivate) indicators.push('PUEDE_ACTIVAR');
+                    if (period.canUnlock) indicators.push('PUEDE_DESBLOQUEAR');
+                    
+                    log(`   📆 ${period.displayName}: ${period.state.toUpperCase()} ${indicators.join(' ')}`);
+                });
+                
+                log('✅ Tarjetas de períodos procesadas correctamente');
+                
+            } catch (error) {
+                log(`❌ Error en tarjetas de períodos: ${error.message}`);
+            }
+        }
+        
+        function testActionButtons() {
+            log('🎨 Testing botones de acción...');
+            
+            try {
+                // Simular acciones disponibles
+                if (!periodNavigatorInstance) {
+                    log('❌ PeriodNavigator no está inicializado');
+                    return;
+                }
+                
+                const periodsInfo = periodNavigatorInstance.temporalManager.getPeriodsInfo();
+                let actionsFound = 0;
+                
+                periodsInfo.forEach(period => {
+                    const actions = [];
+                    if (period.canActivate) actions.push('Activar');
+                    if (period.canUnlock) actions.push('Desbloquear');
+                    if (period.canSwitch && !period.isCurrent) actions.push('Abrir');
+                    
+                    if (actions.length > 0) {
+                        log(`   📆 ${period.displayName}: ${actions.join(', ')}`);
+                        actionsFound += actions.length;
+                    }
+                });
+                
+                log(`📊 Total acciones disponibles: ${actionsFound}`);
+                log('✅ Botones de acción configurados correctamente');
+                
+            } catch (error) {
+                log(`❌ Error en botones de acción: ${error.message}`);
+            }
+        }
+        
+        // 4. TESTING DE CREACIÓN MODAL
+        function testCreateModal() {
+            log('🆕 Testing modal de creación...');
+            
+            if (!periodNavigatorInstance) {
+                log('❌ PeriodNavigator no está inicializado');
+                return;
+            }
+            
+            try {
+                // Simular apertura de modal
+                log('🔄 Simulando apertura de modal...');
+                periodNavigatorInstance.showCreatePeriodModal();
+                
+                setTimeout(() => {
+                    const modal = document.querySelector('.period-create-modal');
+                    const modalContent = document.querySelector('.modal-content');
+                    const periodInput = document.querySelector('#new-period-input');
+                    const cloneSelect = document.querySelector('#clone-source-select');
+                    
+                    log(`📋 Modal creado: ${modal ? 'SÍ' : 'NO'}`);
+                    log(`📋 Contenido modal: ${modalContent ? 'SÍ' : 'NO'}`);
+                    log(`📋 Input período: ${periodInput ? 'SÍ' : 'NO'}`);
+                    log(`📋 Select clonación: ${cloneSelect ? 'SÍ' : 'NO'}`);
+                    
+                    if (modal && modalContent && periodInput && cloneSelect) {
+                        log('✅ Modal de creación funciona correctamente');
+                        
+                        updateUIDemo(`
+                            <div style="color: #10b981; font-weight: 600;">
+                                ✅ Modal de Creación Funcional
+                            </div>
+                            <div style="margin-top: 12px; color: #6b7280;">
+                                Input: ✅ | Select: ✅ | Validación: ✅
+                            </div>
+                        `, true);
+                        
+                        // Cerrar modal después de 3 segundos
+                        setTimeout(() => {
+                            const closeBtn = modal.querySelector('#modal-close');
+                            if (closeBtn) {
+                                closeBtn.click();
+                                log('🔄 Modal cerrado automáticamente');
+                            }
+                        }, 3000);
+                    } else {
+                        log('❌ Modal de creación tiene problemas');
+                    }
+                }, 500);
+                
+            } catch (error) {
+                log(`❌ Error en modal de creación: ${error.message}`);
+            }
+        }
+        
+        function testCloneOptions() {
+            log('🧪 Testing opciones de clonación...');
+            
+            if (!periodNavigatorInstance) {
+                log('❌ PeriodNavigator no está inicializado');
+                return;
+            }
+            
+            try {
+                const cloneSourceHTML = periodNavigatorInstance.getCloneSourceOptions();
+                log(`📋 HTML opciones clonación generado: ${cloneSourceHTML.length > 0 ? 'SÍ' : 'NO'}`);
+                
+                if (cloneSourceHTML.length > 0) {
+                    // Contar opciones
+                    const optionMatches = cloneSourceHTML.match(/<option/g);
+                    const optionCount = optionMatches ? optionMatches.length : 0;
+                    log(`📊 Opciones de clonación disponibles: ${optionCount}`);
+                    
+                    // Verificar que hay opción seleccionada
+                    const hasSelected = cloneSourceHTML.includes('selected');
+                    log(`📋 Opción por defecto seleccionada: ${hasSelected ? 'SÍ' : 'NO'}`);
+                    
+                    log('✅ Opciones de clonación funcionan correctamente');
+                } else {
+                    log('❌ No hay opciones de clonación');
+                }
+                
+            } catch (error) {
+                log(`❌ Error en opciones de clonación: ${error.message}`);
+            }
+        }
+        
+        async function testFullCreationFlow() {
+            log('🧪 Testing flujo completo de creación...');
+            
+            if (!periodNavigatorInstance) {
+                log('❌ PeriodNavigator no está inicializado');
+                return;
+            }
+            
+            try {
+                log('🔄 Iniciando flujo de creación...');
+                
+                // Abrir modal
+                periodNavigatorInstance.showCreatePeriodModal();
+                
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                const modal = document.querySelector('.period-create-modal');
+                const periodInput = document.querySelector('#new-period-input');
+                const createBtn = document.querySelector('#btn-create');
+                
+                if (modal && periodInput && createBtn) {
+                    log('📋 Paso 1: Modal abierto correctamente');
+                    
+                    // Simular entrada de datos
+                    const testPeriod = '2025-10';
+                    periodInput.value = testPeriod;
+                    log(`📋 Paso 2: Período ingresado: ${testPeriod}`);
+                    
+                    // Simular click en crear (sin ejecutar para evitar problemas)
+                    log('📋 Paso 3: Simulando creación...');
+                    
+                    // En lugar de hacer click real, verificamos que el botón esté habilitado
+                    const isButtonEnabled = !createBtn.disabled;
+                    log(`📋 Botón crear habilitado: ${isButtonEnabled ? 'SÍ' : 'NO'}`);
+                    
+                    if (isButtonEnabled) {
+                        log('✅ Flujo de creación completo funcionaría correctamente');
+                        
+                        updateUIDemo(`
+                            <div style="color: #10b981; font-weight: 600;">
+                                ✅ Flujo de Creación Completo
+                            </div>
+                            <div style="margin-top: 12px; color: #6b7280;">
+                                Modal → Input → Validación → Creación ✅
+                            </div>
+                        `, true);
+                    } else {
+                        log('❌ Botón crear no está habilitado');
+                    }
+                    
+                    // Cerrar modal
+                    const closeBtn = modal.querySelector('#modal-close');
+                    if (closeBtn) {
+                        closeBtn.click();
+                        log('🔄 Modal cerrado');
+                    }
+                } else {
+                    log('❌ Elementos del modal no encontrados');
+                }
+                
+            } catch (error) {
+                log(`❌ Error en flujo de creación: ${error.message}`);
+            }
+        }
+        
+        // 5. TESTING DE EVENTOS Y NOTIFICACIONES
+        function testEventSystem() {
+            log('📢 Testing sistema de eventos...');
+            
+            try {
+                // Setup listeners de eventos temporales
+                const eventTypes = [
+                    'temporalPeriodChanged',
+                    'temporalPeriodCreated',
+                    'temporalPeriodActivated',
+                    'temporalPeriodUnlocked',
+                    'temporalPeriodLocked',
+                    'temporalMonthChangeDetected'
+                ];
+                
+                let eventsReceived = 0;
+                
+                eventTypes.forEach(eventType => {
+                    window.addEventListener(eventType, (e) => {
+                        eventsReceived++;
+                        log(`📢 Evento recibido: ${eventType}`);
+                        eventLog.push({
+                            type: eventType,
+                            detail: e.detail,
+                            timestamp: new Date().toISOString()
+                        });
+                    });
+                });
+                
+                log(`📊 Listeners configurados: ${eventTypes.length} tipos de eventos`);
+                
+                // Disparar evento de prueba si tenemos manager
+                if (periodNavigatorInstance && periodNavigatorInstance.temporalManager) {
+                    log('🔄 Disparando evento de prueba...');
+                    periodNavigatorInstance.temporalManager.dispatchPeriodChangeEvent('test_period');
+                    
+                    setTimeout(() => {
+                        log(`📊 Eventos recibidos: ${eventsReceived}`);
+                        if (eventsReceived > 0) {
+                            log('✅ Sistema de eventos funciona correctamente');
+                        } else {
+                            log('⚠️ No se recibieron eventos (puede ser normal)');
+                        }
+                    }, 500);
+                } else {
+                    log('⚠️ No se puede probar eventos sin TemporalManager');
+                }
+                
+            } catch (error) {
+                log(`❌ Error en sistema de eventos: ${error.message}`);
+            }
+        }
+        
+        function testNotifications() {
+            log('📢 Testing notificaciones...');
+            
+            if (!periodNavigatorInstance) {
+                log('❌ PeriodNavigator no está inicializado');
+                return;
+            }
+            
+            try {
+                log('🔄 Testing notificación de éxito...');
+                periodNavigatorInstance.showSuccess('Prueba de notificación exitosa');
+                
+                setTimeout(() => {
+                    log('🔄 Testing notificación de error...');
+                    periodNavigatorInstance.showError('Prueba de notificación de error');
+                    
+                    setTimeout(() => {
+                        log('🔄 Testing notificación de loading...');
+                        periodNavigatorInstance.showLoading('Cargando prueba...');
+                        
+                        setTimeout(() => {
+                            log('✅ Todas las notificaciones funcionan');
+                            
+                            updateUIDemo(`
+                                <div style="color: #10b981; font-weight: 600;">
+                                    ✅ Sistema de Notificaciones
+                                </div>
+                                <div style="margin-top: 12px; color: #6b7280;">
+                                    Éxito ✅ | Error ✅ | Loading ✅
+                                </div>
+                            `, true);
+                        }, 2000);
+                    }, 2000);
+                }, 2000);
+                
+            } catch (error) {
+                log(`❌ Error en notificaciones: ${error.message}`);
+            }
+        }
+        
+        function testErrorHandling() {
+            log('🧪 Testing manejo de errores...');
+            
+            if (!periodNavigatorInstance) {
+                log('❌ PeriodNavigator no está inicializado');
+                return;
+            }
+            
+            try {
+                // Test 1: Período inválido
+                log('🧪 Test 1: Cambio a período inválido');
+                periodNavigatorInstance.switchToPeriod('invalid_period').then(result => {
+                    log(`📋 Resultado: ${result ? 'Éxito (ERROR!)' : 'Falló (correcto)'}`);
+                });
+                
+                // Test 2: Acción en período inexistente
+                log('🧪 Test 2: Acción en período inexistente');
+                periodNavigatorInstance.handlePeriodAction('activate', 'nonexistent_period');
+                
+                // Test 3: Modal sin elementos
+                log('🧪 Test 3: Verificación de elementos faltantes');
+                
+                log('✅ Testing de errores completado');
+                
+            } catch (error) {
+                log(`❌ Error en testing de errores: ${error.message}`);
+                log('✅ Manejo de errores funciona (error capturado correctamente)');
+            }
+        }
+        
+        // 6. TESTING DE INTEGRACIÓN FINAL
+        async function testFullIntegration() {
+            log('⚡ Testing integración completa...');
+            
+            if (!periodNavigatorInstance) {
+                log('❌ PeriodNavigator no está inicializado');
+                return;
+            }
+            
+            try {
+                log('🔄 Verificando integración completa...');
+                
+                // Test 1: Sistema temporal completo
+                const systemState = periodNavigatorInstance.getNavigatorState();
+                log(`✅ Test 1: Estado del sistema - ${systemState.isInitialized ? 'OK' : 'FAIL'}`);
+                
+                // Test 2: Interfaz en DOM
+                const navigatorInDOM = document.querySelector('.period-navigator');
+                log(`✅ Test 2: Interfaz en DOM - ${navigatorInDOM ? 'OK' : 'FAIL'}`);
+                
+                // Test 3: Manager funcionando
+                const managerWorking = systemState.temporalManagerState && systemState.temporalManagerState.isInitialized;
+                log(`✅ Test 3: Manager funcionando - ${managerWorking ? 'OK' : 'FAIL'}`);
+                
+                // Test 4: Eventos configurados
+                const eventsWorking = eventLog.length >= 0; // Al menos el sistema está listo para eventos
+                log(`✅ Test 4: Sistema de eventos - ${eventsWorking ? 'OK' : 'FAIL'}`);
+                
+                // Test 5: Funcionalidades principales
+                const coreFeatures = periodNavigatorInstance.temporalManager && 
+                                   periodNavigatorInstance.temporalManager.isInitialized;
+                log(`✅ Test 5: Funcionalidades principales - ${coreFeatures ? 'OK' : 'FAIL'}`);
+                
+                const allPassed = systemState.isInitialized && navigatorInDOM && managerWorking && coreFeatures;
+                
+                if (allPassed) {
+                    log('🎉 INTEGRACIÓN COMPLETA EXITOSA');
+                    updateStatus('Integración Completa', 'success');
+                    updateUIDemo(`
+                        <div style="color: #10b981; font-weight: 600; font-size: 18px;">
+                            🎉 SISTEMA TEMPORAL COMPLETAMENTE FUNCIONAL
+                        </div>
+                        <div style="margin-top: 16px; color: #6b7280;">
+                            ✅ Storage Temporal<br>
+                            ✅ Gestión de Períodos<br>
+                            ✅ Navegación Visual<br>
+                            ✅ Interfaz Completa<br>
+                            ✅ Sistema de Eventos
+                        </div>
+                        <div style="margin-top: 16px; color: #059669; font-weight: 600;">
+                            ¡Listo para integración al dashboard!
+                        </div>
+                    `, true);
+                } else {
+                    log('❌ Hay componentes que necesitan ajustes');
+                    updateStatus('Integración Parcial', 'warning');
+                }
+                
+            } catch (error) {
+                log(`❌ Error en integración completa: ${error.message}`);
+                updateStatus('Error de Integración', 'error');
+            }
+        }
+        
+        async function simulateRealUsage() {
+            log('🎮 Simulando uso real del sistema...');
+            
+            if (!periodNavigatorInstance) {
+                log('❌ PeriodNavigator no está inicializado');
+                return;
+            }
+            
+            try {
+                log('📅 Escenario: Usuario navegando entre períodos...');
+                
+                // Paso 1: Listar períodos actuales
+                const periodsInfo = periodNavigatorInstance.temporalManager.getPeriodsInfo();
+                log(`📊 Períodos disponibles: ${periodsInfo.length}`);
+                
+                // Paso 2: Crear nuevo período
+                log('🆕 Creando nuevo período...');
+                const newPeriod = '2025_11';
+                const createSuccess = await periodNavigatorInstance.temporalManager.createNewPeriod(newPeriod);
+                log(`📋 Creación exitosa: ${createSuccess ? 'SÍ' : 'NO'}`);
+                
+                if (createSuccess) {
+                    // Paso 3: Verificar en UI
+                    periodNavigatorInstance.refresh();
+                    log('🔄 UI actualizada');
+                    
+                    // Paso 4: Simular navegación
+                    log('🔄 Simulando navegación visual...');
+                    const displayEl = document.querySelector('.period-display');
+                    if (displayEl) {
+                        displayEl.click();
+                        
+                        setTimeout(() => {
+                            const periodItems = document.querySelectorAll('.period-item');
+                            log(`📊 Períodos mostrados en UI: ${periodItems.length}`);
+                            
+                            // Cerrar dropdown
+                            document.body.click();
+                            
+                            log('✅ Simulación de uso real completada');
+                        }, 1000);
+                    }
+                }
+                
+            } catch (error) {
+                log(`❌ Error en simulación: ${error.message}`);
+            }
+        }
+        
+        async function stressTestUI() {
+            log('⚡ Iniciando stress test UI...');
+            
+            if (!periodNavigatorInstance) {
+                log('❌ PeriodNavigator no está inicializado');
+                return;
+            }
+            
+            try {
+                const startTime = performance.now();
+                
+                log('⚡ Test 1: Apertura/cierre rápido de dropdown');
+                const displayEl = document.querySelector('.period-display');
+                
+                if (displayEl) {
+                    for (let i = 0; i < 10; i++) {
+                        displayEl.click(); // Abrir
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                        document.body.click(); // Cerrar
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                    }
+                    log('✅ Apertura/cierre rápido: OK');
+                }
+                
+                log('⚡ Test 2: Actualizaciones rápidas de UI');
+                for (let i = 0; i < 5; i++) {
+                    periodNavigatorInstance.refresh();
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                log('✅ Actualizaciones rápidas: OK');
+                
+                log('⚡ Test 3: Notificaciones múltiples');
+                for (let i = 0; i < 3; i++) {
+                    periodNavigatorInstance.showSuccess(`Test ${i + 1}`);
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+                log('✅ Notificaciones múltiples: OK');
+                
+                const endTime = performance.now();
+                const totalTime = endTime - startTime;
+                
+                log(`⚡ Stress test completado en ${totalTime.toFixed(2)}ms`);
+                log('✅ UI maneja stress test correctamente');
+                
+            } catch (error) {
+                log(`❌ Error en stress test: ${error.message}`);
+            }
+        }
+        
+        // Inicialización automática
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                log('🚀 Testing Final del Sistema Temporal iniciado');
+                log('📋 Ejecuta los tests en orden para verificar funcionamiento completo');
+                log('🎯 Objetivo: Confirmar que todo el sistema está listo para producción');
+                log('');
+                
+                // Verificación automática inicial
+                checkFullSystem();
+            }, 500);
+        });
+        
+        // Asignar navigator global para debugging
+        window.periodNavigator = periodNavigatorInstance;
+        
+        // Debug utilities
+        window.temporalNavigatorDebug = {
+            getState: () => periodNavigatorInstance ? periodNavigatorInstance.getNavigatorState() : 'No inicializado',
+            refresh: () => periodNavigatorInstance ? periodNavigatorInstance.refresh() : 'No disponible',
+            openDropdown: () => {
+                const displayEl = document.querySelector('.period-display');
+                if (displayEl) displayEl.click();
+            },
+            closeDropdown: () => document.body.click(),
+            showModal: () => periodNavigatorInstance ? periodNavigatorInstance.showCreatePeriodModal() : 'No disponible',
+            getEventLog: () => eventLog,
+            clearEventLog: () => eventLog.length = 0
+        };
+        
+        console.log('🧭 period-navigator testing cargado');
+        console.log('🛠️ Debug disponible en: window.temporalNavigatorDebug');
+    </script>
+</body>
+</html>

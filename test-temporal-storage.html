@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing - TemporalManager</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        
+        .test-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .test-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+        
+        .test-section {
+            margin-bottom: 24px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+            padding: 8px 16px;
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+        
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 4px 8px 4px 0;
+            transition: background-color 0.2s;
+        }
+        
+        .test-button:hover {
+            background: #2563eb;
+        }
+        
+        .test-button.success {
+            background: #10b981;
+        }
+        
+        .test-button.warning {
+            background: #f59e0b;
+        }
+        
+        .test-button.danger {
+            background: #ef4444;
+        }
+        
+        .results {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            margin-top: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .info-card {
+            background: #e0f2fe;
+            border-left: 4px solid #0ea5e9;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 12px 0;
+        }
+        
+        .info-card h4 {
+            margin: 0 0 8px 0;
+            color: #0c4a6e;
+        }
+        
+        .info-card p {
+            margin: 0;
+            color: #075985;
+            font-size: 14px;
+        }
+        
+        .period-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+        
+        .period-card {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        
+        .period-card.current {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+        
+        .period-card.preparing {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .period-card.unlocked {
+            border-color: #f59e0b;
+            background: #fffbeb;
+        }
+        
+        .period-card.archived {
+            border-color: #6b7280;
+            background: #f9fafb;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1 class="test-title">🎯 Testing: TemporalManager</h1>
+            <span id="system-status" class="status">Verificando...</span>
+        </div>
+        
+        <div class="info-card">
+            <h4>📋 Objetivo del Testing</h4>
+            <p>Verificar gestión de períodos, navegación temporal, clonación, desbloqueo y activación de períodos.</p>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">🔍 1. Verificación de Sistema</div>
+            <button class="test-button" onclick="checkSystemAvailability()">Verificar Disponibilidad</button>
+            <button class="test-button" onclick="initializeManager()">Inicializar Manager</button>
+            <button class="test-button" onclick="checkManagerState()">Estado del Manager</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">📅 2. Testing de Períodos</div>
+            <button class="test-button" onclick="listAllPeriods()">Listar Períodos</button>
+            <button class="test-button" onclick="showCurrentPeriod()">Período Actual</button>
+            <button class="test-button" onclick="checkPeriodsInfo()">Información Detallada</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">🆕 3. Testing de Creación</div>
+            <button class="test-button success" onclick="createFuturePeriod()">Crear Período Futuro</button>
+            <button class="test-button success" onclick="createPastPeriod()">Crear Período Pasado</button>
+            <button class="test-button warning" onclick="testCloning()">Testing Clonación</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">🔄 4. Testing de Navegación</div>
+            <button class="test-button" onclick="testPeriodSwitch()">Cambiar Entre Períodos</button>
+            <button class="test-button" onclick="testNavigationCallbacks()">Callbacks de Navegación</button>
+            <button class="test-button" onclick="testPeriodValidation()">Validación de Períodos</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">🔓 5. Testing de Desbloqueo</div>
+            <button class="test-button warning" onclick="testUnlockPeriod()">Desbloquear Período</button>
+            <button class="test-button" onclick="testLockPeriod()">Re-bloquear Período</button>
+            <button class="test-button" onclick="testUnlockLimits()">Límites de Desbloqueo</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">✅ 6. Testing de Activación</div>
+            <button class="test-button success" onclick="testActivatePeriod()">Activar Período</button>
+            <button class="test-button" onclick="testActivationFlow()">Flujo Completo</button>
+            <button class="test-button" onclick="testMonthDetection()">Detección de Mes</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">🧪 7. Testing Avanzado</div>
+            <button class="test-button" onclick="testEventSystem()">Sistema de Eventos</button>
+            <button class="test-button" onclick="testErrorScenarios()">Escenarios de Error</button>
+            <button class="test-button danger" onclick="stressTest()">⚡ Stress Test</button>
+        </div>
+        
+        <div id="periods-display" class="period-grid">
+            <!-- Los períodos se mostrarán aquí -->
+        </div>
+        
+        <div id="results" class="results">📝 Consola de Testing - Los resultados aparecerán aquí...\n</div>
+    </div>
+
+    <!-- Cargar TemporalStorage y TemporalManager -->
+    <script src="js/temporal-storage.js"></script>
+    <script src="js/temporal-manager.js"></script>
+    
+    <script>
+        let temporalManager = null;
+        let testResults = [];
+        let eventLog = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const formattedMessage = `[${timestamp}] ${message}`;
+            testResults.push(formattedMessage);
+            
+            const resultsEl = document.getElementById('results');
+            resultsEl.textContent += formattedMessage + '\n';
+            resultsEl.scrollTop = resultsEl.scrollHeight;
+            
+            console.log(formattedMessage);
+        }
+        
+        function updateStatus(status, type = 'success') {
+            const statusEl = document.getElementById('system-status');
+            statusEl.textContent = status;
+            statusEl.className = `status ${type}`;
+        }
+        
+        function updatePeriodsDisplay() {
+            if (!temporalManager) return;
+            
+            const periodsInfo = temporalManager.getPeriodsInfo();
+            const displayEl = document.getElementById('periods-display');
+            
+            displayEl.innerHTML = periodsInfo.map(period => `
+                <div class="period-card ${period.state} ${period.isCurrent ? 'current' : ''}">
+                    <h4>${period.displayName}</h4>
+                    <p><strong>Estado:</strong> ${period.state}</p>
+                    <p><strong>Editable:</strong> ${period.isEditable ? 'Sí' : 'No'}</p>
+                    <p><strong>Actual:</strong> ${period.isCurrent ? 'Sí' : 'No'}</p>
+                    <div style="margin-top: 8px; font-size: 12px;">
+                        ${period.canActivate ? '✅ Puede activar' : ''}
+                        ${period.canUnlock ? '🔓 Puede desbloquear' : ''}
+                        ${period.canSwitch ? '🔄 Puede cambiar' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 1. VERIFICACIÓN DE SISTEMA
+        function checkSystemAvailability() {
+            log('🔍 Verificando disponibilidad del sistema...');
+            
+            try {
+                if (typeof TemporalStorage !== 'undefined') {
+                    log('✅ TemporalStorage está disponible');
+                } else {
+                    log('❌ TemporalStorage NO está disponible');
+                    updateStatus('TemporalStorage Faltante', 'error');
+                    return;
+                }
+                
+                if (typeof TemporalManager !== 'undefined') {
+                    log('✅ TemporalManager está disponible');
+                    updateStatus('Sistemas Disponibles', 'success');
+                } else {
+                    log('❌ TemporalManager NO está disponible');
+                    updateStatus('TemporalManager Faltante', 'error');
+                    return;
+                }
+                
+            } catch (error) {
+                log(`❌ Error verificando sistema: ${error.message}`);
+                updateStatus('Error de Sistema', 'error');
+            }
+        }
+        
+        async function initializeManager() {
+            log('🎯 Inicializando TemporalManager...');
+            
+            try {
+                temporalManager = new TemporalManager();
+                
+                // Esperar a que se inicialice
+                let attempts = 0;
+                while (!temporalManager.isInitialized && attempts < 20) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+                
+                if (temporalManager.isInitialized) {
+                    log('✅ TemporalManager inicializado correctamente');
+                    updateStatus('Manager Activo', 'success');
+                    updatePeriodsDisplay();
+                } else {
+                    log('❌ TemporalManager no se pudo inicializar');
+                    updateStatus('Error de Inicialización', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error inicializando manager: ${error.message}`);
+                updateStatus('Error de Manager', 'error');
+            }
+        }
+        
+        function checkManagerState() {
+            log('🔍 Verificando estado del manager...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                const state = temporalManager.getSystemState();
+                
+                log(`✅ Manager inicializado: ${state.isInitialized}`);
+                log(`📅 Período activo: ${state.currentActivePeriod}`);
+                log(`📊 Total períodos: ${state.totalPeriods}`);
+                log(`⚙️ Configuración: ${JSON.stringify(state.config)}`);
+                
+                updatePeriodsDisplay();
+                
+            } catch (error) {
+                log(`❌ Error verificando estado: ${error.message}`);
+            }
+        }
+        
+        // 2. TESTING DE PERÍODOS
+        function listAllPeriods() {
+            log('📅 Listando todos los períodos...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                const periodsInfo = temporalManager.getPeriodsInfo();
+                
+                log(`📊 Total de períodos: ${periodsInfo.length}`);
+                
+                periodsInfo.forEach(period => {
+                    const indicators = [];
+                    if (period.isCurrent) indicators.push('ACTUAL');
+                    if (period.isEditable) indicators.push('EDITABLE');
+                    if (period.canActivate) indicators.push('PUEDE_ACTIVAR');
+                    if (period.canUnlock) indicators.push('PUEDE_DESBLOQUEAR');
+                    
+                    log(`   📆 ${period.period} (${period.displayName}): ${period.state.toUpperCase()} ${indicators.join(' ')}`);
+                });
+                
+                updatePeriodsDisplay();
+                
+            } catch (error) {
+                log(`❌ Error listando períodos: ${error.message}`);
+            }
+        }
+        
+        function showCurrentPeriod() {
+            log('📅 Mostrando período actual...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                const currentPeriod = temporalManager.currentActivePeriod;
+                const displayName = temporalManager.formatPeriodDisplay(currentPeriod);
+                const state = temporalManager.temporalStorage.getPeriodState(currentPeriod);
+                const isEditable = temporalManager.temporalStorage.isPeriodEditable(currentPeriod);
+                
+                log(`📅 Período actual: ${currentPeriod}`);
+                log(`🏷️ Nombre mostrado: ${displayName}`);
+                log(`🎯 Estado: ${state}`);
+                log(`✏️ Editable: ${isEditable ? 'Sí' : 'No'}`);
+                
+                // Verificar datos del período actual
+                const allData = temporalManager.temporalStorage.getAllPeriodData(currentPeriod);
+                log(`📊 Tipos de datos en período actual: ${Object.keys(allData).length}`);
+                
+            } catch (error) {
+                log(`❌ Error mostrando período actual: ${error.message}`);
+            }
+        }
+        
+        function checkPeriodsInfo() {
+            log('🔍 Verificando información detallada de períodos...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                const systemState = temporalManager.getSystemState();
+                const temporalInfo = systemState.temporalInfo;
+                
+                log('📊 INFORMACIÓN DEL SISTEMA TEMPORAL:');
+                log(`   🕐 Período actual: ${temporalInfo.currentPeriod}`);
+                log(`   📈 Total períodos: ${temporalInfo.totalPeriods}`);
+                log(`   🔄 Auto-guardado activo: ${temporalInfo.autoSaveActive ? 'Sí' : 'No'}`);
+                
+                log('📊 ESTADOS DE PERÍODOS:');
+                Object.entries(temporalInfo.periodStates).forEach(([period, info]) => {
+                    log(`   📆 ${period}:`);
+                    log(`      Estado: ${info.state}`);
+                    log(`      Editable: ${info.isEditable ? 'Sí' : 'No'}`);
+                    log(`      Integridad: ${info.dataIntegrity.isValid ? 'Válida' : 'Inválida'}`);
+                });
+                
+            } catch (error) {
+                log(`❌ Error verificando información: ${error.message}`);
+            }
+        }
+        
+        // 3. TESTING DE CREACIÓN
+        async function createFuturePeriod() {
+            log('🆕 Creando período futuro...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                // Crear período 2 meses en el futuro
+                const futureDate = new Date();
+                futureDate.setMonth(futureDate.getMonth() + 2);
+                const futurePeriod = temporalManager.formatPeriod(futureDate);
+                
+                log(`🎯 Creando período: ${futurePeriod}`);
+                
+                const success = await temporalManager.createNewPeriod(futurePeriod);
+                
+                if (success) {
+                    log(`✅ Período ${futurePeriod} creado exitosamente`);
+                    const displayName = temporalManager.formatPeriodDisplay(futurePeriod);
+                    log(`📅 Nombre: ${displayName}`);
+                    
+                    updatePeriodsDisplay();
+                } else {
+                    log(`❌ Error creando período ${futurePeriod}`);
+                }
+                
+            } catch (error) {
+                log(`❌ Error en creación de período futuro: ${error.message}`);
+            }
+        }
+        
+        async function createPastPeriod() {
+            log('🆕 Creando período pasado...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                // Crear período 1 mes en el pasado
+                const pastDate = new Date();
+                pastDate.setMonth(pastDate.getMonth() - 1);
+                const pastPeriod = temporalManager.formatPeriod(pastDate);
+                
+                log(`🎯 Creando período: ${pastPeriod}`);
+                
+                const success = await temporalManager.createNewPeriod(pastPeriod);
+                
+                if (success) {
+                    log(`✅ Período ${pastPeriod} creado exitosamente`);
+                    
+                    // Verificar que se creó como archivado automáticamente
+                    const state = temporalManager.temporalStorage.getPeriodState(pastPeriod);
+                    log(`📋 Estado automático: ${state}`);
+                    
+                    updatePeriodsDisplay();
+                } else {
+                    log(`❌ Error creando período ${pastPeriod}`);
+                }
+                
+            } catch (error) {
+                log(`❌ Error en creación de período pasado: ${error.message}`);
+            }
+        }
+        
+        async function testCloning() {
+            log('🧪 Testing clonación de períodos...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                const sourcePeriod = temporalManager.currentActivePeriod;
+                const targetPeriod = '2025_10'; // Período de prueba
+                
+                log(`🔄 Clonando ${sourcePeriod} → ${targetPeriod}`);
+                
+                // Verificar datos del período fuente
+                const sourceData = temporalManager.temporalStorage.getAllPeriodData(sourcePeriod);
+                log(`📊 Datos fuente: ${Object.keys(sourceData).length} tipos`);
+                
+                // Ejecutar clonación
+                const cloneSuccess = temporalManager.temporalStorage.clonePeriod(sourcePeriod, targetPeriod);
+                
+                if (cloneSuccess) {
+                    log(`✅ Clonación exitosa`);
+                    
+                    // Verificar datos clonados
+                    const clonedData = temporalManager.temporalStorage.getAllPeriodData(targetPeriod);
+                    log(`📊 Datos clonados: ${Object.keys(clonedData).length} tipos`);
+                    
+                    // Verificar que los datos son iguales pero independientes
+                    if (sourceData.ingresos && clonedData.ingresos) {
+                        const sourceTotal = sourceData.ingresos.total;
+                        const clonedTotal = clonedData.ingresos.total;
+                        log(`💰 Ingresos fuente: ${sourceTotal?.toLocaleString('es-CL') || 'N/A'}`);
+                        log(`💰 Ingresos clonados: ${clonedTotal?.toLocaleString('es-CL') || 'N/A'}`);
+                        log(`🔍 Integridad: ${sourceTotal === clonedTotal ? 'OK' : 'FAIL'}`);
+                    }
+                    
+                    updatePeriodsDisplay();
+                } else {
+                    log(`❌ Error en clonación`);
+                }
+                
+            } catch (error) {
+                log(`❌ Error en testing de clonación: ${error.message}`);
+            }
+        }
+        
+        // 4. TESTING DE NAVEGACIÓN
+        async function testPeriodSwitch() {
+            log('🔄 Testing cambio entre períodos...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                const periodsInfo = temporalManager.getPeriodsInfo();
+                const currentPeriod = temporalManager.currentActivePeriod;
+                
+                // Encontrar un período diferente al actual
+                const otherPeriod = periodsInfo.find(p => p.period !== currentPeriod && p.canSwitch);
+                
+                if (!otherPeriod) {
+                    log('⚠️ No hay períodos disponibles para cambio');
+                    return;
+                }
+                
+                log(`🎯 Cambiando de ${currentPeriod} a ${otherPeriod.period}`);
+                
+                const success = await temporalManager.switchToPeriod(otherPeriod.period);
+                
+                if (success) {
+                    log(`✅ Cambio exitoso a ${otherPeriod.period}`);
+                    
+                    // Verificar que el período actual cambió
+                    const newCurrentPeriod = temporalManager.currentActivePeriod;
+                    log(`📅 Nuevo período actual: ${newCurrentPeriod}`);
+                    
+                    updatePeriodsDisplay();
+                    
+                    // Cambiar de vuelta
+                    setTimeout(async () => {
+                        log(`🔄 Cambiando de vuelta a ${currentPeriod}`);
+                        const backSuccess = await temporalManager.switchToPeriod(currentPeriod);
+                        if (backSuccess) {
+                            log(`✅ Vuelta exitosa a ${currentPeriod}`);
+                            updatePeriodsDisplay();
+                        }
+                    }, 1000);
+                    
+                } else {
+                    log(`❌ Error cambiando a ${otherPeriod.period}`);
+                }
+                
+            } catch (error) {
+                log(`❌ Error en testing de navegación: ${error.message}`);
+            }
+        }
+        
+        function testNavigationCallbacks() {
+            log('🧪 Testing callbacks de navegación...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                // Registrar callback de prueba
+                temporalManager.registerNavigationCallback('testCallback', (targetPeriod) => {
+                    log(`📋 Callback ejecutado para período: ${targetPeriod}`);
+                    return Promise.resolve();
+                });
+                
+                log('✅ Callback de prueba registrado');
+                
+                // Verificar que está registrado
+                const callbackCount = temporalManager.navigationCallbacks.size;
+                log(`📊 Total callbacks: ${callbackCount}`);
+                
+                // Remover callback
+                temporalManager.removeNavigationCallback('testCallback');
+                log('✅ Callback removido');
+                
+            } catch (error) {
+                log(`❌ Error en testing de callbacks: ${error.message}`);
+            }
+        }
+        
+        function testPeriodValidation() {
+            log('🧪 Testing validación de períodos...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                const periodsInfo = temporalManager.getPeriodsInfo();
+                
+                periodsInfo.forEach(period => {
+                    const exists = temporalManager.periodExists(period.period);
+                    const validation = temporalManager.temporalStorage.validatePeriodData(period.period);
+                    
+                    log(`🔍 ${period.period}:`);
+                    log(`   Existe: ${exists ? 'Sí' : 'No'}`);
+                    log(`   Válido: ${validation.isValid ? 'Sí' : 'No'}`);
+                    
+                    if (!validation.isValid) {
+                        validation.issues.forEach(issue => {
+                            log(`   ⚠️ ${issue}`);
+                        });
+                    }
+                });
+                
+            } catch (error) {
+                log(`❌ Error en validación: ${error.message}`);
+            }
+        }
+        
+        // 5. TESTING DE DESBLOQUEO
+        async function testUnlockPeriod() {
+            log('🔓 Testing desbloqueo de período...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                const periodsInfo = temporalManager.getPeriodsInfo();
+                const archivedPeriod = periodsInfo.find(p => p.canUnlock);
+                
+                if (!archivedPeriod) {
+                    log('⚠️ No hay períodos archivados para desbloquear');
+                    
+                    // Crear y archivar un período para testing
+                    const testPeriod = '2025_06';
+                    await temporalManager.createNewPeriod(testPeriod);
+                    temporalManager.temporalStorage.setPeriodState(testPeriod, 'archived');
+                    log(`📦 Período de prueba ${testPeriod} creado y archivado`);
+                    updatePeriodsDisplay();
+                    
+                    // Intentar desbloquear el período de prueba
+                    const unlockSuccess = await temporalManager.unlockPeriod(testPeriod);
+                    
+                    if (unlockSuccess) {
+                        log(`✅ Período ${testPeriod} desbloqueado exitosamente`);
+                        
+                        // Verificar estado
+                        const state = temporalManager.temporalStorage.getPeriodState(testPeriod);
+                        log(`📋 Nuevo estado: ${state}`);
+                        
+                        updatePeriodsDisplay();
+                    } else {
+                        log(`❌ Error desbloqueando período ${testPeriod}`);
+                    }
+                    
+                    return;
+                }
+                
+                log(`🎯 Desbloqueando período: ${archivedPeriod.period}`);
+                
+                const unlockSuccess = await temporalManager.unlockPeriod(archivedPeriod.period);
+                
+                if (unlockSuccess) {
+                    log(`✅ Período ${archivedPeriod.period} desbloqueado exitosamente`);
+                    
+                    // Verificar que el auto-guardado se activó
+                    const temporalInfo = temporalManager.temporalStorage.getTemporalInfo();
+                    log(`🔄 Auto-guardado activo: ${temporalInfo.autoSaveActive ? 'Sí' : 'No'}`);
+                    
+                    updatePeriodsDisplay();
+                } else {
+                    log(`❌ Error desbloqueando período ${archivedPeriod.period}`);
+                }
+                
+            } catch (error) {
+                log(`❌ Error en testing de desbloqueo: ${error.message}`);
+            }
+        }
+        
+        async function testLockPeriod() {
+            log('🔒 Testing re-bloqueo de período...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                const periodsInfo = temporalManager.getPeriodsInfo();
+                const unlockedPeriod = periodsInfo.find(p => p.state === 'unlocked');
+                
+                if (!unlockedPeriod) {
+                    log('⚠️ No hay períodos desbloqueados para re-bloquear');
+                    return;
+                }
+                
+                log(`🎯 Re-bloqueando período: ${unlockedPeriod.period}`);
+                
+                const lockSuccess = await temporalManager.lockPeriod(unlockedPeriod.period);
+                
+                if (lockSuccess) {
+                    log(`✅ Período ${unlockedPeriod.period} re-bloqueado exitosamente`);
+                    
+                    // Verificar estado
+                    const state = temporalManager.temporalStorage.getPeriodState(unlockedPeriod.period);
+                    log(`📋 Nuevo estado: ${state}`);
+                    
+                    updatePeriodsDisplay();
+                } else {
+                    log(`❌ Error re-bloqueando período ${unlockedPeriod.period}`);
+                }
+                
+            } catch (error) {
+                log(`❌ Error en testing de re-bloqueo: ${error.message}`);
+            }
+        }
+        
+        async function testUnlockLimits() {
+            log('🧪 Testing límites de desbloqueo...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                // Verificar límite actual
+                const canUnlock = temporalManager.validateUnlockLimit();
+                log(`🔍 Puede desbloquear más períodos: ${canUnlock ? 'Sí' : 'No'}`);
+                
+                // Contar períodos desbloqueados
+                const periodsInfo = temporalManager.getPeriodsInfo();
+                const unlockedCount = periodsInfo.filter(p => p.state === 'unlocked').length;
+                const maxUnlocked = temporalManager.config.maxUnlockedPeriods;
+                
+                log(`📊 Períodos desbloqueados: ${unlockedCount}/${maxUnlocked}`);
+                
+                if (unlockedCount >= maxUnlocked) {
+                    log('⚠️ Límite de desbloqueo alcanzado');
+                    
+                    // Intentar desbloquear otro (debería fallar)
+                    const archivedPeriod = periodsInfo.find(p => p.state === 'archived');
+                    if (archivedPeriod) {
+                        log(`🧪 Intentando desbloquear ${archivedPeriod.period} (debería fallar)`);
+                        const unlockResult = await temporalManager.unlockPeriod(archivedPeriod.period);
+                        log(`📋 Resultado: ${unlockResult ? 'Éxito (ERROR!)' : 'Falló (correcto)'}`);
+                    }
+                } else {
+                    log('✅ Hay espacio para más desbloqueos');
+                }
+                
+            } catch (error) {
+                log(`❌ Error en testing de límites: ${error.message}`);
+            }
+        }
+        
+        // 6. TESTING DE ACTIVACIÓN
+        async function testActivatePeriod() {
+            log('✅ Testing activación de período...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                const periodsInfo = temporalManager.getPeriodsInfo();
+                const preparingPeriod = periodsInfo.find(p => p.canActivate);
+                
+                if (!preparingPeriod) {
+                    log('⚠️ No hay períodos en preparación para activar');
+                    
+                    // Crear período en preparación para testing
+                    const testPeriod = '2025_11';
+                    await temporalManager.createNewPeriod(testPeriod);
+                    log(`📦 Período de prueba ${testPeriod} creado en preparación`);
+                    updatePeriodsDisplay();
+                    
+                    // Intentar activar
+                    const activateSuccess = await temporalManager.activatePeriod(testPeriod);
+                    
+                    if (activateSuccess) {
+                        log(`✅ Período ${testPeriod} activado exitosamente`);
+                        
+                        // Verificar que es el nuevo período actual
+                        const newCurrentPeriod = temporalManager.currentActivePeriod;
+                        log(`📅 Nuevo período actual: ${newCurrentPeriod}`);
+                        
+                        updatePeriodsDisplay();
+                    } else {
+                        log(`❌ Error activando período ${testPeriod}`);
+                    }
+                    
+                    return;
+                }
+                
+                const currentPeriod = temporalManager.currentActivePeriod;
+                log(`🎯 Activando período: ${preparingPeriod.period}`);
+                log(`📅 Período actual que será archivado: ${currentPeriod}`);
+                
+                const activateSuccess = await temporalManager.activatePeriod(preparingPeriod.period);
+                
+                if (activateSuccess) {
+                    log(`✅ Período ${preparingPeriod.period} activado exitosamente`);
+                    
+                    // Verificar cambios
+                    const newCurrentPeriod = temporalManager.currentActivePeriod;
+                    const oldPeriodState = temporalManager.temporalStorage.getPeriodState(currentPeriod);
+                    
+                    log(`📅 Nuevo período actual: ${newCurrentPeriod}`);
+                    log(`📋 Estado del período anterior: ${oldPeriodState}`);
+                    
+                    updatePeriodsDisplay();
+                } else {
+                    log(`❌ Error activando período ${preparingPeriod.period}`);
+                }
+                
+            } catch (error) {
+                log(`❌ Error en testing de activación: ${error.message}`);
+            }
+        }
+        
+        async function testActivationFlow() {
+            log('🧪 Testing flujo completo de activación...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                const originalPeriod = temporalManager.currentActivePeriod;
+                log(`📅 Período original: ${originalPeriod}`);
+                
+                // 1. Crear nuevo período
+                const newPeriod = '2025_12';
+                log(`🆕 Paso 1: Creando período ${newPeriod}`);
+                
+                const createSuccess = await temporalManager.createNewPeriod(newPeriod);
+                if (!createSuccess) {
+                    log('❌ Error en paso 1: Creación fallida');
+                    return;
+                }
+                
+                // 2. Verificar que está en preparación
+                const state = temporalManager.temporalStorage.getPeriodState(newPeriod);
+                log(`📋 Paso 2: Estado del nuevo período: ${state}`);
+                
+                // 3. Activar período
+                log(`✅ Paso 3: Activando período ${newPeriod}`);
+                const activateSuccess = await temporalManager.activatePeriod(newPeriod);
+                
+                if (activateSuccess) {
+                    log(`✅ Flujo completo exitoso`);
+                    
+                    // 4. Verificar resultado final
+                    const finalCurrentPeriod = temporalManager.currentActivePeriod;
+                    const originalState = temporalManager.temporalStorage.getPeriodState(originalPeriod);
+                    
+                    log(`📊 RESULTADO FINAL:`);
+                    log(`   Período actual: ${finalCurrentPeriod}`);
+                    log(`   Período original archivado: ${originalState === 'archived' ? 'Sí' : 'No'}`);
+                    
+                    updatePeriodsDisplay();
+                } else {
+                    log('❌ Error en paso 3: Activación fallida');
+                }
+                
+            } catch (error) {
+                log(`❌ Error en flujo de activación: ${error.message}`);
+            }
+        }
+        
+        function testMonthDetection() {
+            log('🧪 Testing detección de cambio de mes...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                // Simular cambio de mes
+                const currentPeriod = temporalManager.currentActivePeriod;
+                const realCurrentPeriod = temporalManager.temporalStorage.getCurrentPeriod();
+                
+                log(`📅 Período activo en manager: ${currentPeriod}`);
+                log(`📅 Período real actual: ${realCurrentPeriod}`);
+                
+                if (currentPeriod !== realCurrentPeriod) {
+                    log('🔍 Cambio de mes detectado por diferencia');
+                    temporalManager.handleMonthChange(realCurrentPeriod);
+                } else {
+                    log('✅ Períodos sincronizados, no hay cambio de mes');
+                }
+                
+                // Verificar configuración de detección
+                log('⚙️ Sistema de detección configurado correctamente');
+                
+            } catch (error) {
+                log(`❌ Error en testing de detección: ${error.message}`);
+            }
+        }
+        
+        // 7. TESTING AVANZADO
+        function testEventSystem() {
+            log('🧪 Testing sistema de eventos...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                // Setup listeners de prueba
+                const eventTypes = [
+                    'temporalPeriodChanged',
+                    'temporalPeriodCreated',
+                    'temporalPeriodActivated',
+                    'temporalPeriodUnlocked',
+                    'temporalPeriodLocked'
+                ];
+                
+                eventTypes.forEach(eventType => {
+                    window.addEventListener(eventType, (e) => {
+                        eventLog.push({
+                            type: eventType,
+                            detail: e.detail,
+                            timestamp: new Date().toISOString()
+                        });
+                        log(`📢 Evento recibido: ${eventType}`);
+                    });
+                });
+                
+                log('✅ Listeners de eventos configurados');
+                log(`📊 Total tipos de eventos monitoreados: ${eventTypes.length}`);
+                
+                // Disparar evento de prueba
+                temporalManager.dispatchPeriodChangeEvent('test_period');
+                
+                setTimeout(() => {
+                    log(`📊 Eventos capturados: ${eventLog.length}`);
+                    eventLog.forEach(event => {
+                        log(`   📢 ${event.type}: ${JSON.stringify(event.detail)}`);
+                    });
+                }, 100);
+                
+            } catch (error) {
+                log(`❌ Error en testing de eventos: ${error.message}`);
+            }
+        }
+        
+        async function testErrorScenarios() {
+            log('🧪 Testing escenarios de error...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                // 1. Período inexistente
+                log('🧪 Test 1: Cambiar a período inexistente');
+                const invalidSwitch = await temporalManager.switchToPeriod('invalid_period');
+                log(`📋 Resultado: ${invalidSwitch ? 'Éxito (ERROR!)' : 'Falló (correcto)'}`);
+                
+                // 2. Crear período duplicado
+                log('🧪 Test 2: Crear período duplicado');
+                const currentPeriod = temporalManager.currentActivePeriod;
+                const duplicateCreate = await temporalManager.createNewPeriod(currentPeriod);
+                log(`📋 Resultado: ${duplicateCreate ? 'Éxito (ERROR!)' : 'Falló (correcto)'}`);
+                
+                // 3. Activar período no válido
+                log('🧪 Test 3: Activar período archivado');
+                const periodsInfo = temporalManager.getPeriodsInfo();
+                const archivedPeriod = periodsInfo.find(p => p.state === 'archived');
+                if (archivedPeriod) {
+                    const invalidActivate = await temporalManager.activatePeriod(archivedPeriod.period);
+                    log(`📋 Resultado: ${invalidActivate ? 'Éxito (ERROR!)' : 'Falló (correcto)'}`);
+                }
+                
+                // 4. Desbloquear período ya desbloqueado
+                log('🧪 Test 4: Desbloquear período activo');
+                const invalidUnlock = await temporalManager.unlockPeriod(currentPeriod);
+                log(`📋 Resultado: ${invalidUnlock ? 'Éxito (ERROR!)' : 'Falló (correcto)'}`);
+                
+                log('✅ Testing de errores completado');
+                
+            } catch (error) {
+                log(`❌ Error en testing de errores: ${error.message}`);
+            }
+        }
+        
+        async function stressTest() {
+            log('⚡ Iniciando stress test...');
+            
+            if (!temporalManager) {
+                log('❌ TemporalManager no está inicializado');
+                return;
+            }
+            
+            try {
+                const startTime = performance.now();
+                
+                // 1. Crear múltiples períodos rápidamente
+                log('⚡ Test 1: Creación masiva de períodos');
+                const createPromises = [];
+                for (let i = 1; i <= 5; i++) {
+                    const testPeriod = `2026_${String(i).padStart(2, '0')}`;
+                    createPromises.push(temporalManager.createNewPeriod(testPeriod));
+                }
+                
+                const createResults = await Promise.all(createPromises);
+                const successfulCreates = createResults.filter(r => r).length;
+                log(`📊 Períodos creados: ${successfulCreates}/${createPromises.length}`);
+                
+                // 2. Operaciones rápidas de estado
+                log('⚡ Test 2: Cambios de estado rápidos');
+                const periodsInfo = temporalManager.getPeriodsInfo();
+                let stateChanges = 0;
+                
+                periodsInfo.forEach(period => {
+                    if (period.period.startsWith('2026_')) {
+                        temporalManager.temporalStorage.setPeriodState(period.period, 'archived');
+                        temporalManager.temporalStorage.setPeriodState(period.period, 'preparing');
+                        stateChanges += 2;
+                    }
+                });
+                
+                log(`📊 Cambios de estado: ${stateChanges}`);
+                
+                // 3. Lectura masiva de datos
+                log('⚡ Test 3: Lectura masiva de datos');
+                let dataReads = 0;
+                periodsInfo.forEach(period => {
+                    const allData = temporalManager.temporalStorage.getAllPeriodData(period.period);
+                    dataReads += Object.keys(allData).length;
+                });
+                
+                log(`📊 Lecturas de datos: ${dataReads}`);
+                
+                const endTime = performance.now();
+                const totalTime = endTime - startTime;
+                
+                log(`✅ Stress test completado en ${totalTime.toFixed(2)}ms`);
+                
+                updatePeriodsDisplay();
+                
+            } catch (error) {
+                log(`❌ Error en stress test: ${error.message}`);
+            }
+        }
+        
+        // Configurar eventos del sistema
+        function setupEventListeners() {
+            const eventTypes = [
+                'temporalPeriodChanged',
+                'temporalPeriodCreated', 
+                'temporalPeriodActivated',
+                'temporalPeriodUnlocked',
+                'temporalPeriodLocked',
+                'temporalMonthChangeDetected',
+                'temporalNavigationError',
+                'temporalCreationError'
+            ];
+            
+            eventTypes.forEach(eventType => {
+                window.addEventListener(eventType, (e) => {
+                    log(`📢 Evento: ${eventType} - ${JSON.stringify(e.detail)}`);
+                    updatePeriodsDisplay();
+                });
+            });
+        }
+        
+        // Verificación inicial al cargar la página
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                log('🚀 Testing de TemporalManager iniciado');
+                log('📋 Haz clic en los botones para ejecutar las pruebas');
+                log('⚠️ Asegúrate de ejecutar primero "Verificar Disponibilidad" e "Inicializar Manager"');
+                log('');
+                
+                setupEventListeners();
+                checkSystemAvailability();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

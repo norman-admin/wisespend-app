@@ -1,0 +1,83 @@
+<!-- 
+    NEW-HEADER.HTML - Header Ultra Minimalista
+    WiseSpend - Control de Gastos Familiares
+    Versión: 1.0.0 - Integración con Sistema Existente
+    
+    🎯 CARACTERÍSTICAS:
+    ✅ Logo WiseSpend.png a la izquierda
+    ✅ Menú de usuario ultra minimalista a la derecha
+    ✅ Integrado con storageManager, currency.js, auth.js
+    ✅ Compatible con sistema de temas existente
+    ✅ Funciones: Ver Perfil, Agregar Usuario, Cerrar Sesión
+    ✅ Mantiene todas las funcionalidades del header original
+-->
+
+<header class="new-header" id="newHeader">
+    <div class="new-header-container">
+        <!-- Logo Izquierda -->
+        <div class="header-logo-section">
+            <img src="assets/WiseSpend.png" alt="WiseSpend" class="header-logo-image" id="headerLogo">
+        </div>
+
+        <!-- Menú Usuario Derecha -->
+        <div class="header-user-section">
+            <div class="user-menu-wrapper" id="userMenuWrapper">
+                <button class="user-menu-button" id="userMenuButton" aria-expanded="false" aria-haspopup="true">
+                    <div class="user-avatar-circle" id="userAvatar">
+                        <span class="user-initial" id="userInitial">U</span>
+                    </div>
+                    <span class="user-display-name" id="userDisplayName">Usuario</span>
+                    <svg class="menu-arrow" id="menuArrow" width="12" height="12" viewBox="0 0 12 12">
+                        <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                    </svg>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
+                    <button class="dropdown-menu-item" role="menuitem" data-action="profile" id="profileAction">
+                        <svg class="menu-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <span>Ver Perfil</span>
+                    </button>
+                    
+                    <button class="dropdown-menu-item" role="menuitem" data-action="add-user" id="addUserAction">
+                        <svg class="menu-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <span>Agregar Usuario</span>
+                    </button>
+                    
+                    <div class="menu-separator"></div>
+                    
+                    <button class="dropdown-menu-item logout-item" role="menuitem" data-action="logout" id="logoutAction">
+                        <svg class="menu-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+                        </svg>
+                        <span>Cerrar Sesión</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Script de inicialización temporal (será movido a new-header.js) -->
+<script>
+    // Inicialización básica temporal
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🎨 New Header Ultra Minimalista cargado');
+        
+        // Detectar nombre de usuario desde storage si está disponible
+        if (window.storageManager) {
+            const userData = window.storageManager.getConfiguracion();
+            const userName = userData?.usuario || 'Usuario';
+            
+            const userDisplayName = document.getElementById('userDisplayName');
+            const userInitial = document.getElementById('userInitial');
+            
+            if (userDisplayName) userDisplayName.textContent = userName;
+            if (userInitial) userInitial.textContent = userName.charAt(0).toUpperCase();
+        }
+    });
+</script>

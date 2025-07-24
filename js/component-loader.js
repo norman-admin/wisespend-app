@@ -94,7 +94,7 @@ class ComponentLoader {
             this.setupSidebarNavigation();
         }
         
-        if (componentPath.includes('header-section.html')) {
+        if (componentPath.includes('new-header.html')) {
             this.setupHeaderEvents();
         }    
     }
@@ -604,7 +604,7 @@ showVariosError(container, message) {
         // Definir componentes a cargar
         const components = [
             { 
-                path: 'components/header-section.html', 
+                path: 'components/new-header.html',
                 container: 'header-container',
                 name: 'Header'
             },
@@ -718,7 +718,7 @@ showVariosError(container, message) {
      */
     areAllComponentsLoaded() {
         const requiredComponents = [
-            'components/header-section.html',
+            'components/new-header.html',
             'components/stats-cards.html',
             'components/sidebar-menu.html',
             'components/details-panel.html'

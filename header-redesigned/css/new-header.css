@@ -35,7 +35,7 @@
     align-items: center;
     max-width: 1400px;
     margin: 0 auto;
-    padding: 16px 24px;
+    padding: 4px 12px;
     min-height: 20px;
 }
 
@@ -47,10 +47,9 @@
 }
 
 .header-logo-image {
-    height: 100%;
-    max-height: 56px;
-    width: auto;
-    max-width: 200px;
+    height: 70px;           /* 🟢 Altura balanceada para header compacto */
+    width: auto;            /* 🟢 Mantiene proporción automática */
+    max-width: 144px;       /* 🟢 Ancho proporcional (50px * 2.4) */
     object-fit: contain;
     transition: transform 0.2s ease;
     cursor: pointer;
@@ -79,11 +78,11 @@
 .user-menu-button {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     background: var(--bg-accent, #f8fafc);
     border: 1px solid var(--border-medium, #d1d5db);
     color: var(--text-primary, #1f2937);
-    padding: 8px 16px;
+    padding: 6px 12px;
     border-radius: 12px;
     cursor: pointer;
     font-size: 14px;

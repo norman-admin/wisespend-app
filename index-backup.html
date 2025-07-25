@@ -270,5 +270,45 @@
     <script src="js/password-toggle.js"></script>
     <script src="js/auth.js"></script>
     
+    <script>
+    // 🎯 DETECTAR MODO REGISTRO DESDE URL
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+        
+        if (mode === 'register') {
+            console.log('🔄 Parámetro mode=register detectado, cambiando a registro...');
+            
+            // Buscar los elementos específicos del index-backup.html
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const modeQuestion = document.getElementById('mode-question');
+            const modeAction = document.getElementById('mode-action');
+            
+            // Cambiar a modo registro
+            if (loginForm && registerForm) {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                
+                // Actualizar texto del toggle
+                if (modeQuestion && modeAction) {
+                    modeQuestion.textContent = '¿Ya tienes cuenta?';
+                    modeAction.textContent = 'Iniciar sesión';
+                }
+                
+                console.log('✅ Cambiado automáticamente a modo registro');
+                
+                // Opcional: Limpiar URL después del cambio
+                setTimeout(() => {
+                    const newUrl = window.location.pathname;
+                    window.history.replaceState({}, document.title, newUrl);
+                }, 1000);
+            } else {
+                console.log('❌ No se encontraron los formularios');
+            }
+        }
+    });
+    </script>
+    
     </body>
 </html>

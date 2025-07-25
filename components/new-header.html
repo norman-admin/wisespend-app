@@ -62,22 +62,3 @@
     </div>
 </header>
 
-<!-- Script de inicialización temporal (será movido a new-header.js) -->
-<script>
-    // Inicialización básica temporal
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('🎨 New Header Ultra Minimalista cargado');
-        
-        // Detectar nombre de usuario desde storage si está disponible
-        if (window.storageManager) {
-            const userData = window.storageManager.getConfiguracion();
-            const userName = userData?.usuario || 'Usuario';
-            
-            const userDisplayName = document.getElementById('userDisplayName');
-            const userInitial = document.getElementById('userInitial');
-            
-            if (userDisplayName) userDisplayName.textContent = userName;
-            if (userInitial) userInitial.textContent = userName.charAt(0).toUpperCase();
-        }
-    });
-</script>

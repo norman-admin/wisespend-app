@@ -167,10 +167,10 @@
     backdrop-filter: blur(8px);
 }
 
-.user-dropdown-menu.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0) scale(1);
+.user-dropdown-menu {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
 }
 
 /* ========== ITEMS DEL DROPDOWN ========== */

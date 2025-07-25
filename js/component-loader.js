@@ -96,8 +96,34 @@ class ComponentLoader {
         
         if (componentPath.includes('new-header.html')) {
             this.setupHeaderEvents();
+            this.loadHeaderScript();
         }    
     }
+
+    /**
+ * 🆕 CARGAR SCRIPT DEL HEADER DESPUÉS DEL HTML
+ */
+async loadHeaderScript() {
+    try {
+        console.log('🎨 Cargando script del header...');
+        
+        // Crear script element
+        const script = document.createElement('script');
+        script.src = 'header-redesigned/js/new-header.js';
+        script.onload = () => {
+            console.log('✅ Script del header cargado correctamente');
+        };
+        script.onerror = () => {
+            console.error('❌ Error cargando script del header');
+        };
+        
+        // Agregar al DOM
+        document.head.appendChild(script);
+        
+    } catch (error) {
+        console.error('❌ Error en loadHeaderScript:', error);
+    }
+}
 
     /**
      * 🆕 CONFIGURAR NAVEGACIÓN DEL SIDEBAR

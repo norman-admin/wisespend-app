@@ -279,10 +279,10 @@ class NewHeaderManager {
         console.log('👤 Acción: Ver Perfil');
         
         // Integrar con sistema existente o mostrar modal
-        if (window.modalSystem) {
-            window.modalSystem.showModal({
-                title: '👤 Perfil de Usuario',
-                content: `
+            if (window.modalSystem) {
+        window.modalSystem.show('profile', {
+            title: '👤 Perfil de Usuario',
+            content: `
                     <div style="text-align: center; padding: 20px;">
                         <div style="width: 80px; height: 80px; border-radius: 50%; background: #3b82f6; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: white; font-size: 32px; font-weight: bold;">
                             ${this.currentUser.initial}

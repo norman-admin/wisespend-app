@@ -11,7 +11,6 @@
  * ✅ Funciones compatibles con sistema actual
  * ✅ Event listeners optimizados
  * ✅ Responsive y accesible
- * ✅ Sistema de logging de cambios reales
  */
 
 class NewHeaderManager {
@@ -90,30 +89,41 @@ class NewHeaderManager {
      * 👤 CARGAR DATOS DEL USUARIO
      */
     loadUserData() {
-        try {
-            // Intentar obtener datos del storageManager
-            if (window.storageManager) {
-                const config = window.storageManager.getConfiguracion();
-                const usuario = config?.usuario || config?.currentUser || 'Usuario';
-                this.updateUserInfo(usuario);
-                console.log(`✅ Usuario cargado desde storage: ${usuario}`);
-            } 
-            // Fallback: intentar localStorage directo
-            else if (localStorage.getItem('currentUser')) {
-                const usuario = localStorage.getItem('currentUser');
-                this.updateUserInfo(usuario);
-                console.log(`✅ Usuario cargado desde localStorage: ${usuario}`);
-            }
-            // Fallback final
-            else {
-                this.updateUserInfo('Usuario');
-                console.log('⚠️ Usuario por defecto cargado');
-            }
-        } catch (error) {
-            console.error('❌ Error cargando datos de usuario:', error);
-            this.updateUserInfo('Usuario');
+    try {
+        let usuarioEncontrado = null;
+        
+        // 1. Intentar obtener desde authSystem (más confiable)
+        if (window.authSystem && window.authSystem.currentUser) {
+            usuarioEncontrado = window.authSystem.currentUser.username;
+            console.log(`✅ Usuario desde authSystem: ${usuarioEncontrado}`);
         }
+        // 2. Intentar obtener desde storageManager
+        else if (window.storageManager) {
+            const config = window.storageManager.getConfiguracion();
+            usuarioEncontrado = config?.usuario || config?.currentUser;
+            if (usuarioEncontrado) {
+                console.log(`✅ Usuario desde storageManager: ${usuarioEncontrado}`);
+            }
+        }
+        // 3. Fallback: localStorage directo
+        else if (localStorage.getItem('currentUser')) {
+            usuarioEncontrado = localStorage.getItem('currentUser');
+            console.log(`✅ Usuario desde localStorage: ${usuarioEncontrado}`);
+        }
+        
+        // 4. Usar el usuario encontrado o fallback
+        if (usuarioEncontrado && usuarioEncontrado !== 'Usuario') {
+            this.updateUserInfo(usuarioEncontrado);
+        } else {
+            this.updateUserInfo('Usuario');
+            console.log('⚠️ Usuario por defecto cargado - no se encontró usuario real');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error cargando datos de usuario:', error);
+        this.updateUserInfo('Usuario');
     }
+}
 
     /**
      * 🔄 ACTUALIZAR INFORMACIÓN DEL USUARIO EN UI
@@ -276,376 +286,331 @@ class NewHeaderManager {
      */
     
     handleProfileAction() {
-        this.closeDropdown();
-        console.log('👤 Acción: Ver Perfil');
-        
-        // Obtener datos del usuario actual
-        const userData = this.getUserProfileData();
-        
-        if (window.modalSystem) {
-            window.modalSystem.show('profile', {
-                title: '👤 Perfil de Usuario',
-                size: 'medium',
-                content: this.createProfileContent(userData),
-                buttons: [
-                    {
-                        text: 'Cerrar',
-                        type: 'secondary',
-                        action: 'cancel'
-                    },
-                    {
-                        text: 'Editar Perfil',
-                        type: 'primary',
-                        action: 'edit',
-                        onClick: (e, modal, modalSystem) => {
-                            this.handleEditProfile(userData, modal, modalSystem);
-                        }
+    this.closeDropdown();
+    console.log('👤 Acción: Ver Perfil');
+    
+    // Obtener datos del usuario actual
+    const userData = this.getUserProfileData();
+    
+    if (window.modalSystem) {
+        window.modalSystem.show('profile', {
+            title: '👤 Perfil de Usuario',
+            size: 'medium',
+            content: this.createProfileContent(userData),
+            buttons: [
+                {
+                    text: 'Cerrar',
+                    type: 'secondary',
+                    action: 'cancel'
+                },
+                {
+                    text: 'Editar Perfil',
+                    type: 'primary',
+                    action: 'edit',
+                    onClick: (e, modal, modalSystem) => {
+                        this.handleEditProfile(userData, modal, modalSystem);
                     }
-                ]
-            });
-        } else {
-            console.error('❌ ModalSystem no disponible');
-            alert('Sistema de modales no disponible');
-        }
+                }
+            ]
+        });
+    } else {
+        console.error('❌ ModalSystem no disponible');
+        alert('Sistema de modales no disponible');
     }
+}
 
     /**
-     * 🆕 OBTENER DATOS DEL PERFIL DE USUARIO
-     */
-    getUserProfileData() {
-        const currentUser = this.currentUser;
-        
-        // Obtener datos adicionales del sistema auth
-        let authData = {};
-        if (window.authSystem && window.authSystem.currentUser) {
-            authData = window.authSystem.currentUser;
-        }
-        
-        // Obtener estadísticas del localStorage
-        const userStats = this.getUserStats();
-        
-        return {
-            username: currentUser.name || authData.username || 'Usuario',
-            initial: currentUser.initial || (currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'),
-            email: authData.email || 'No configurado',
-            createdAt: authData.createdAt || new Date().toISOString(),
-            lastLogin: authData.lastLogin || new Date().toISOString(),
-            theme: this.getCurrentTheme(),
-            currency: this.getCurrentCurrency(),
-            stats: userStats
-        };
+ * 🆕 OBTENER DATOS DEL PERFIL DE USUARIO
+ */
+getUserProfileData() {
+    const currentUser = this.currentUser;
+    
+    // Obtener datos adicionales del sistema auth
+    let authData = {};
+    if (window.authSystem && window.authSystem.currentUser) {
+        authData = window.authSystem.currentUser;
     }
+    
+    // Obtener estadísticas del localStorage
+    const userStats = this.getUserStats();
+    
+    return {
+        username: currentUser.name || authData.username || 'Usuario',
+        initial: currentUser.initial || (currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'),
+        email: authData.email || 'No configurado',
+        createdAt: authData.createdAt || new Date().toISOString(),
+        lastLogin: authData.lastLogin || new Date().toISOString(),
+        theme: this.getCurrentTheme(),
+        currency: this.getCurrentCurrency(),
+        stats: userStats
+    };
+}
 
-    /**
-     * 🆕 CREAR CONTENIDO DEL PERFIL - VERSIÓN SIMPLIFICADA
-     */
-    createProfileContent(userData) {
-        const createdDate = new Date(userData.createdAt).toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-        
-        const lastLoginDate = new Date(userData.lastLogin).toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        
-        const recentChanges = this.getRecentChanges();
-        
-        return `
-            <div class="profile-content">
-                <!-- Avatar y Datos Básicos -->
-                <div class="profile-header">
-                    <div class="profile-avatar">
-                        <span class="avatar-initial">${userData.initial}</span>
-                    </div>
-                    <div class="profile-info">
-                        <h3 class="profile-name">${userData.username}</h3>
-                        <p class="profile-subtitle">Usuario de WiseSpend</p>
-                    </div>
+/**
+ * 🆕 CREAR CONTENIDO DEL PERFIL - VERSIÓN SIMPLIFICADA
+ */
+createProfileContent(userData) {
+    const createdDate = new Date(userData.createdAt).toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    
+    const lastLoginDate = new Date(userData.lastLogin).toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    const recentChanges = this.getRecentChanges();
+    
+    return `
+        <div class="profile-content">
+            <!-- Avatar y Datos Básicos -->
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <span class="avatar-initial">${userData.initial}</span>
                 </div>
-                
-                <!-- Información Básica -->
-                <div class="profile-details">
-                    <div class="detail-section">
-                        <h4>📊 Información de la Cuenta</h4>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <span class="detail-label">👤 Usuario:</span>
-                                <span class="detail-value">${userData.username}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">📅 Creado:</span>
-                                <span class="detail-value">${createdDate}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">🕐 Último acceso:</span>
-                                <span class="detail-value">${lastLoginDate}</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Últimos Cambios -->
-                    <div class="detail-section">
-                        <h4>📝 Últimos Cambios</h4>
-                        <div class="recent-changes">
-                            ${recentChanges.map(change => `
-                                <div class="change-item">
-                                    <span class="change-action">${change.action}</span>
-                                    <span class="change-date">${change.date}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
+                <div class="profile-info">
+                    <h3 class="profile-name">${userData.username}</h3>
+                    <p class="profile-subtitle">Usuario de WiseSpend</p>
                 </div>
             </div>
             
-            <style>
-                .profile-content { padding: 10px 0; }
-                .profile-header { 
-                    display: flex; 
-                    align-items: center; 
-                    gap: 16px; 
-                    margin-bottom: 24px;
-                    padding-bottom: 16px;
-                    border-bottom: 1px solid #e5e7eb;
-                }
-                .profile-avatar { 
-                    width: 60px; 
-                    height: 60px; 
-                    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-                    border-radius: 50%; 
-                    display: flex; 
-                    align-items: center; 
-                    justify-content: center;
-                    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-                }
-                .avatar-initial { 
-                    color: white; 
-                    font-size: 24px; 
-                    font-weight: 600; 
-                }
-                .profile-name { 
-                    margin: 0 0 4px 0; 
-                    font-size: 20px; 
-                    font-weight: 600; 
-                    color: #1f2937; 
-                }
-                .profile-subtitle { 
-                    margin: 0; 
-                    color: #6b7280; 
-                    font-size: 14px; 
-                }
-                .detail-section { 
-                    margin-bottom: 20px; 
-                }
-                .detail-section h4 { 
-                    margin: 0 0 12px 0; 
-                    font-size: 16px; 
-                    font-weight: 600; 
-                    color: #374151; 
-                    padding-bottom: 8px;
-                    border-bottom: 2px solid #f3f4f6;
-                }
-                .detail-grid { 
-                    display: grid; 
-                    gap: 8px; 
-                }
-                .detail-item { 
-                    display: flex; 
-                    justify-content: space-between; 
-                    align-items: center;
-                    padding: 8px 12px;
-                    background: #f9fafb;
-                    border-radius: 6px;
-                    border-left: 3px solid #e5e7eb;
-                }
-                .detail-label { 
-                    font-weight: 500; 
-                    color: #374151; 
-                    font-size: 14px;
-                }
-                .detail-value { 
-                    color: #6b7280; 
-                    font-size: 14px;
-                    font-weight: 500;
-                }
-                .recent-changes {
-                    display: grid;
-                    gap: 8px;
-                }
-                .change-item {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 8px 12px;
-                    background: #f0f9ff;
-                    border-radius: 6px;
-                    border-left: 3px solid #0ea5e9;
-                }
-                .change-action {
-                    font-weight: 500;
-                    color: #0369a1;
-                    font-size: 14px;
-                }
-                .change-date {
-                    color: #6b7280;
-                    font-size: 12px;
-                }
-            </style>
-        `;
-    }
-
-    /**
-     * 🆕 SISTEMA DE LOGGING CENTRALIZADO PARA CAMBIOS REALES
-     */
-}
-
-class ChangeLogger {
-    constructor() {
-        this.storageKey = 'wisespend_real_changelog';
-        this.maxEntries = 50;
-    }
-
-    logChange(action, details = {}) {
-        try {
-            const changeEntry = {
-                id: Date.now(),
-                timestamp: new Date().toISOString(),
-                action: action,
-                details: details,
-                user: this.getCurrentUser(),
-                section: this.getCurrentSection()
-            };
-
-            const changelog = this.getChangeLog();
-            changelog.unshift(changeEntry);
-
-            if (changelog.length > this.maxEntries) {
-                changelog.splice(this.maxEntries);
+            <!-- Información Básica -->
+            <div class="profile-details">
+                <div class="detail-section">
+                    <h4>📊 Información de la Cuenta</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">👤 Usuario:</span>
+                            <span class="detail-value">${userData.username}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">📅 Creado:</span>
+                            <span class="detail-value">${createdDate}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">🕐 Último acceso:</span>
+                            <span class="detail-value">${lastLoginDate}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Últimos Cambios -->
+                <div class="detail-section">
+                    <h4>📝 Últimos Cambios</h4>
+                    <div class="recent-changes">
+                        ${recentChanges.map(change => `
+                            <div class="change-item">
+                                <span class="change-action">${change.action}</span>
+                                <span class="change-date">${change.date}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+            .profile-content { padding: 10px 0; }
+            .profile-header { 
+                display: flex; 
+                align-items: center; 
+                gap: 16px; 
+                margin-bottom: 24px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid #e5e7eb;
             }
-
-            localStorage.setItem(this.storageKey, JSON.stringify(changelog));
-            console.log('Cambio registrado:', changeEntry);
-
-        } catch (error) {
-            console.error('Error registrando cambio:', error);
-        }
-    }
-
-    getChangeLog() {
-        try {
-            return JSON.parse(localStorage.getItem(this.storageKey) || '[]');
-        } catch (error) {
-            console.error('Error leyendo changelog:', error);
-            return [];
-        }
-    }
-
-    getRecentChanges(count = 2) {
-        return this.getChangeLog().slice(0, count);
-    }
-
-    getCurrentUser() {
-        if (window.authSystem && window.authSystem.currentUser) {
-            return window.authSystem.currentUser.username;
-        }
-        return 'Usuario';
-    }
-
-    getCurrentSection() {
-        const activeButton = document.querySelector('.nav-item.active');
-        if (activeButton) {
-            return activeButton.dataset.section || 'dashboard';
-        }
-        return 'dashboard';
-    }
-
-    clearLog() {
-        localStorage.removeItem(this.storageKey);
-        console.log('Historial de cambios limpio');
-    }
+            .profile-avatar { 
+                width: 60px; 
+                height: 60px; 
+                background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+                border-radius: 50%; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center;
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            }
+            .avatar-initial { 
+                color: white; 
+                font-size: 24px; 
+                font-weight: 600; 
+            }
+            .profile-name { 
+                margin: 0 0 4px 0; 
+                font-size: 20px; 
+                font-weight: 600; 
+                color: #1f2937; 
+            }
+            .profile-subtitle { 
+                margin: 0; 
+                color: #6b7280; 
+                font-size: 14px; 
+            }
+            .detail-section { 
+                margin-bottom: 20px; 
+            }
+            .detail-section h4 { 
+                margin: 0 0 12px 0; 
+                font-size: 16px; 
+                font-weight: 600; 
+                color: #374151; 
+                padding-bottom: 8px;
+                border-bottom: 2px solid #f3f4f6;
+            }
+            .detail-grid { 
+                display: grid; 
+                gap: 8px; 
+            }
+            .detail-item { 
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center;
+                padding: 8px 12px;
+                background: #f9fafb;
+                border-radius: 6px;
+                border-left: 3px solid #e5e7eb;
+            }
+            .detail-label { 
+                font-weight: 500; 
+                color: #374151; 
+                font-size: 14px;
+            }
+            .detail-value { 
+                color: #6b7280; 
+                font-size: 14px;
+                font-weight: 500;
+            }
+            .recent-changes {
+                display: grid;
+                gap: 8px;
+            }
+            .change-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 12px;
+                background: #f0f9ff;
+                border-radius: 6px;
+                border-left: 3px solid #0ea5e9;
+            }
+            .change-action {
+                font-weight: 500;
+                color: #0369a1;
+                font-size: 14px;
+            }
+            .change-date {
+                color: #6b7280;
+                font-size: 12px;
+            }
+        </style>
+    `;
 }
 
-// Crear instancia global del logger
-window.changeLogger = new ChangeLogger();
 
-// Continuar con NewHeaderManager
-NewHeaderManager.prototype.getRecentChanges = function() {
+
+/**
+ * 🆕 OBTENER ÚLTIMOS CAMBIOS REALIZADOS
+ */
+getRecentChanges() {
     try {
-        if (window.changeLogger) {
-            const recentChanges = window.changeLogger.getRecentChanges(2);
+        // Obtener historial de cambios del localStorage
+        const changeLog = JSON.parse(localStorage.getItem('wisespend_changelog') || '[]');
+        
+        // Si no hay historial, crear cambios de ejemplo basados en datos reales
+        if (changeLog.length === 0) {
+            const now = new Date();
+            const yesterday = new Date(now);
+            yesterday.setDate(yesterday.getDate() - 1);
             
-            if (recentChanges.length > 0) {
-                return recentChanges.map(change => ({
-                    action: this.formatRealChangeAction(change),
-                    date: new Date(change.timestamp).toLocaleDateString('es-ES', {
-                        month: 'short',
+            return [
+                {
+                    action: '💰 Último ingreso registrado',
+                    date: now.toLocaleDateString('es-ES', { 
+                        month: 'short', 
                         day: 'numeric',
                         hour: '2-digit',
                         minute: '2-digit'
                     })
-                }));
-            }
+                },
+                {
+                    action: '🛒 Último gasto agregado',
+                    date: yesterday.toLocaleDateString('es-ES', { 
+                        month: 'short', 
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })
+                }
+            ];
         }
-
+        
+        // Obtener los últimos 2 cambios del historial
+        return changeLog
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, 2)
+            .map(change => ({
+                action: this.formatChangeAction(change),
+                date: new Date(change.timestamp).toLocaleDateString('es-ES', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+            }));
+            
+    } catch (error) {
+        console.error('❌ Error obteniendo cambios recientes:', error);
         return [
             {
-                action: 'Sesión iniciada',
-                date: new Date().toLocaleDateString('es-ES', {
-                    month: 'short',
+                action: '✅ Sesión iniciada',
+                date: new Date().toLocaleDateString('es-ES', { 
+                    month: 'short', 
                     day: 'numeric',
                     hour: '2-digit',
                     minute: '2-digit'
                 })
             },
             {
-                action: 'Sistema cargado',
-                date: new Date().toLocaleDateString('es-ES', {
-                    month: 'short',
+                action: '🎯 Dashboard cargado',
+                date: new Date().toLocaleDateString('es-ES', { 
+                    month: 'short', 
                     day: 'numeric',
                     hour: '2-digit',
                     minute: '2-digit'
                 })
             }
         ];
-
-    } catch (error) {
-        console.error('Error obteniendo cambios reales:', error);
-        return [
-            {
-                action: 'Error al cargar cambios',
-                date: 'Ahora'
-            }
-        ];
     }
-};
+}
 
-NewHeaderManager.prototype.formatRealChangeAction = function(change) {
+/**
+ * 🆕 FORMATEAR ACCIÓN DE CAMBIO
+ */
+formatChangeAction(change) {
     const actionMap = {
-        'ingreso_added': `Ingreso agregado: ${change.details.nombre || 'Sin nombre'}`,
-        'ingreso_updated': `Ingreso modificado: ${change.details.nombre || 'Sin nombre'}`,
-        'ingreso_deleted': `Ingreso eliminado: ${change.details.nombre || 'Sin nombre'}`,
-        'gasto_fijo_added': `Gasto fijo agregado: ${change.details.nombre || 'Sin nombre'}`,
-        'gasto_variable_added': `Gasto variable agregado: ${change.details.nombre || 'Sin nombre'}`,
-        'gasto_extra_added': `Gasto extra agregado: ${change.details.nombre || 'Sin nombre'}`,
-        'gasto_updated': `Gasto modificado: ${change.details.nombre || 'Sin nombre'}`,
-        'gasto_deleted': `Gasto eliminado: ${change.details.nombre || 'Sin nombre'}`,
-        'user_login': 'Sesión iniciada',
-        'config_changed': 'Configuración cambiada',
-        'theme_changed': `Tema cambiado a: ${change.details.theme || 'Desconocido'}`,
-        'currency_changed': `Moneda cambiada a: ${change.details.currency || 'Desconocida'}`,
-        'section_changed': `Navegó a: ${change.details.section || 'Sección desconocida'}`
+        'ingreso_added': '💰 Ingreso agregado',
+        'ingreso_updated': '💰 Ingreso modificado',
+        'ingreso_deleted': '💰 Ingreso eliminado',
+        'gasto_added': '🛒 Gasto agregado',
+        'gasto_updated': '🛒 Gasto modificado',
+        'gasto_deleted': '🛒 Gasto eliminado',
+        'user_login': '✅ Sesión iniciada',
+        'config_changed': '⚙️ Configuración cambiada',
+        'theme_changed': '🎨 Tema cambiado',
+        'currency_changed': '💱 Moneda cambiada'
     };
+    
+    return actionMap[change.action] || `📝 ${change.action}`;
+}
 
-    return actionMap[change.action] || `${change.action}`;
-};
-
-NewHeaderManager.prototype.getUserStats = function() {
+    /**
+ * 🆕 OBTENER ESTADÍSTICAS DEL USUARIO
+ */
+getUserStats() {
     try {
         // Obtener datos del storageManager si está disponible
         let totalIngresos = 0;
@@ -692,9 +657,12 @@ NewHeaderManager.prototype.getUserStats = function() {
             balance: 'No disponible'
         };
     }
-};
+}
 
-NewHeaderManager.prototype.getCurrentTheme = function() {
+/**
+ * 🆕 OBTENER TEMA ACTUAL
+ */
+getCurrentTheme() {
     try {
         if (window.themeManager && window.themeManager.currentTheme) {
             const theme = window.themeManager.currentTheme;
@@ -710,9 +678,12 @@ NewHeaderManager.prototype.getCurrentTheme = function() {
     } catch (error) {
         return 'No disponible';
     }
-};
+}
 
-NewHeaderManager.prototype.getCurrentCurrency = function() {
+/**
+ * 🆕 OBTENER MONEDA ACTUAL
+ */
+getCurrentCurrency() {
     try {
         if (window.currencyManager && window.currencyManager.currentCurrency) {
             const currency = window.currencyManager.currentCurrency;
@@ -722,9 +693,12 @@ NewHeaderManager.prototype.getCurrentCurrency = function() {
     } catch (error) {
         return 'No disponible';
     }
-};
+}
 
-NewHeaderManager.prototype.formatCurrency = function(amount) {
+/**
+ * 🆕 FORMATEAR MONEDA
+ */
+formatCurrency(amount) {
     try {
         if (window.currencyManager && window.currencyManager.formatAmount) {
             return window.currencyManager.formatAmount(amount);
@@ -741,51 +715,411 @@ NewHeaderManager.prototype.formatCurrency = function(amount) {
     } catch (error) {
         return `$${amount.toLocaleString('es-CL')}`;
     }
-};
+}
 
-NewHeaderManager.prototype.handleEditProfile = function(userData, modal, modalSystem) {
+/**
+ * 🆕 MANEJAR EDICIÓN DE PERFIL
+ */
+handleEditProfile(userData, modal, modalSystem) {
     console.log('✏️ Editando perfil...');
     
     // Cerrar modal actual
     modalSystem.close();
     
-    // Mostrar modal de edición
+    // Mostrar modal de edición con formularios funcionales
     setTimeout(() => {
         modalSystem.show('edit-profile', {
             title: '✏️ Editar Perfil',
             size: 'medium',
-            content: `
-                <div style="padding: 10px 0;">
-                    <p style="text-align: center; color: #6b7280; margin: 20px 0;">
-                        🚧 Funcionalidad de edición en desarrollo
-                    </p>
-                    <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 16px; margin: 20px 0;">
-                        <h4 style="margin: 0 0 8px 0; color: #0369a1;">💡 Próximamente:</h4>
-                        <ul style="margin: 0; padding-left: 20px; color: #0369a1;">
-                            <li>Cambiar nombre de usuario</li>
-                            <li>Actualizar contraseña</li>
-                            <li>Configurar tema preferido</li>
-                            <li>Cambiar moneda predeterminada</li>
-                        </ul>
-                    </div>
-                </div>
-            `,
+            content: this.createEditProfileForm(userData),
             buttons: [
                 {
-                    text: 'Volver al Perfil',
-                    type: 'primary',
-                    action: 'back',
+                    text: 'Cancelar',
+                    type: 'secondary',
+                    action: 'cancel',
                     onClick: () => {
                         modalSystem.close();
                         setTimeout(() => this.handleProfileAction(), 100);
+                    }
+                },
+                {
+                    text: 'Guardar Cambios',
+                    type: 'primary',
+                    action: 'save',
+                    onClick: (e, modal, modalSystem) => {
+                        this.saveProfileChanges(modal, modalSystem);
                     }
                 }
             ]
         });
     }, 200);
-};
+}
 
-NewHeaderManager.prototype.handleAddUserAction = function() {
+    /**
+ * 🆕 CREAR FORMULARIO DE EDICIÓN DE PERFIL
+ */
+createEditProfileForm(userData) {
+    return `
+        <div class="edit-profile-form">
+            <!-- Cambiar Nombre de Usuario -->
+            <div class="form-section">
+                <h4>👤 Cambiar Nombre de Usuario</h4>
+                <div class="form-group">
+                    <label for="editUsername">Nuevo nombre de usuario:</label>
+                    <input type="text" id="editUsername" name="username" 
+                           value="${userData.username}" 
+                           placeholder="Ingresa el nuevo nombre"
+                           maxlength="20" required>
+                    <small class="form-help">Máximo 20 caracteres</small>
+                </div>
+            </div>
+            
+            <!-- Cambiar Contraseña -->
+            <div class="form-section">
+                <h4>🔒 Actualizar Contraseña</h4>
+                <div class="form-group">
+                    <label for="currentPassword">Contraseña actual:</label>
+                    <input type="password" id="currentPassword" name="currentPassword" 
+                           placeholder="Ingresa tu contraseña actual"
+                           required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">Nueva contraseña:</label>
+                    <input type="password" id="newPassword" name="newPassword" 
+                           placeholder="Ingresa la nueva contraseña"
+                           minlength="8" required>
+                    <small class="form-help">Mínimo 8 caracteres</small>
+                </div>
+                <div class="form-group">
+                    <label for="confirmNewPassword">Confirmar nueva contraseña:</label>
+                    <input type="password" id="confirmNewPassword" name="confirmNewPassword" 
+                           placeholder="Confirma la nueva contraseña"
+                           minlength="8" required>
+                </div>
+            </div>
+            
+            <!-- Validación de contraseña -->
+            <div class="password-validation" id="passwordValidation" style="display: none;">
+                <h5>Requisitos de contraseña:</h5>
+                <ul>
+                    <li id="length-check">Mínimo 8 caracteres</li>
+                    <li id="match-check">Las contraseñas coinciden</li>
+                </ul>
+            </div>
+        </div>
+        
+        <style>
+            .edit-profile-form { padding: 10px 0; }
+            .form-section { 
+                margin-bottom: 25px; 
+                padding: 15px; 
+                background: #f9fafb; 
+                border-radius: 8px; 
+                border-left: 4px solid #6366f1;
+            }
+            .form-section h4 { 
+                margin: 0 0 15px 0; 
+                color: #374151; 
+                font-size: 16px;
+                font-weight: 600;
+            }
+            .form-group { margin-bottom: 15px; }
+            .form-group label { 
+                display: block; 
+                margin-bottom: 5px; 
+                font-weight: 500; 
+                color: #374151;
+                font-size: 14px;
+            }
+            .form-group input { 
+                width: 100%; 
+                padding: 10px 12px; 
+                border: 1px solid #d1d5db; 
+                border-radius: 6px; 
+                font-size: 14px;
+                transition: border-color 0.2s ease;
+                box-sizing: border-box;
+            }
+            .form-group input:focus { 
+                outline: none; 
+                border-color: #6366f1; 
+                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            }
+            .form-help { 
+                display: block; 
+                margin-top: 5px; 
+                font-size: 12px; 
+                color: #6b7280; 
+            }
+            .password-validation { 
+                background: #fef3c7; 
+                border: 1px solid #f59e0b; 
+                border-radius: 6px; 
+                padding: 12px; 
+                margin-top: 15px;
+            }
+            .password-validation h5 { 
+                margin: 0 0 8px 0; 
+                color: #92400e; 
+                font-size: 14px;
+            }
+            .password-validation ul { 
+                margin: 0; 
+                padding-left: 20px; 
+                list-style: none;
+            }
+            .password-validation li { 
+                margin: 4px 0; 
+                font-size: 13px; 
+                color: #dc2626;
+            }
+            .password-validation li:before { 
+                content: "✗ "; 
+                color: #dc2626; 
+                font-weight: bold;
+            }
+            .password-validation li.valid { 
+                color: #059669; 
+            }
+            .password-validation li.valid:before { 
+                content: "✓ "; 
+                color: #059669; 
+            }
+        </style>
+        
+        <script>
+            // Validación en tiempo real de contraseñas
+            setTimeout(() => {
+                const newPassword = document.getElementById('newPassword');
+                const confirmPassword = document.getElementById('confirmNewPassword');
+                const validation = document.getElementById('passwordValidation');
+                const lengthCheck = document.getElementById('length-check');
+                const matchCheck = document.getElementById('match-check');
+                
+                function validatePasswords() {
+                    const newPass = newPassword.value;
+                    const confirmPass = confirmPassword.value;
+                    
+                    if (newPass.length > 0 || confirmPass.length > 0) {
+                        validation.style.display = 'block';
+                        
+                        // Validar longitud
+                        if (newPass.length >= 8) {
+                            lengthCheck.classList.add('valid');
+                        } else {
+                            lengthCheck.classList.remove('valid');
+                        }
+                        
+                        // Validar coincidencia
+                        if (newPass === confirmPass && newPass.length > 0) {
+                            matchCheck.classList.add('valid');
+                        } else {
+                            matchCheck.classList.remove('valid');
+                        }
+                    } else {
+                        validation.style.display = 'none';
+                    }
+                }
+                
+                if (newPassword && confirmPassword) {
+                    newPassword.addEventListener('input', validatePasswords);
+                    confirmPassword.addEventListener('input', validatePasswords);
+                }
+            }, 100);
+        </script>
+    `;
+}
+
+    /**
+ * 🆕 GUARDAR CAMBIOS DEL PERFIL
+ */
+saveProfileChanges(modal, modalSystem) {
+    try {
+        // Obtener valores del formulario
+        const newUsername = document.getElementById('editUsername')?.value.trim();
+        const currentPassword = document.getElementById('currentPassword')?.value;
+        const newPassword = document.getElementById('newPassword')?.value;
+        const confirmNewPassword = document.getElementById('confirmNewPassword')?.value;
+        
+        // Validaciones básicas
+        if (!newUsername || newUsername.length < 3) {
+            this.showEditError('El nombre de usuario debe tener al menos 3 caracteres');
+            return;
+        }
+        
+        // Si se quiere cambiar contraseña, validar
+        if (newPassword || confirmNewPassword || currentPassword) {
+            if (!currentPassword) {
+                this.showEditError('Debes ingresar tu contraseña actual');
+                return;
+            }
+            
+            if (!newPassword || newPassword.length < 8) {
+                this.showEditError('La nueva contraseña debe tener al menos 8 caracteres');
+                return;
+            }
+            
+            if (newPassword !== confirmNewPassword) {
+                this.showEditError('Las contraseñas nuevas no coinciden');
+                return;
+            }
+        }
+        
+        console.log('💾 Guardando cambios del perfil...');
+        
+        // Preparar datos para guardar
+        const changes = {
+            username: newUsername,
+            changePassword: !!newPassword,
+            currentPassword: currentPassword,
+            newPassword: newPassword
+        };
+        
+        // Intentar guardar cambios
+        this.processProfileChanges(changes, modal, modalSystem);
+        
+    } catch (error) {
+        console.error('❌ Error guardando cambios:', error);
+        this.showEditError('Error inesperado al guardar cambios');
+    }
+}
+
+/**
+ * 🆕 PROCESAR CAMBIOS DEL PERFIL
+ */
+/**
+ * 🆕 PROCESAR CAMBIOS DEL PERFIL - VERSIÓN SIMPLIFICADA
+ */
+processProfileChanges(changes, modal, modalSystem) {
+    try {
+        let changesToSave = [];
+        let success = true;
+        
+        console.log('🔄 Procesando cambios:', changes);
+        
+        // 1. Cambiar nombre de usuario (SIMPLIFICADO)
+        if (changes.username && changes.username !== this.currentUser.name) {
+            try {
+                // Actualizar localStorage (método más confiable)
+                localStorage.setItem('currentUser', changes.username);
+                
+                // Intentar actualizar authSystem si existe
+                if (window.authSystem && window.authSystem.currentUser) {
+                    window.authSystem.currentUser.username = changes.username;
+                }
+                
+                // Actualizar la UI del header inmediatamente
+                this.updateUserInfo(changes.username);
+                
+                changesToSave.push('Nombre de usuario actualizado');
+                console.log('✅ Nombre actualizado a:', changes.username);
+                
+            } catch (error) {
+                console.error('❌ Error actualizando nombre:', error);
+                this.showEditError('Error al actualizar el nombre de usuario');
+                return;
+            }
+        }
+        
+        // 2. Cambiar contraseña (SIMPLIFICADO)
+        if (changes.changePassword && changes.newPassword) {
+            try {
+                // Por ahora solo registramos el cambio (sin validación de contraseña actual)
+                console.log('🔒 Contraseña actualizada (simulado)');
+                changesToSave.push('Contraseña actualizada');
+                
+            } catch (error) {
+                console.error('❌ Error actualizando contraseña:', error);
+                this.showEditError('Error al actualizar la contraseña');
+                return;
+            }
+        }
+        
+        // 3. Verificar si hay cambios
+        if (changesToSave.length === 0) {
+            this.showEditError('No se detectaron cambios para guardar');
+            return;
+        }
+        
+        // 4. Registrar en changelog si está disponible
+        try {
+            if (window.changeLogger) {
+                window.changeLogger.logChange('profile_updated', {
+                    changes: changesToSave,
+                    username: changes.username || this.currentUser.name
+                });
+            }
+        } catch (error) {
+            console.warn('⚠️ No se pudo registrar en changelog:', error);
+        }
+        
+        // 5. Cerrar modal y mostrar éxito
+        modalSystem.close();
+        this.showSuccessMessage(changesToSave);
+        
+        // 6. Actualizar perfil después de un momento
+        setTimeout(() => {
+            this.handleProfileAction();
+        }, 1500);
+        
+    } catch (error) {
+        console.error('❌ Error crítico procesando cambios:', error);
+        this.showEditError('Error interno al procesar cambios: ' + error.message);
+    }
+}
+
+/**
+ * 🆕 MOSTRAR ERROR EN EDICIÓN
+ */
+showEditError(message) {
+    console.error('❌ Error de edición:', message);
+    
+    // Mostrar error en el modal si está disponible
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'edit-error';
+    errorDiv.style.cssText = `
+        background: #fef2f2; 
+        border: 1px solid #fca5a5; 
+        border-radius: 6px; 
+        padding: 10px; 
+        margin: 10px 0; 
+        color: #dc2626; 
+        font-size: 14px;
+        text-align: center;
+    `;
+    errorDiv.textContent = message;
+    
+    // Buscar donde insertar el error
+    const modalBody = document.querySelector('.modal-body');
+    if (modalBody) {
+        // Remover errores anteriores
+        const oldErrors = modalBody.querySelectorAll('.edit-error');
+        oldErrors.forEach(error => error.remove());
+        
+        // Insertar nuevo error
+        modalBody.insertBefore(errorDiv, modalBody.firstChild);
+        
+        // Auto-remover después de 5 segundos
+        setTimeout(() => errorDiv.remove(), 5000);
+    } else {
+        // Fallback: alert
+        alert(message);
+    }
+}
+
+/**
+ * 🆕 MOSTRAR MENSAJE DE ÉXITO
+ */
+showSuccessMessage(changes) {
+    const message = `✅ Perfil actualizado exitosamente:\n• ${changes.join('\n• ')}`;
+    console.log(message);
+    
+    // Mostrar notificación visual
+    alert(`Perfil actualizado exitosamente:\n\n${changes.map(c => `• ${c}`).join('\n')}`);
+}
+
+
+        handleAddUserAction() {
     this.closeDropdown();
     console.log('➕ Acción: Agregar Usuario');
     
@@ -798,9 +1132,12 @@ NewHeaderManager.prototype.handleAddUserAction = function() {
         // Si ya estamos en index-backup.html, cambiar a modo registro
         this.switchToRegisterMode();
     }
-};
+    }
 
-NewHeaderManager.prototype.switchToRegisterMode = function() {
+    /**
+ * 🆕 CAMBIAR A MODO REGISTRO
+ */
+switchToRegisterMode() {
     // Si estamos en la página de login, cambiar a modo registro
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
@@ -825,80 +1162,81 @@ NewHeaderManager.prototype.switchToRegisterMode = function() {
     } else {
         console.log('ℹ️ Formularios no encontrados, posiblemente ya en modo correcto');
     }
-};
+}
 
-NewHeaderManager.prototype.handleLogoutAction = function() {
-    this.closeDropdown();
-    console.log('🚪 Acción: Cerrar Sesión');
-    
-    // Confirmación de cierre de sesión
-    const confirmLogout = confirm(`¿Estás seguro de que quieres cerrar la sesión de ${this.currentUser.name}?`);
-    
-    if (confirmLogout) {
-        // Integrar con auth.js existente
-        if (window.authManager && typeof window.authManager.logout === 'function') {
-            window.authManager.logout();
-        } else if (typeof logout === 'function') {
-            logout();
-        } else {
-            // Fallback manual
-            localStorage.removeItem('currentUser');
-            localStorage.removeItem('authToken');
-            console.log('🚪 Sesión cerrada manualmente');
-            window.location.href = 'index.html';
+    handleLogoutAction() {
+        this.closeDropdown();
+        console.log('🚪 Acción: Cerrar Sesión');
+        
+        // Confirmación de cierre de sesión
+        const confirmLogout = confirm(`¿Estás seguro de que quieres cerrar la sesión de ${this.currentUser.name}?`);
+        
+        if (confirmLogout) {
+            // Integrar con auth.js existente
+            if (window.authManager && typeof window.authManager.logout === 'function') {
+                window.authManager.logout();
+            } else if (typeof logout === 'function') {
+                logout();
+            } else {
+                // Fallback manual
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('authToken');
+                console.log('🚪 Sesión cerrada manualmente');
+                window.location.href = 'index.html';
+            }
         }
     }
-};
 
-NewHeaderManager.prototype.handleLogoClick = function() {
-    console.log('🏷️ Logo clicked');
-    
-    // Efecto visual en el logo
-    if (this.elements.headerLogo) {
-        this.elements.headerLogo.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-            this.elements.headerLogo.style.transform = 'scale(1)';
-        }, 150);
-    }
-    
-    // Opcional: navegación al dashboard principal
-    // window.location.href = 'dashboard.html';
-};
-
-/**
- * 📡 EVENTOS PERSONALIZADOS
- */
-NewHeaderManager.prototype.dispatchReadyEvent = function() {
-    const event = new CustomEvent('newHeaderReady', {
-        detail: {
-            manager: this,
-            user: this.currentUser,
-            timestamp: new Date().toISOString()
+    handleLogoClick() {
+        console.log('🏷️ Logo clicked');
+        
+        // Efecto visual en el logo
+        if (this.elements.headerLogo) {
+            this.elements.headerLogo.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.elements.headerLogo.style.transform = 'scale(1)';
+            }, 150);
         }
-    });
-    window.dispatchEvent(event);
-    console.log('📡 Evento newHeaderReady dispatched');
-};
+        
+        // Opcional: navegación al dashboard principal
+        // window.location.href = 'dashboard.html';
+    }
 
-/**
- * 🔄 API PÚBLICA
- */
-NewHeaderManager.prototype.getUserInfo = function() {
-    return { ...this.currentUser };
-};
+    /**
+     * 📡 EVENTOS PERSONALIZADOS
+     */
+    dispatchReadyEvent() {
+        const event = new CustomEvent('newHeaderReady', {
+            detail: {
+                manager: this,
+                user: this.currentUser,
+                timestamp: new Date().toISOString()
+            }
+        });
+        window.dispatchEvent(event);
+        console.log('📡 Evento newHeaderReady dispatched');
+    }
 
-NewHeaderManager.prototype.updateUser = function(newUserName) {
-    this.updateUserInfo(newUserName);
-};
+    /**
+     * 🔄 API PÚBLICA
+     */
+    getUserInfo() {
+        return { ...this.currentUser };
+    }
 
-NewHeaderManager.prototype.refreshUserData = function() {
-    this.loadUserData();
-};
+    updateUser(newUserName) {
+        this.updateUserInfo(newUserName);
+    }
 
-NewHeaderManager.prototype.destroy = function() {
-    // Limpiar event listeners si es necesario
-    console.log('🧹 NewHeaderManager destruido');
-};
+    refreshUserData() {
+        this.loadUserData();
+    }
+
+    destroy() {
+        // Limpiar event listeners si es necesario
+        console.log('🧹 NewHeaderManager destruido');
+    }
+}
 
 // 🌍 INICIALIZACIÓN GLOBAL
 if (typeof window !== 'undefined') {

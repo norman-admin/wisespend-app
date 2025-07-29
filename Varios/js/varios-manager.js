@@ -202,13 +202,6 @@ class VariosManager {
         const contentContainer = this.container.querySelector('#varios-content');
         if (!contentContainer) return;
 
-        // Mostrar loading
-        contentContainer.innerHTML = `
-            <div class="varios-loading">
-                <p>Cargando ${tabId}...</p>
-            </div>
-        `;
-
         try {
             switch (tabId) {
                 case 'notas':

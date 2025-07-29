@@ -869,16 +869,12 @@ class ContextualManager {
         if (type === 'income') {
             // 🔧 USAR RENDERIZADO DIRECTO DE TABLA SIN PESTAÑEO
             if (window.IncomeTableEnhanced && window.gastosManager) {
-    setTimeout(() => {
-
-        // Crear instancia temporal de la tabla
-        const tableInstance = new window.IncomeTableEnhanced(window.gastosManager);
-        tableInstance.renderIncomeSection(window.gastosManager.getMainContainer());
-                    window.gastosManager.updateHeaderTotals();
-                    console.log('✅ Tabla de ingresos actualizada sin pestañeo');
-                }, 50);
+                // Crear instancia temporal de la tabla
+                const tableInstance = new window.IncomeTableEnhanced(window.gastosManager);
+                tableInstance.renderIncomeSection(window.gastosManager.getMainContainer());
+                window.gastosManager.updateHeaderTotals();
+                console.log('✅ Tabla de ingresos actualizada sin pestañeo');
             } else {
-                
                 // Fallback al método tradicional
                 this.refreshView();
             }
@@ -887,7 +883,6 @@ class ContextualManager {
             this.refreshView();
         }
     }
-
     /**
      * Refrescar vista (método tradicional para compatibilidad)
      */

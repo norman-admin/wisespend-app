@@ -1235,11 +1235,41 @@ moveReminderToTop(reminderId) {
             }
         });
 
-        // Cerrar modales clickeando fuera
+        // Cerrar modales clickeando fuera - CORREGIDO
         document.addEventListener('click', (e) => {
+            // Solo cerrar si el clic es exactamente en el overlay
             if (e.target.classList.contains('modal-overlay')) {
                 this.closeTaskModal();
                 this.closeReminderModal();
+            }
+        });
+
+        // 🆕 MANEJO ESPECIAL PARA MOUSEDOWN EN SELECTS
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.matches('#categorySelect, #prioritySelect, #taskModal select, #reminderModal select')) {
+                e.stopPropagation();
+            }
+        });
+
+        // 🆕 MANEJO ESPECIAL PARA CHANGE EN SELECTS
+        document.addEventListener('change', (e) => {
+            if (e.target.matches('#categorySelect, #prioritySelect, #taskModal select, #reminderModal select')) {
+                e.stopPropagation();
+            }
+        });
+
+         // 🆕 MANEJO ESPECIAL PARA DROPDOWNS
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.matches('#categorySelect, #prioritySelect, #taskModal select, #reminderModal select')) {
+                e.stopPropagation();
+            }
+        });
+
+        // 🆕 PREVENIR PROPAGACIÓN EN CONTENIDO INTERNO DE MODALES
+        document.addEventListener('click', (e) => {
+            const modalContent = e.target.closest('.modal-content-task, .modal-content-reminder');
+            if (modalContent) {
+                e.stopPropagation();
             }
         });
 
@@ -1251,6 +1281,37 @@ moveReminderToTop(reminderId) {
                 this.saveTask(); // Guardar automáticamente
             }
         });
+
+        // 🆕 SOLUCIÓN BALANCEADA PARA TODOS LOS ELEMENTOS
+document.addEventListener('mousedown', (e) => {
+    // Solo para selects - bloquear propagación
+    if (e.target.matches('select') && e.target.closest('#taskModal, #reminderModal')) {
+        e.stopImmediatePropagation();
+        return;
+    }
+    
+    // Para inputs y textarea - permitir, pero enfocar
+    if (e.target.matches('input, textarea') && e.target.closest('#taskModal, #reminderModal')) {
+        e.stopPropagation();
+        setTimeout(() => e.target.focus(), 10);
+        return;
+    }
+}, true);
+
+document.addEventListener('click', (e) => {
+    // Solo para selects - bloquear propagación
+    if (e.target.matches('select') && e.target.closest('#taskModal, #reminderModal')) {
+        e.stopImmediatePropagation();
+        return;
+    }
+    
+    // Para inputs y textarea - permitir y enfocar
+    if (e.target.matches('input, textarea') && e.target.closest('#taskModal, #reminderModal')) {
+        e.stopPropagation();
+        e.target.focus();
+        return;
+    }
+}, true);
     }
 
     /**

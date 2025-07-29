@@ -1,6 +1,6 @@
 /**
  * 🎭 MODAL-SYSTEM.JS - Sistema Universal de Modales CON SOPORTE ENTER KEY
- * Control de Gastos Familiares - Versión 1.1.0 MEJORADO
+ * Control de Gastos Familiares - Versión 1.2.0 UNIFICADO
  * 
  * 🎯 FUNCIONALIDADES:
  * ✅ API unificada para todos los modales
@@ -12,6 +12,7 @@
  * 🆕 SOPORTE ENTER KEY UNIVERSAL
  * 🆕 Formularios HTML reales con submit
  * 🆕 Doble funcionalidad: Enter + Clic en botón
+ * 🔧 INTEGRACIÓN UNIFICADA CON HEADER
  */
 
 class ModalSystem {
@@ -27,7 +28,7 @@ class ModalSystem {
         };
         
         this.initializeSystem();
-        console.log('🎭 ModalSystem v1.1.0 inicializado con soporte Enter key');
+        console.log('🎭 ModalSystem v1.2.0 inicializado - UNIFICADO CON HEADER');
     }
 
     /**
@@ -47,7 +48,7 @@ class ModalSystem {
     }
 
     /**
-     * API PRINCIPAL - MOSTRAR MODAL
+     * API PRINCIPAL - MOSTRAR MODAL - UNIFICADO
      */
     show(type, config = {}) {
         const modalConfig = {
@@ -76,6 +77,25 @@ class ModalSystem {
         
         // 🆕 CONFIGURAR SOPORTE DE ENTER KEY
         this.setupFormSubmitHandlers(modal, modalConfig);
+        
+        // 🔧 CONTROL UNIFICADO DE HEADER Y MODALES
+        document.body.classList.add('modal-active');
+
+        // Gestión de focus simplificada
+        setTimeout(() => {
+            // Blur del header
+            const headerButton = document.getElementById('userMenuButton');
+            if (headerButton) {
+                headerButton.blur();
+            }
+            
+            // Focus al modal
+            const firstInput = modal.querySelector('input[type="text"], input[type="password"], textarea');
+            if (firstInput) {
+                firstInput.focus();
+                firstInput.select();
+            }
+        }, 150);
         
         return modal;
     }
@@ -214,7 +234,7 @@ class ModalSystem {
     }
 
     /**
-     * CONFIGURAR EVENTOS
+     * CONFIGURAR EVENTOS - CORREGIDO PARA CLICS INTERNOS
      */
     setupModalEvents(modal, config) {
         // Cerrar modal
@@ -225,12 +245,39 @@ class ModalSystem {
             });
         });
 
-        // Backdrop click
+        // Backdrop click - MEJORADO para permitir clics internos
         if (this.config.closeOnBackdropClick) {
             modal.addEventListener('click', (e) => {
-                if (e.target === modal) this.close();
+                // Solo cerrar si el clic es exactamente en el overlay, no en contenido interno
+                if (e.target === modal) {
+                    this.close();
+                }
             });
         }
+
+        // 🆕 PREVENIR PROPAGACIÓN EN CONTENIDO INTERNO
+        const modalContent = modal.querySelector('.modal-content, .modern-modal');
+        if (modalContent) {
+            modalContent.addEventListener('click', (e) => {
+                // Permitir que todos los clics internos funcionen normalmente
+                e.stopPropagation();
+            });
+        }
+
+        // 🆕 ASEGURAR QUE LOS INPUTS SIEMPRE RESPONDAN A CLICS
+        const inputs = modal.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.addEventListener('click', (e) => {
+                // Asegurar que el input reciba el focus al hacer clic
+                e.stopPropagation();
+                input.focus();
+            });
+            
+            // También manejar mousedown para casos edge
+            input.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+            });
+        });
 
         // Botones personalizados
         config.buttons?.forEach(btnConfig => {
@@ -265,6 +312,9 @@ class ModalSystem {
         }
     }
 
+    /**
+     * CERRAR MODAL - UNIFICADO
+     */
     close(modal = null) {
         const targetModal = modal || this.currentModal;
         if (!targetModal) return;
@@ -288,6 +338,9 @@ class ModalSystem {
         }
     }
 
+    /**
+     * REMOVER MODAL - UNIFICADO CON HEADER
+     */
     removeModal(modal) {
         if (modal && modal.parentNode) {
             modal.remove();
@@ -295,6 +348,18 @@ class ModalSystem {
         
         this.modalStack = this.modalStack.filter(m => m !== modal);
         this.currentModal = this.modalStack[this.modalStack.length - 1] || null;
+        
+        // 🔧 LIMPIAR ESTADO MODAL SI NO HAY MÁS MODALES
+        if (this.modalStack.length === 0) {
+            document.body.classList.remove('modal-active');
+            
+            // Reactivar header completamente
+            const headerButton = document.getElementById('userMenuButton');
+            if (headerButton) {
+                headerButton.removeAttribute('tabindex');
+                headerButton.style.pointerEvents = '';
+            }
+        }
     }
 
     removeExistingModal() {
@@ -562,7 +627,22 @@ class ModalSystem {
     }
 
     /**
-     * INYECTAR ESTILOS CSS
+     * UTILIDADES PÚBLICAS
+     */
+    isModalOpen() {
+        return this.currentModal !== null;
+    }
+
+    getConfig() {
+        return { ...this.config };
+    }
+
+    setConfig(newConfig) {
+        this.config = { ...this.config, ...newConfig };
+    }
+
+    /**
+     * INYECTAR ESTILOS CSS - MEJORADO
      */
     injectStyles() {
         if (document.querySelector('#modal-system-styles')) return;
@@ -755,6 +835,15 @@ class ModalSystem {
                 background: #e5e7eb;
             }
             
+            .btn-danger {
+                background: #ef4444;
+                color: white;
+            }
+            
+            .btn-danger:hover {
+                background: #dc2626;
+            }
+            
             .btn:disabled {
                 opacity: 0.6;
                 cursor: not-allowed;
@@ -809,6 +898,27 @@ class ModalSystem {
                 to { transform: rotate(360deg); }
             }
             
+            /* UNIFICACIÓN CON HEADER - MODAL ACTIVE STATE */
+            body.modal-active .user-menu-wrapper,
+            body.modal-active #userMenuButton {
+                pointer-events: none !important;
+                opacity: 0.7 !important;
+                transition: opacity 0.2s ease !important;
+            }
+
+            body.modal-active .user-dropdown-menu {
+                display: none !important;
+            }
+
+            /* Asegurar que los inputs del modal funcionen */
+            .modal-overlay input,
+            .modal-overlay textarea,
+            .modal-overlay select,
+            .modal-overlay button {
+                pointer-events: auto !important;
+                opacity: 1 !important;
+            }
+            
             /* Responsive */
             @media (max-width: 640px) {
                 .modal-overlay {
@@ -836,50 +946,8 @@ class ModalSystem {
         `;
         
         document.head.appendChild(styles);
-        console.log('✅ Estilos del modal inyectados');
+        console.log('✅ Estilos del modal inyectados - UNIFICADOS CON HEADER');
     }
-
-    /**
- * 🆕 DESACTIVAR HEADER DURANTE MODALES
- */
-show(type, config = {}) {
-    // ... código existente del método show() ...
-    
-    // AL FINAL del método, ANTES del return, AGREGAR:
-    document.body.classList.add('modal-active');
-    
-    // Forzar blur del header
-    setTimeout(() => {
-        const headerButton = document.getElementById('userMenuButton');
-        if (headerButton) {
-            headerButton.blur();
-            headerButton.setAttribute('tabindex', '-1');
-        }
-        
-        // Focus al primer input del modal
-        const firstInput = modal.querySelector('input, textarea, select');
-        if (firstInput) {
-            firstInput.focus();
-        }
-    }, 100);
-    
-    return modal;
-}
-
-close(modal = null) {
-    // ... código existente del método close() ...
-    
-    // AL FINAL del método removeModal, AGREGAR:
-    if (this.modalStack.length === 0) {
-        document.body.classList.remove('modal-active');
-        
-        // Reactivar header
-        const headerButton = document.getElementById('userMenuButton');
-        if (headerButton) {
-            headerButton.setAttribute('tabindex', '0');
-        }
-    }
-}
 }
 
 // Inicialización global
@@ -890,4 +958,4 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = ModalSystem;
 }
 
-console.log('🎭 Modal-system.js v1.1.0 cargado - CON SOPORTE ENTER KEY UNIVERSAL');
+console.log('🎭 Modal-system.js v1.2.0 cargado - SISTEMA UNIFICADO CON HEADER');

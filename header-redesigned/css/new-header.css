@@ -1,7 +1,7 @@
 /**
- * NEW-HEADER.CSS - Header Ultra Minimalista RECONSTRUIDO
+ * NEW-HEADER.CSS - Header Ultra Minimalista UNIFICADO
  * WiseSpend - Control de Gastos Familiares
- * Versión: 1.1.0 - DROPDOWN GARANTIZADO FUNCIONAL
+ * Versión: 1.2.0 - SISTEMA UNIFICADO CON MODAL-SYSTEM
  * 
  * 🎯 CARACTERÍSTICAS:
  * ✅ Compatible con themes.css variables CSS
@@ -11,6 +11,7 @@
  * ✅ Dark mode automático
  * ✅ Accesibilidad optimizada
  * ✅ Z-index optimizado para evitar conflictos
+ * 🔧 INTEGRACIÓN UNIFICADA CON MODAL-SYSTEM
  */
 
 /* ========== RESET Y BASE ========== */
@@ -75,7 +76,7 @@
     z-index: 1000; /* 🔥 CRÍTICO: Z-index alto para el contenedor */
 }
 
-/* ========== BOTÓN MENÚ USUARIO ========== */
+/* ========== BOTÓN MENÚ USUARIO - UNIFICADO ========== */
 .user-menu-button {
     display: flex;
     align-items: center;
@@ -109,6 +110,7 @@
     box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
 }
 
+/* 🔧 ESTADOS UNIFICADOS PARA MODAL-ACTIVE */
 .user-menu-button:not(:focus):not(:hover) {
     background: var(--bg-accent, #f8fafc) !important;
     border-color: var(--border-medium, #d1d5db) !important;
@@ -175,7 +177,7 @@
     flex-shrink: 0;
 }
 
-/* ========== DROPDOWN MENU - RECONSTRUIDO ========== */
+/* ========== DROPDOWN MENU - RECONSTRUIDO Y UNIFICADO ========== */
 .user-dropdown-menu {
     /* 🔥 POSICIONAMIENTO ABSOLUTO GARANTIZADO */
     position: absolute !important;
@@ -298,6 +300,57 @@
 
 .dropdown-menu-item.logout-item:hover .menu-item-icon {
     color: var(--danger-600, #dc2626) !important;
+}
+
+/* ========== UNIFICACIÓN CON MODAL-SYSTEM ========== */
+
+/* 🔧 DESACTIVAR HEADER CUANDO HAY MODAL ACTIVO */
+body.modal-active .user-menu-wrapper,
+body.modal-active .user-menu-button {
+    pointer-events: none !important;
+    opacity: 0.7 !important;
+    transition: opacity 0.2s ease !important;
+}
+
+body.modal-active .user-menu-button {
+    background: var(--bg-accent, #f8fafc) !important;
+    border-color: var(--border-medium, #d1d5db) !important;
+    box-shadow: none !important;
+    outline: none !important;
+    transform: none !important;
+}
+
+body.modal-active .user-menu-button:focus,
+body.modal-active .user-menu-button:active,
+body.modal-active .user-menu-button:hover {
+    background: var(--bg-accent, #f8fafc) !important;
+    border-color: var(--border-medium, #d1d5db) !important;
+    box-shadow: none !important;
+    outline: none !important;
+    transform: none !important;
+}
+
+body.modal-active .user-dropdown-menu {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* 🔧 ASEGURAR QUE LOS MODALES FUNCIONEN */
+.modal-overlay,
+.modal-overlay * {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+}
+
+.modal-overlay input,
+.modal-overlay textarea,
+.modal-overlay select,
+.modal-overlay button {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    cursor: auto !important;
 }
 
 /* ========== RESPONSIVE DESIGN ========== */
@@ -487,7 +540,7 @@
     }
 }
 
-/* ========== MODALES DEL HEADER ========== */
+/* ========== ESTILOS DE MODALES DEL HEADER ========== */
 
 /* === MODAL VER PERFIL === */
 .profile-content { 
@@ -792,30 +845,7 @@
     text-align: center;
 }
 
-/* ========== DESACTIVAR HEADER CUANDO HAY MODAL ========== */
-body.modal-active .user-menu-button {
-    pointer-events: none !important;
-    background: var(--bg-accent, #f8fafc) !important;
-    border-color: var(--border-medium, #d1d5db) !important;
-    box-shadow: none !important;
-    outline: none !important;
-}
-
-body.modal-active .user-menu-button:focus,
-body.modal-active .user-menu-button:active,
-body.modal-active .user-menu-button:hover {
-    background: var(--bg-accent, #f8fafc) !important;
-    border-color: var(--border-medium, #d1d5db) !important;
-    box-shadow: none !important;
-    outline: none !important;
-    transform: none !important;
-}
-
-body.modal-active .user-dropdown-menu {
-    display: none !important;
-}
-
-/* ========== DEBUGGING TEMPORAL (REMOVER EN PRODUCCIÓN) ========== */
+/* ========== DEBUGGING (REMOVER EN PRODUCCIÓN) ========== */
 /* 
 .user-dropdown-menu {
     border: 3px solid red !important;

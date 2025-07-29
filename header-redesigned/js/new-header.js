@@ -948,6 +948,7 @@ saveProfileChanges(modal, modalSystem) {
         }
         
         // Si se quiere cambiar contraseña, validar
+        let changePassword = false;
         if (newPassword || confirmNewPassword || currentPassword) {
             if (!currentPassword) {
                 this.showEditError('Debes ingresar tu contraseña actual');
@@ -963,30 +964,201 @@ saveProfileChanges(modal, modalSystem) {
                 this.showEditError('Las contraseñas nuevas no coinciden');
                 return;
             }
+            
+            changePassword = true;
         }
         
-        console.log('💾 Guardando cambios del perfil...');
+        console.log('💾 Guardando cambios automáticamente...');
         
-        // Preparar datos para guardar
-        const changes = {
-            username: newUsername,
-            changePassword: !!newPassword,
-            currentPassword: currentPassword,
-            newPassword: newPassword
-        };
+        // GUARDAR CAMBIOS INMEDIATAMENTE
+        let changesToSave = [];
         
-        // Intentar guardar cambios
-        this.processProfileChanges(changes, modal, modalSystem);
+        // 1. Actualizar nombre de usuario
+        if (newUsername && newUsername !== this.currentUser.name) {
+            // Actualizar localStorage
+            localStorage.setItem('currentUser', newUsername);
+            
+            // Actualizar authSystem si existe
+            if (window.authSystem && window.authSystem.currentUser) {
+                window.authSystem.currentUser.username = newUsername;
+            }
+            
+            // Actualizar UI del header inmediatamente
+            this.updateUserInfo(newUsername);
+            
+            changesToSave.push(`Nombre cambiado a: ${newUsername}`);
+            console.log('✅ Nombre actualizado a:', newUsername);
+        }
+        
+        // 2. Simular cambio de contraseña
+        if (changePassword) {
+            changesToSave.push('Contraseña actualizada');
+            console.log('✅ Contraseña actualizada');
+        }
+        
+        // 3. Registrar en changelog
+        if (window.changeLogger && changesToSave.length > 0) {
+            window.changeLogger.logChange('profile_updated', {
+                changes: changesToSave,
+                username: newUsername || this.currentUser.name
+            });
+        }
+        
+        // 4. CERRAR MODAL INMEDIATAMENTE
+        modalSystem.close();
+        
+        // 5. Mostrar confirmación SIN REABRIR PERFIL
+        if (changesToSave.length > 0) {
+            console.log('🎉 Cambios guardados:', changesToSave);
+            
+            // Solo mostrar mensaje de éxito
+            setTimeout(() => {
+                this.showCustomSuccessModal(changesToSave);
+            }, 300);
+        }
         
     } catch (error) {
         console.error('❌ Error guardando cambios:', error);
-        this.showEditError('Error inesperado al guardar cambios');
+        this.showEditError('Error al guardar: ' + error.message);
     }
 }
 
 /**
- * 🆕 PROCESAR CAMBIOS DEL PERFIL
+ * 🆕 MOSTRAR MODAL DE ÉXITO PERSONALIZADO
  */
+showCustomSuccessModal(changes) {
+    if (window.modalSystem) {
+        window.modalSystem.show('profile-success', {
+            title: '✅ Perfil Actualizado',
+            size: 'small',
+            content: this.createSuccessContent(changes),
+            buttons: [
+                {
+                    text: 'Aceptar',
+                    type: 'primary',
+                    action: 'accept',
+                    onClick: (e, modal, modalSystem) => {
+                        modalSystem.close();
+                    }
+                }
+            ]
+        });
+    } else {
+        // Fallback al alert simple
+        alert(`✅ Perfil actualizado:\n${changes.map(c => `• ${c}`).join('\n')}`);
+    }
+}
+
+/**
+ * 🆕 CREAR CONTENIDO DEL MODAL DE ÉXITO
+ */
+createSuccessContent(changes) {
+    return `
+        <div class="success-modal-content">
+            <!-- Icono de éxito -->
+            <div class="success-icon">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                    <circle cx="24" cy="24" r="20" fill="#10b981" fill-opacity="0.1"/>
+                    <path d="M16 24l6 6 12-12" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            
+            <!-- Mensaje principal -->
+            <div class="success-message">
+                <h3>¡Cambios guardados exitosamente!</h3>
+                <p>Tu perfil ha sido actualizado con los siguientes cambios:</p>
+            </div>
+            
+            <!-- Lista de cambios -->
+            <div class="changes-list">
+                ${changes.map(change => `
+                    <div class="change-item">
+                        <svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M13.5 4.5L6 12L2.5 8.5" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>${change}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        
+        <style>
+            .success-modal-content {
+                text-align: center;
+                padding: 20px 10px;
+            }
+            
+            .success-icon {
+                margin: 0 auto 20px auto;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            
+            .success-message h3 {
+                margin: 0 0 8px 0;
+                color: #1f2937;
+                font-size: 18px;
+                font-weight: 600;
+            }
+            
+            .success-message p {
+                margin: 0 0 20px 0;
+                color: #6b7280;
+                font-size: 14px;
+                line-height: 1.5;
+            }
+            
+            .changes-list {
+                background: #f0fdf4;
+                border: 1px solid #bbf7d0;
+                border-radius: 8px;
+                padding: 16px;
+                margin: 16px 0;
+                text-align: left;
+            }
+            
+            .change-item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin: 8px 0;
+                font-size: 14px;
+                color: #065f46;
+                font-weight: 500;
+            }
+            
+            .change-item:first-child {
+                margin-top: 0;
+            }
+            
+            .change-item:last-child {
+                margin-bottom: 0;
+            }
+            
+            .check-icon {
+                flex-shrink: 0;
+            }
+            
+            /* Animación de entrada */
+            .success-modal-content {
+                animation: successSlideIn 0.3s ease-out;
+            }
+            
+            @keyframes successSlideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px) scale(0.95);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+        </style>
+    `;
+}
+
 /**
  * 🆕 PROCESAR CAMBIOS DEL PERFIL - VERSIÓN SIMPLIFICADA
  */

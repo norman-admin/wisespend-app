@@ -220,8 +220,13 @@ class NewHeaderManager {
         }
         
         if (this.elements.userDropdownMenu) {
-            this.elements.userDropdownMenu.setAttribute('aria-hidden', 'true');
-        }
+    this.elements.userDropdownMenu.setAttribute('aria-hidden', 'true');
+    // 🆕 REMOVER FOCO DE ELEMENTOS INTERNOS
+    const focusedElement = this.elements.userDropdownMenu.querySelector(':focus');
+    if (focusedElement) {
+        focusedElement.blur();
+    }
+}
     }
 
     /**
@@ -239,47 +244,62 @@ class NewHeaderManager {
      * 📂 ABRIR DROPDOWN
      */
     openDropdown() {
-        this.isDropdownOpen = true;
-        
-        if (this.elements.userDropdownMenu) {
-            this.elements.userDropdownMenu.classList.add('show');
-            this.elements.userDropdownMenu.setAttribute('aria-hidden', 'false');
-        }
-        
-        if (this.elements.userMenuButton) {
-            this.elements.userMenuButton.classList.add('open');
-            this.elements.userMenuButton.setAttribute('aria-expanded', 'true');
-        }
-        
-        if (this.elements.menuArrow) {
-            this.elements.menuArrow.style.transform = 'rotate(180deg)';
-        }
+    this.isDropdownOpen = true;
 
-        console.log('📂 Dropdown abierto');
+    if (this.elements.userDropdownMenu) {
+        this.elements.userDropdownMenu.classList.add('show');
+        this.elements.userDropdownMenu.setAttribute('aria-hidden', 'false');
+        
+        // 🆕 RESTAURAR TABINDEX DE BOTONES INTERNOS
+        const menuButtons = this.elements.userDropdownMenu.querySelectorAll('button');
+        menuButtons.forEach(btn => {
+            btn.setAttribute('tabindex', '0');
+        });
     }
+
+    if (this.elements.userMenuButton) {
+        this.elements.userMenuButton.setAttribute('aria-expanded', 'true');
+    }
+
+    if (this.elements.menuArrow) {
+        this.elements.menuArrow.style.transform = 'rotate(180deg)';
+    }
+
+    console.log('📂 Dropdown abierto');
+}
 
     /**
      * 📁 CERRAR DROPDOWN
      */
     closeDropdown() {
-        this.isDropdownOpen = false;
-        
-        if (this.elements.userDropdownMenu) {
-            this.elements.userDropdownMenu.classList.remove('show');
-            this.elements.userDropdownMenu.setAttribute('aria-hidden', 'true');
+    this.isDropdownOpen = false;
+    
+    if (this.elements.userDropdownMenu) {
+        // 🆕 REMOVER FOCO DE ELEMENTOS INTERNOS ANTES DE OCULTAR
+        const focusedElement = this.elements.userDropdownMenu.querySelector(':focus');
+        if (focusedElement) {
+            focusedElement.blur();
         }
         
-        if (this.elements.userMenuButton) {
-            this.elements.userMenuButton.classList.remove('open');
-            this.elements.userMenuButton.setAttribute('aria-expanded', 'false');
-        }
+        // 🆕 REMOVER FOCO DE TODOS LOS BOTONES INTERNOS
+        const menuButtons = this.elements.userDropdownMenu.querySelectorAll('button, [tabindex]');
+        menuButtons.forEach(btn => {
+            btn.blur();
+            btn.setAttribute('tabindex', '-1');
+        });
         
-        if (this.elements.menuArrow) {
-            this.elements.menuArrow.style.transform = 'rotate(0deg)';
-        }
-
-        console.log('📁 Dropdown cerrado');
+        this.elements.userDropdownMenu.classList.remove('show');
+        this.elements.userDropdownMenu.setAttribute('aria-hidden', 'true');
     }
+    
+    if (this.elements.userMenuButton) {
+        this.elements.userMenuButton.setAttribute('aria-expanded', 'false');
+        // 🆕 DEVOLVER FOCO AL BOTÓN PRINCIPAL
+        this.elements.userMenuButton.focus();
+    }
+    
+    console.log('📁 Dropdown cerrado');
+}
 
     /**
      * 🎭 MANEJAR ACCIONES DEL MENÚ
@@ -617,10 +637,10 @@ getUserStats() {
         let totalGastos = 0;
         
         if (window.storageManager) {
-            const ingresos = window.storageManager.getData('ingresos') || {};
-            const gastosFijos = window.storageManager.getData('gastosFijos') || {};
-            const gastosVariables = window.storageManager.getData('gastosVariables') || {};
-            const gastosExtras = window.storageManager.getData('gastosExtras') || {};
+            const ingresos = window.storageManager.getIngresos() || {};
+            const gastosFijos = window.storageManager.getGastosFijos() || {};
+            const gastosVariables = window.storageManager.getGastosVariables() || {};
+            const gastosExtras = window.storageManager.getGastosExtras() || {};
             
             // Calcular total ingresos
             totalIngresos = Object.values(ingresos).reduce((sum, ingreso) => {

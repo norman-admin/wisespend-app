@@ -383,9 +383,7 @@ createProfileContent(userData) {
         hour: '2-digit',
         minute: '2-digit'
     });
-    
-    const recentChanges = this.getRecentChanges();
-    
+      
     return `
         <div class="profile-content">
             <!-- Avatar y Datos Básicos -->
@@ -417,118 +415,8 @@ createProfileContent(userData) {
                             <span class="detail-value">${lastLoginDate}</span>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Últimos Cambios -->
-                <div class="detail-section">
-                    <h4>📝 Últimos Cambios</h4>
-                    <div class="recent-changes">
-                        ${recentChanges.map(change => `
-                            <div class="change-item">
-                                <span class="change-action">${change.action}</span>
-                                <span class="change-date">${change.date}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            </div>
-        </div>
+                </div>            
     `;
-}
-
-/**
- * 🆕 OBTENER ÚLTIMOS CAMBIOS REALIZADOS
- */
-getRecentChanges() {
-    try {
-        // Obtener historial de cambios del localStorage
-        const changeLog = JSON.parse(localStorage.getItem('wisespend_changelog') || '[]');
-        
-        // Si no hay historial, crear cambios de ejemplo basados en datos reales
-        if (changeLog.length === 0) {
-            const now = new Date();
-            const yesterday = new Date(now);
-            yesterday.setDate(yesterday.getDate() - 1);
-            
-            return [
-                {
-                    action: '💰 Último ingreso registrado',
-                    date: now.toLocaleDateString('es-ES', { 
-                        month: 'short', 
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    })
-                },
-                {
-                    action: '🛒 Último gasto agregado',
-                    date: yesterday.toLocaleDateString('es-ES', { 
-                        month: 'short', 
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    })
-                }
-            ];
-        }
-        
-        // Obtener los últimos 2 cambios del historial
-        return changeLog
-            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-            .slice(0, 2)
-            .map(change => ({
-                action: this.formatChangeAction(change),
-                date: new Date(change.timestamp).toLocaleDateString('es-ES', { 
-                    month: 'short', 
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                })
-            }));
-            
-    } catch (error) {
-        console.error('❌ Error obteniendo cambios recientes:', error);
-        return [
-            {
-                action: '✅ Sesión iniciada',
-                date: new Date().toLocaleDateString('es-ES', { 
-                    month: 'short', 
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                })
-            },
-            {
-                action: '🎯 Dashboard cargado',
-                date: new Date().toLocaleDateString('es-ES', { 
-                    month: 'short', 
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                })
-            }
-        ];
-    }
-}
-
-/**
- * 🆕 FORMATEAR ACCIÓN DE CAMBIO
- */
-formatChangeAction(change) {
-    const actionMap = {
-        'ingreso_added': '💰 Ingreso agregado',
-        'ingreso_updated': '💰 Ingreso modificado',
-        'ingreso_deleted': '💰 Ingreso eliminado',
-        'gasto_added': '🛒 Gasto agregado',
-        'gasto_updated': '🛒 Gasto modificado',
-        'gasto_deleted': '🛒 Gasto eliminado',
-        'user_login': '✅ Sesión iniciada',
-        'config_changed': '⚙️ Configuración cambiada',
-        'theme_changed': '🎨 Tema cambiado',
-        'currency_changed': '💱 Moneda cambiada'
-    };
-    
-    return actionMap[change.action] || `📝 ${change.action}`;
 }
 
     /**
@@ -1175,10 +1063,7 @@ performLogout() {
         
         // 1. Auto-guardado antes del logout
         this.performAutoSave();
-        
-        // 2. Registrar en ChangeLogger
-        this.logLogoutAction();
-        
+
         // 3. Ejecutar logout según disponibilidad de sistemas
         setTimeout(() => {
             if (window.authSystem && typeof window.authSystem.logout === 'function') {
@@ -1224,27 +1109,6 @@ performAutoSave() {
         
     } catch (error) {
         console.warn('⚠️ Error en auto-guardado:', error);
-    }
-}
-
-/**
- * 🆕 REGISTRAR LOGOUT EN CHANGELOG
- */
-logLogoutAction() {
-    try {
-        if (window.changeLogger || window.ChangeLogger) {
-            const logger = window.changeLogger || window.ChangeLogger;
-            if (typeof logger.logChange === 'function') {
-                logger.logChange('user_logout', {
-                    username: this.currentUser.name,
-                    timestamp: new Date().toISOString(),
-                    source: 'header_dropdown'
-                });
-                console.log('✅ Logout registrado en ChangeLogger');
-            }
-        }
-    } catch (error) {
-        console.warn('⚠️ No se pudo registrar en ChangeLogger:', error);
     }
 }
 

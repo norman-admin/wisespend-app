@@ -1337,27 +1337,204 @@ switchToRegisterMode() {
 }
 
     handleLogoutAction() {
-        this.closeDropdown();
-        console.log('🚪 Acción: Cerrar Sesión');
-        
-        // Confirmación de cierre de sesión
+    this.closeDropdown();
+    console.log('🚪 Acción: Cerrar Sesión');
+    
+    // Usar modal personalizado en lugar de confirm()
+    if (window.modalSystem) {
+        window.modalSystem.show('logout-confirmation', {
+            title: '🚪 Cerrar Sesión',
+            size: 'small',
+            content: this.createLogoutContent(),
+            buttons: [
+                {
+                    text: 'Cancelar',
+                    type: 'secondary',
+                    action: 'cancel',
+                    onClick: (e, modal, modalSystem) => {
+                        modalSystem.close();
+                    }
+                },
+                {
+                    text: 'Cerrar Sesión',
+                    type: 'danger',
+                    action: 'logout',
+                    onClick: (e, modal, modalSystem) => {
+                        this.performLogout();
+                        modalSystem.close();
+                    }
+                }
+            ]
+        });
+    } else {
+        // Fallback al confirm tradicional
         const confirmLogout = confirm(`¿Estás seguro de que quieres cerrar la sesión de ${this.currentUser.name}?`);
-        
         if (confirmLogout) {
-            // Integrar con auth.js existente
-            if (window.authManager && typeof window.authManager.logout === 'function') {
-                window.authManager.logout();
-            } else if (typeof logout === 'function') {
-                logout();
-            } else {
-                // Fallback manual
-                localStorage.removeItem('currentUser');
-                localStorage.removeItem('authToken');
-                console.log('🚪 Sesión cerrada manualmente');
-                window.location.href = 'index.html';
-            }
+            this.performLogout();
         }
     }
+}
+
+    /**
+ * 🆕 CREAR CONTENIDO DEL MODAL DE LOGOUT
+ */
+createLogoutContent() {
+    return `
+        <div class="logout-confirmation-content">
+            <div class="logout-icon">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                    <circle cx="24" cy="24" r="20" fill="#ef4444" fill-opacity="0.1"/>
+                    <path d="M18 18l12 12M18 30l12-12" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="logout-message">
+                <p><strong>¿Estás seguro de que quieres cerrar la sesión?</strong></p>
+                <p class="logout-details">Usuario activo: <span class="user-highlight">${this.currentUser.name}</span></p>
+                </div>
+        </div>
+        
+        <style>
+            .logout-confirmation-content {
+                text-align: center;
+                padding: 20px 10px;
+            }
+            .logout-icon {
+                margin-bottom: 16px;
+            }
+            .logout-message p {
+                margin: 8px 0;
+                color: #374151;
+                font-size: 14px;
+                line-height: 1.5;
+            }
+            .logout-message p:first-child {
+                font-size: 16px;
+                color: #1f2937;
+                margin-bottom: 12px;
+            }
+            .user-highlight {
+                font-weight: 600;
+                color: #2563eb;
+                background: #dbeafe;
+                padding: 2px 6px;
+                border-radius: 4px;
+            }
+            .logout-warning {
+                color: #d97706 !important;
+                font-size: 13px !important;
+                background: #fef3c7;
+                padding: 8px;
+                border-radius: 6px;
+                border-left: 3px solid #f59e0b;
+                margin-top: 12px !important;
+            }
+        </style>
+    `;
+}
+
+/**
+ * 🆕 EJECUTAR LOGOUT CON AUTO-GUARDADO E INTEGRACIÓN
+ */
+performLogout() {
+    try {
+        console.log('🚪 Iniciando proceso de logout...');
+        
+        // 1. Auto-guardado antes del logout
+        this.performAutoSave();
+        
+        // 2. Registrar en ChangeLogger
+        this.logLogoutAction();
+        
+        // 3. Ejecutar logout según disponibilidad de sistemas
+        setTimeout(() => {
+            if (window.authSystem && typeof window.authSystem.logout === 'function') {
+                console.log('✅ Usando authSystem.logout()');
+                window.authSystem.logout();
+            } else if (window.authManager && typeof window.authManager.logout === 'function') {
+                console.log('✅ Usando authManager.logout()');
+                window.authManager.logout();
+            } else if (typeof logout === 'function') {
+                console.log('✅ Usando función global logout()');
+                logout();
+            } else {
+                console.log('⚠️ Usando logout manual');
+                this.manualLogout();
+            }
+        }, 500); // Pequeño delay para que se complete el auto-guardado
+        
+    } catch (error) {
+        console.error('❌ Error durante logout:', error);
+        // Proceder con logout manual como fallback
+        this.manualLogout();
+    }
+}
+
+   /**
+ * 🆕 AUTO-GUARDADO ANTES DEL LOGOUT
+ */
+performAutoSave() {
+    try {
+        console.log('💾 Ejecutando auto-guardado antes del logout...');
+        
+        // Guardar datos a través de storageManager si está disponible
+        if (window.storageManager && typeof window.storageManager.saveAllData === 'function') {
+            window.storageManager.saveAllData();
+            console.log('✅ Datos guardados via storageManager');
+        }
+        
+        // Backup adicional en localStorage
+        const timestamp = new Date().toISOString();
+        localStorage.setItem('last_logout_save', timestamp);
+        
+        console.log('✅ Auto-guardado completado');
+        
+    } catch (error) {
+        console.warn('⚠️ Error en auto-guardado:', error);
+    }
+}
+
+/**
+ * 🆕 REGISTRAR LOGOUT EN CHANGELOG
+ */
+logLogoutAction() {
+    try {
+        if (window.changeLogger || window.ChangeLogger) {
+            const logger = window.changeLogger || window.ChangeLogger;
+            if (typeof logger.logChange === 'function') {
+                logger.logChange('user_logout', {
+                    username: this.currentUser.name,
+                    timestamp: new Date().toISOString(),
+                    source: 'header_dropdown'
+                });
+                console.log('✅ Logout registrado en ChangeLogger');
+            }
+        }
+    } catch (error) {
+        console.warn('⚠️ No se pudo registrar en ChangeLogger:', error);
+    }
+}
+
+/**
+ * 🆕 LOGOUT MANUAL COMO FALLBACK
+ */
+manualLogout() {
+    console.log('🔧 Ejecutando logout manual...');
+    
+    // Limpiar datos de sesión
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('app_session');
+    
+    // Registrar logout manual
+    localStorage.setItem('manual_logout', new Date().toISOString());
+    
+    console.log('🚪 Sesión cerrada manualmente');
+    
+    // Redireccionar después de un momento
+    setTimeout(() => {
+        window.location.href = 'index.html';
+    }, 300);
+} 
 
     handleLogoClick() {
         console.log('🏷️ Logo clicked');

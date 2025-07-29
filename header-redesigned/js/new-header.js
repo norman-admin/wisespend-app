@@ -40,12 +40,14 @@ class NewHeaderManager {
      * 🚀 INICIALIZACIÓN PRINCIPAL
      */
     init() {
-        this.waitForDOM(() => {
+            this.waitForDOM(() => {
             this.cacheElements();
             this.loadUserData();
             this.setupEventListeners();
+            this.setupModalDetection();
             this.setupAccessibility();
             this.dispatchReadyEvent();
+            
         });
     }
 
@@ -153,12 +155,19 @@ class NewHeaderManager {
      */
     setupEventListeners() {
         // Botón principal del menú
-        if (this.elements.userMenuButton) {
-            this.elements.userMenuButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.toggleDropdown();
-            });
+if (this.elements.userMenuButton) {
+    this.elements.userMenuButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // 🆕 NO ACTUAR SI HAY MODAL ABIERTO
+        if (document.querySelector('.modal-overlay, .modal-backdrop, .modal')) {
+            return;
         }
+        
+        this.toggleDropdown();
+    });
+}
 
         // Clics fuera del menú para cerrarlo
         document.addEventListener('click', (e) => {
@@ -167,13 +176,23 @@ class NewHeaderManager {
             }
         });
 
-        // Escape key para cerrar menú
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.isDropdownOpen) {
-                this.closeDropdown();
-                this.elements.userMenuButton?.focus();
-            }
-        });
+        // Escape key para cerrar menú y prevenir Enter conflictivo
+document.addEventListener('keydown', (e) => {
+    // 🆕 PREVENIR ENTER SI HAY MODAL ACTIVO
+    if (e.key === 'Enter' && document.querySelector('.modal-overlay, .modal-backdrop, .modal')) {
+        const activeElement = document.activeElement;
+        if (activeElement && (activeElement.id === 'userMenuButton' || activeElement.closest('.user-menu-wrapper'))) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+    }
+    
+    if (e.key === 'Escape' && this.isDropdownOpen) {
+        this.closeDropdown();
+        this.elements.userMenuButton?.focus();
+    }
+});
 
         // Event listeners para acciones del menú
         this.setupMenuActions();
@@ -211,6 +230,96 @@ class NewHeaderManager {
         console.log('✅ Acciones del menú configuradas');
     }
 
+/**
+ * 🆕 CONFIGURAR DETECCIÓN DE MODALES - VERSIÓN MEJORADA
+ */
+setupModalDetection() {
+    // Observar cambios en el DOM para detectar modales
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === 1) {
+                    // Detectar modal añadido
+                    if (node.classList?.contains('modal-overlay') || 
+                        node.querySelector?.('.modal-overlay') ||
+                        node.classList?.contains('modal')) {
+                        
+                        setTimeout(() => {
+                            this.handleModalOpened(node);
+                        }, 50);
+                    }
+                }
+            });
+        });
+    });
+
+    observer.observe(document.body, { 
+        childList: true, 
+        subtree: true 
+    });
+    
+    console.log('✅ Detección de modales configurada - VERSIÓN MEJORADA');
+}
+
+/**
+ * 🆕 MANEJAR MODAL ABIERTO
+ */
+handleModalOpened(modalNode) {
+    console.log('🎯 Modal detectado, desactivando header...');
+    
+    // 1. Desenfocar botón del header INMEDIATAMENTE
+    if (this.elements.userMenuButton) {
+        this.elements.userMenuButton.blur();
+        this.elements.userMenuButton.classList.remove('open');
+        this.elements.userMenuButton.style.pointerEvents = 'none';
+        this.elements.userMenuButton.setAttribute('tabindex', '-1');
+    }
+    
+    // 2. Cerrar dropdown
+    this.closeDropdown();
+    
+    // 3. Enfocar el primer input del modal
+    setTimeout(() => {
+        const modal = modalNode.classList?.contains('modal-overlay') ? 
+                     modalNode : 
+                     modalNode.querySelector('.modal-overlay') || modalNode;
+        
+        const firstInput = modal.querySelector('input, textarea, select, button');
+        if (firstInput) {
+            firstInput.focus();
+            console.log('✅ Focus transferido al modal');
+        }
+    }, 100);
+    
+    // 4. Reactivar header cuando se cierre el modal
+    this.watchModalClose(modalNode);
+}
+
+/**
+ * 🆕 VIGILAR CIERRE DEL MODAL
+ */
+watchModalClose(modalNode) {
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.removedNodes.forEach((node) => {
+                if (node === modalNode || node.contains?.(modalNode)) {
+                    // Modal cerrado, reactivar header
+                    if (this.elements.userMenuButton) {
+                        this.elements.userMenuButton.style.pointerEvents = '';
+                        this.elements.userMenuButton.setAttribute('tabindex', '0');
+                    }
+                    observer.disconnect();
+                    console.log('✅ Header reactivado - modal cerrado');
+                }
+            });
+        });
+    });
+    
+    observer.observe(document.body, { 
+        childList: true, 
+        subtree: true 
+    });
+}
     /**
      * ♿ CONFIGURAR ACCESIBILIDAD
      */
@@ -233,12 +342,17 @@ class NewHeaderManager {
      * 🔄 TOGGLE DROPDOWN MENU
      */
     toggleDropdown() {
-        if (this.isDropdownOpen) {
-            this.closeDropdown();
-        } else {
-            this.openDropdown();
-        }
+    // 🆕 PREVENIR APERTURA SI HAY MODAL ACTIVO
+    if (document.querySelector('.modal-overlay, .modal-backdrop, .modal')) {
+        return;
     }
+    
+    if (this.isDropdownOpen) {
+        this.closeDropdown();
+    } else {
+        this.openDropdown();
+    }
+}
 
     /**
      * 📂 ABRIR DROPDOWN

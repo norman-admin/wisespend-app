@@ -72,7 +72,7 @@
 
 .user-menu-wrapper {
     position: relative;
-    z-index: 10000; /* 🔥 CRÍTICO: Z-index alto para el contenedor */
+    z-index: 1000; /* 🔥 CRÍTICO: Z-index alto para el contenedor */
 }
 
 /* ========== BOTÓN MENÚ USUARIO ========== */
@@ -93,7 +93,7 @@
     outline: none;
     min-width: 120px;
     position: relative;
-    z-index: 10001; /* 🔥 CRÍTICO: Z-index del botón */
+    z-index: 1001; /* 🔥 CRÍTICO: Z-index del botón */
 }
 
 .user-menu-button:hover {
@@ -103,15 +103,40 @@
     box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
 }
 
-.user-menu-button:focus {
-    border-color: var(--primary-500, #6366f1);
-    box-shadow: 0 0 0 3px var(--focus-ring, rgba(59, 130, 246, 0.1));
-}
-
 .user-menu-button.open {
     background: var(--bg-secondary, #f1f5f9);
     border-color: var(--primary-500, #6366f1);
     box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
+}
+
+.user-menu-button:not(:focus):not(:hover) {
+    background: var(--bg-accent, #f8fafc) !important;
+    border-color: var(--border-medium, #d1d5db) !important;
+    box-shadow: none !important;
+}
+
+.user-menu-button:focus {
+    border-color: var(--border-medium, #d1d5db) !important;
+    box-shadow: none !important;
+    background: var(--bg-accent, #f8fafc) !important;
+}
+
+.user-menu-button:focus-visible {
+    border-color: var(--primary-500, #6366f1) !important;
+    box-shadow: 0 0 0 3px var(--focus-ring, rgba(59, 130, 246, 0.1)) !important;
+}
+
+.user-menu-button:not(:focus-visible):not(:hover) {
+    background: var(--bg-accent, #f8fafc) !important;
+    border-color: var(--border-medium, #d1d5db) !important;
+    box-shadow: none !important;
+}
+
+.user-menu-button[tabindex="-1"] {
+    background: var(--bg-accent, #f8fafc) !important;
+    border-color: var(--border-medium, #d1d5db) !important;
+    box-shadow: none !important;
+    outline: none !important;
 }
 
 /* ========== AVATAR CIRCULAR ========== */
@@ -176,7 +201,7 @@
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     
     /* 🔥 Z-INDEX SUPREMO */
-    z-index: 99999 !important;
+    z-index: 9999 !important;
     
     /* 🔥 BACKDROP FILTER */
     backdrop-filter: blur(8px) !important;
@@ -548,32 +573,6 @@
     font-weight: 500;
 }
 
-.recent-changes {
-    display: grid;
-    gap: 8px;
-}
-
-.change-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 12px;
-    background: #f0f9ff;
-    border-radius: 6px;
-    border-left: 3px solid #0ea5e9;
-}
-
-.change-action {
-    font-weight: 500;
-    color: #0369a1;
-    font-size: 14px;
-}
-
-.change-date {
-    color: #6b7280;
-    font-size: 12px;
-}
-
 /* === MODAL EDITAR PERFIL === */
 .edit-profile-form { 
     padding: 10px 0; 
@@ -791,6 +790,29 @@
     color: #dc2626; 
     font-size: 14px;
     text-align: center;
+}
+
+/* ========== DESACTIVAR HEADER CUANDO HAY MODAL ========== */
+body.modal-active .user-menu-button {
+    pointer-events: none !important;
+    background: var(--bg-accent, #f8fafc) !important;
+    border-color: var(--border-medium, #d1d5db) !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+body.modal-active .user-menu-button:focus,
+body.modal-active .user-menu-button:active,
+body.modal-active .user-menu-button:hover {
+    background: var(--bg-accent, #f8fafc) !important;
+    border-color: var(--border-medium, #d1d5db) !important;
+    box-shadow: none !important;
+    outline: none !important;
+    transform: none !important;
+}
+
+body.modal-active .user-dropdown-menu {
+    display: none !important;
 }
 
 /* ========== DEBUGGING TEMPORAL (REMOVER EN PRODUCCIÓN) ========== */

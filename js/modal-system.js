@@ -582,7 +582,7 @@ class ModalSystem {
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                z-index: 1000;
+                z-index: 99999;
                 padding: 20px;
             }
             
@@ -838,6 +838,48 @@ class ModalSystem {
         document.head.appendChild(styles);
         console.log('✅ Estilos del modal inyectados');
     }
+
+    /**
+ * 🆕 DESACTIVAR HEADER DURANTE MODALES
+ */
+show(type, config = {}) {
+    // ... código existente del método show() ...
+    
+    // AL FINAL del método, ANTES del return, AGREGAR:
+    document.body.classList.add('modal-active');
+    
+    // Forzar blur del header
+    setTimeout(() => {
+        const headerButton = document.getElementById('userMenuButton');
+        if (headerButton) {
+            headerButton.blur();
+            headerButton.setAttribute('tabindex', '-1');
+        }
+        
+        // Focus al primer input del modal
+        const firstInput = modal.querySelector('input, textarea, select');
+        if (firstInput) {
+            firstInput.focus();
+        }
+    }, 100);
+    
+    return modal;
+}
+
+close(modal = null) {
+    // ... código existente del método close() ...
+    
+    // AL FINAL del método removeModal, AGREGAR:
+    if (this.modalStack.length === 0) {
+        document.body.classList.remove('modal-active');
+        
+        // Reactivar header
+        const headerButton = document.getElementById('userMenuButton');
+        if (headerButton) {
+            headerButton.setAttribute('tabindex', '0');
+        }
+    }
+}
 }
 
 // Inicialización global

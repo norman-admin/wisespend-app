@@ -476,6 +476,12 @@ async deriveKeyFallback(password, salt, iterations = 10000) {
             this.hideLoadingState();
             this.showSuccess('Usuario creado exitosamente');
 
+            // 🆕 REDIRECCIÓN AUTOMÁTICA AL FORMULARIO DE LOGIN
+            setTimeout(() => {
+                this.log('🔄 Redirigiendo al formulario de login...', 'success');
+                this.switchToLoginAfterRegister();
+            }, 800); // 500 milisegundos para mostrar el mensaje de éxito
+
             return { success: true, user: newUser };
 
         } catch (error) {
@@ -485,6 +491,80 @@ async deriveKeyFallback(password, salt, iterations = 10000) {
             return { success: false, error: error.message };
         }
     }
+
+    /**
+ * 🆕 CAMBIAR AL FORMULARIO DE LOGIN DESPUÉS DEL REGISTRO
+ */
+switchToLoginAfterRegister() {
+    try {
+        // Buscar elementos del DOM
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        
+        if (loginForm && registerForm) {
+            // Cambiar vista
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+            
+            // Actualizar UI del toggle si existe
+            const modeQuestion = document.getElementById('mode-question');
+            const modeAction = document.getElementById('mode-action');
+            
+            if (modeQuestion && modeAction) {
+                modeQuestion.textContent = '¿No tienes cuenta?';
+                modeAction.textContent = 'Crear cuenta';
+            }
+            
+            // Limpiar formulario de registro
+            registerForm.reset();
+
+            // Limpiar formulario de registro
+            registerForm.reset();
+
+            // 🆕 LIMPIAR MENSAJES DE ÉXITO ANTERIORES
+            this.clearAllMessages();
+
+            // 🆕 OCULTAR ESTADOS DE LOADING SI EXISTEN
+            this.hideLoadingState();
+                                   
+            this.log('✅ Cambiado al formulario de login después del registro', 'success');
+            
+        } else {
+            this.log('⚠️ No se encontraron los formularios para cambiar', 'warning');
+        }
+        
+    } catch (error) {
+        this.log('❌ Error cambiando al login', 'error', error.message);
+    }
+}
+
+    /**
+ * 🆕 LIMPIAR TODOS LOS MENSAJES VISUALES
+ */
+clearAllMessages() {
+    try {
+        // Limpiar mensajes de auth
+        const messages = document.querySelectorAll('.auth-message, .success-message, .error-message');
+        messages.forEach(msg => {
+            if (msg && msg.parentNode) {
+                msg.parentNode.removeChild(msg);
+            }
+        });
+        
+        // Limpiar elementos de éxito específicos
+        const successElements = document.querySelectorAll('[class*="success"], [class*="alert"]');
+        successElements.forEach(el => {
+            if (el.textContent && el.textContent.includes('exitosamente')) {
+                el.style.display = 'none';
+            }
+        });
+        
+        this.log('🧹 Mensajes limpiados', 'info');
+        
+    } catch (error) {
+        this.log('⚠️ Error limpiando mensajes', 'warning', error.message);
+    }
+}
 
     /**
      * 🔓 Inicio de sesión - MODIFICADO CON REDIRECCIÓN

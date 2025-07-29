@@ -112,10 +112,7 @@ class VariosManager {
                     </div>
                     
                     <!-- Contenido de pestañas -->
-                    <div class="varios-tabs-content" id="varios-content">
-                        <div class="varios-loading">
-                            <p>Cargando...</p>
-                        </div>
+                        <div class="varios-tabs-content" id="varios-content"></div>
                     </div>
                 </div>
             </section>

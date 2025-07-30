@@ -317,28 +317,39 @@ addNewIncomeRow(incomeData) {
 
     const percentage = 10; // Se calculará después
     const newRowHTML = `
-        <tr class="income-row" data-id="${incomeData.id}" style="opacity: 0;">
+        <tr class="income-row ${!incomeData.activo ? 'inactive' : ''}" data-id="${incomeData.id}" style="opacity: 0;">
             <td class="source-cell">
                 <div class="source-content breakdown-item" data-id="${incomeData.id}">
                     <span class="source-name breakdown-name">${incomeData.fuente}</span>
                 </div>
             </td>
-            <td class="amount-cell">
-                <span class="breakdown-amount">${this.formatNumber(incomeData.monto)}</span>
-            </td>
+           <td class="amount-cell">
+    <div class="breakdown-item" data-id="${incomeData.id}">
+        <span class="amount-value breakdown-amount">$${new Intl.NumberFormat('es-CL').format(incomeData.monto)}</span>
+    </div>
+</td>
             <td class="percentage-cell">
-                <span class="breakdown-percentage">${percentage.toFixed(1)}%</span>
-            </td>
+    <div class="percentage-container">
+        <div class="progress-bar">
+            <div class="progress-fill progress-medium" style="width: ${percentage}%"></div>
+        </div>
+        <span class="percentage-text">${percentage.toFixed(1)}%</span>
+    </div>
+</td>
             <td class="actions-cell">
-                <div class="action-buttons">
-                    <button class="btn-action btn-edit" onclick="window.incomeTableEnhanced.editIncome('${incomeData.id}')" title="Editar">
-                        ✏️
-                    </button>
-                    <button class="btn-action btn-delete" onclick="window.incomeTableEnhanced.deleteIncome('${incomeData.id}')" title="Eliminar">
-                        🗑️
-                    </button>
-                </div>
-            </td>
+    <div class="action-buttons">
+        <button class="action-btn btn-edit" 
+                onclick="window.incomeTableEnhanced.editIncome('${incomeData.id}')" 
+                title="Editar">
+            ✏️
+        </button>
+        <button class="action-btn btn-delete" 
+                onclick="window.incomeTableEnhanced.deleteIncome('${incomeData.id}')" 
+                title="Eliminar">
+            🗑️
+        </button>
+    </div>
+</td>
         </tr>
     `;
 
@@ -376,17 +387,19 @@ recalculatePercentages() {
         }
     });
 
-    // Actualizar total en la tabla
-    this.updateTableTotals(total);
+   // Actualizar total en el footer de la tabla
+const totalRowElement = document.querySelector('#income-total-row .amount, .total-amount');
+if (totalRowElement) {
+    totalRowElement.textContent = this.formatNumber(total);
+}
 }
 
 /**
  * 🎯 FORMATEAR NÚMERO (HELPER)
  */
 formatNumber(amount) {
-    return this.gastosManager.formatNumber ? 
-           this.gastosManager.formatNumber(amount) : 
-           new Intl.NumberFormat('es-CL').format(amount);
+    // Usar Utils.currency.format() que está disponible globalmente
+    return Utils.currency.format(amount);
 }
 
     /**

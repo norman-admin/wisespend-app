@@ -172,7 +172,26 @@ async showDeleteModal(incomeId) {
         `Ingreso ${isEdit ? 'actualizado' : 'agregado'} correctamente`, 
         'success'
     );
+
+   // 🎯 ACTUALIZACIÓN OPTIMIZADA SIN REFRESCO - CORREGIDA
+if (!isEdit && window.incomeTableEnhanced) {
+  
+    // 🎯 USAR LA INSTANCIA CORRECTA DE LA TABLA
+if (window.gastosManager && window.gastosManager.incomeTableEnhanced) {
+    window.gastosManager.incomeTableEnhanced.addNewIncomeRow(incomeData);
+} else {
+    // Fallback: recargar tabla completa
+    console.warn('⚠️ incomeTableEnhanced no disponible, recargando tabla');
     this.updateDashboard();
+}
+    // Actualizar solo los totales del header, NO recalcular porcentajes aquí
+    if (window.gastosManager) {
+        window.gastosManager.updateHeaderTotals();
+    }
+} else if (!isEdit) {
+    // Fallback: recargar tabla completa
+    this.updateDashboard();
+}
     
     console.log(`✅ Ingreso ${isEdit ? 'actualizado' : 'agregado'}:`, incomeData);
 }

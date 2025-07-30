@@ -515,7 +515,9 @@ class IncomeTableEnhanced {
             emptyRow.remove();
         }
 
-        const percentage = 10; // Se calculará después
+        // 🎯 CALCULAR PORCENTAJE REAL
+        const ingresos = this.storage.getIngresos();
+        const percentage = ((incomeData.monto / ingresos.total) * 100);
         const newRowHTML = `
             <tr class="income-row" data-id="${incomeData.id}" style="opacity: 0;">
                 <td class="source-cell">
@@ -525,7 +527,7 @@ class IncomeTableEnhanced {
                 </td>
                 <td class="amount-cell">
                     <div class="breakdown-item" data-id="${incomeData.id}">
-                        <span class="amount-value breakdown-amount">${this.formatNumber(incomeData.monto)}</span>
+                        <span class="amount-value breakdown-amount">${this.gastosManager.formatNumber(incomeData.monto)}</span>
                     </div>
                 </td>
                 <td class="percentage-cell">
@@ -563,7 +565,17 @@ class IncomeTableEnhanced {
         }
 
         // Actualizar totales y porcentajes
-        this.recalculatePercentages();
+        // Actualizar totales y porcentajes con debug
+console.log('🔄 Recalculando porcentajes después de agregar fila');
+setTimeout(() => {
+    this.recalculatePercentages();
+    console.log('✅ Porcentajes recalculados');
+}, 100);
+
+console.log('🚨 DEBUGGING: saveIncomeFromModal ejecutándose');
+console.log('🔍 isEdit:', isEdit);
+console.log('🔍 window.incomeTableEnhanced existe:', !!window.incomeTableEnhanced);
+console.log('🔍 incomeData:', incomeData);
     }
 
     /**

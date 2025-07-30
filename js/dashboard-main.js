@@ -582,15 +582,18 @@ class DashboardOrchestrator {
         console.log('🎧 Configurando event listeners...');
         
         // Eventos de datos
-        window.addEventListener('storageSaved', () => {
-    if (!this.isUpdatingDashboard) {
-        this.isUpdatingDashboard = true;
-        setTimeout(() => {
-            this.handleDataChange();
-            this.isUpdatingDashboard = false;
-        }, 50);
-    }
+// 🔧 TEMPORALMENTE DESHABILITADO PARA EVITAR REFRESCO EN EDICIÓN INLINE
+/*
+window.addEventListener('storageSaved', () => {
+if (!this.isUpdatingDashboard) {
+    this.isUpdatingDashboard = true;
+    setTimeout(() => {
+        this.handleDataChange();
+        this.isUpdatingDashboard = false;
+    }, 50);
+}
 });
+*/
         window.addEventListener('gastos_gastoAdded', () => this.handleDataChange());
         window.addEventListener('gastos_gastoUpdated', () => this.handleDataChange());
         window.addEventListener('income_incomeAdded', () => this.handleDataChange());

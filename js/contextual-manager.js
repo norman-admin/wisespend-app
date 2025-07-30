@@ -864,25 +864,30 @@ class ContextualManager {
      * 🚀 NUEVO: REFRESCO INTELIGENTE SIN PESTAÑEO
      */
     smartRefresh(type, actionType = 'general') {
-        console.log(`🧠 Refresco inteligente: ${type} - ${actionType}`);
+    console.log(`🧠 Refresco inteligente: ${type} - ${actionType}`);
 
-        if (type === 'income') {
-            // 🔧 USAR RENDERIZADO DIRECTO DE TABLA SIN PESTAÑEO
-            if (window.IncomeTableEnhanced && window.gastosManager) {
-                // Crear instancia temporal de la tabla
-                const tableInstance = new window.IncomeTableEnhanced(window.gastosManager);
-                tableInstance.renderIncomeSection(window.gastosManager.getMainContainer());
-                window.gastosManager.updateHeaderTotals();
-                console.log('✅ Tabla de ingresos actualizada sin pestañeo');
-            } else {
-                // Fallback al método tradicional
-                this.refreshView();
-            }
-        } else {
-            // Para otros tipos, usar refresh normal
-            this.refreshView();
+    if (type === 'income') {
+        // 🎯 SOLUCIÓN: Usar actualización optimizada sin recargar tabla
+        console.log('✅ Usando actualización optimizada SIN recargar tabla');
+        
+        // Solo actualizar totales y estadísticas, NO recargar tabla
+        if (window.gastosManager) {
+            window.gastosManager.updateHeaderTotals();
         }
+        
+        // Si hay tabla mejorada, solo recalcular porcentajes
+        if (window.incomeTableEnhanced) {
+            window.incomeTableEnhanced.recalculatePercentages();
+        }
+        
+        console.log('✅ Actualización inteligente completada SIN refresco');
+        return; // ← IMPORTANTE: Salir aquí para evitar recargar tabla
+    } else {
+        // Para otros tipos, usar refresh normal
+        this.refreshView();
     }
+}
+
     /**
      * Refrescar vista (método tradicional para compatibilidad)
      */

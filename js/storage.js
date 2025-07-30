@@ -208,8 +208,8 @@ class StorageManager {
         localStorage.setItem(key, serializedValue);
         this.updateLastSave();
         
-        // 🆕 CRÍTICO: Disparar evento de guardado
-        this.dispatchSaveEvent();
+    // 🔧 TEMPORALMENTE DESHABILITADO PARA EVITAR REFRESCO EN EDICIÓN INLINE
+    // this.dispatchSaveEvent();
         
         return true;
     } catch (error) {

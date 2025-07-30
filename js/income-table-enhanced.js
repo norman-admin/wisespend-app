@@ -30,9 +30,12 @@ class IncomeTableEnhanced {
      * 🎨 RENDERIZAR SECCIÓN DE INGRESOS MEJORADA
      */
     renderIncomeSection(container) {
-        const ingresos = this.storage.getIngresos();
-        
-        const html = `
+    console.log('🚨 DEBUGGING: renderIncomeSection() llamado');
+    console.trace('🔍 STACK TRACE: renderIncomeSection origen');
+    
+    const ingresos = this.storage.getIngresos();
+    
+    const html = `
             <section class="content-section active">
                 <div class="income-header-enhanced">
                     <div class="header-content">
@@ -763,9 +766,10 @@ tableBody.addEventListener('dblclick', (e) => {
      * 🎯 ACTUALIZAR SOLO LA FILA EDITADA INLINE SIN RECARGAR TABLA
      */
     updateIncomeRowInline(incomeId, field, newValue) {
-        console.log(`🔄 Actualizando campo ${field} de fila ${incomeId} inline`);
-        
-        const row = document.querySelector(`[data-id="${incomeId}"]`);
+    console.log('🎯 DEBUGGING: updateIncomeRowInline() llamado con:', {incomeId, field, newValue});
+    console.log(`🔄 Actualizando campo ${field} de fila ${incomeId} inline`);
+    
+    const row = document.querySelector(`[data-id="${incomeId}"]`);
         if (!row) {
             console.warn('⚠️ Fila no encontrada para actualización inline');
             return;

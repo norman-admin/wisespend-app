@@ -326,13 +326,14 @@ class ModalSystem {
         }
 
         if (this.config.animation) {
-            targetModal.style.transition = 'all 0.3s ease';
+            targetModal.style.transition = 'opacity 0.15s ease';
             targetModal.style.opacity = '0';
-            targetModal.style.transform = 'scale(0.9)';
+            // targetModal.style.transform = 'scale(0.9)';  (comentar o eliminar esta línea)
             
             setTimeout(() => {
                 this.removeModal(targetModal);
-            }, 300);
+            }, 150);
+            
         } else {
             this.removeModal(targetModal);
         }

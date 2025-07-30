@@ -387,18 +387,7 @@ async loadHeaderScript() {
  */
 async loadVariosScript(container) {
     try {
-        // Mostrar loading temporal
-        container.innerHTML = `
-            <section class="content-section active">
-                <div class="section-header">
-                    <h2>📋 Varios</h2>
-                </div>
-                <div class="varios-loading">
-                    <p>Cargando sistema de pestañas...</p>
-                </div>
-            </section>
-        `;
-        
+                
         // Verificar si el script ya existe
         const existingScript = document.querySelector('script[src*="varios-manager.js"]');
         if (existingScript) {

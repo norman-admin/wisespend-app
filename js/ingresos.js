@@ -89,55 +89,22 @@ class IngresosManager {
         this.editingItem = { id: incomeId };
         this.showIncomeModal(true, income);
     }
-
-    showDeleteModal(incomeId) {
-        const income = this.findIncomeById(incomeId);
-        if (!income) {
-            this.modalSystem.showMessage('Ingreso no encontrado', 'error');
-            return;
-        }
-
-        const deleteContent = `
-            <div class="delete-confirmation">
-                <div class="warning-icon">⚠️</div>
-                <p>¿Estás seguro de que quieres eliminar esta fuente de ingresos?</p>
-                <div class="item-details">
-                    <strong>${income.fuente}</strong><br>
-                    <span class="amount">${this.utils.currency.format(income.monto)}</span>
-                </div>
-                <p class="warning-text">Esta acción no se puede deshacer.</p>
-            </div>
-        `;
-
-        this.modalSystem.show('delete', {
-            title: 'Confirmar Eliminación',
-            content: deleteContent,
-            buttons: [
-                {
-                    text: 'Cancelar',
-                    type: 'secondary',
-                    action: 'cancel'
-                },
-                {
-                    text: 'Eliminar',
-                    type: 'danger',
-                    action: 'delete',
-                    onClick: async (e, modal, modalSystem) => {
-                        const btn = e.target;
-                        this.utils.ui.showButtonLoading(btn, true);
-                        
-                        try {
-                            await new Promise(resolve => setTimeout(resolve, 500));
-                            this.deleteIncome(incomeId);
-                            modalSystem.close();
-                        } finally {
-                            this.utils.ui.showButtonLoading(btn, false);
-                        }
-                    }
-                }
-            ]
-        });
+async showDeleteModal(incomeId) {
+    const income = this.findIncomeById(incomeId);
+    if (!income) {
+        console.error('Ingreso no encontrado');
+        return;
     }
+
+    const confirmed = await window.simpleModal.confirmDelete({
+        itemName: income.fuente,
+        itemAmount: this.utils.currency.format(income.monto)
+    });
+
+    if (confirmed) {
+        this.deleteIncome(incomeId);
+    }
+}
 
     showIncomeModal(isEdit, incomeData = {}) {
     this.editingItem = isEdit ? { id: incomeData.id } : null;
@@ -321,32 +288,61 @@ class IngresosManager {
     
     // Llamado desde contextual-manager para editar
     handleEditAction(incomeId) {
-        console.log(`✏️ Editando ingreso desde contextual-manager: ${incomeId}`);
+    console.log(`✏️ Editando ingreso desde contextual-manager: ${incomeId}`);
+    
+    // 🎯 USAR MÉTODO DE TABLA MEJORADA EN LUGAR DEL MODAL VIEJO
+    if (window.incomeTableEnhanced) {
+        window.incomeTableEnhanced.editIncome(incomeId);
+    } else {
+        // Fallback al método original si no está disponible
         this.showEditIncomeModal(incomeId);
     }
+}
     
-    // Llamado desde contextual-manager para duplicar
-    handleDuplicateAction(incomeId) {
-        console.log(`📋 Duplicando ingreso: ${incomeId}`);
-        const income = this.findIncomeById(incomeId);
-        if (!income) {
-            this.modalSystem.showMessage('Ingreso no encontrado', 'error');
-            return;
+// Llamado desde contextual-manager para duplicar
+handleDuplicateAction(incomeId) {
+    console.log(`📋 Duplicando ingreso: ${incomeId}`);
+    const income = this.findIncomeById(incomeId);
+    if (!income) {
+        console.error('Ingreso no encontrado');
+        return;
+    }
+    
+    // Crear duplicado con nuevo ID
+    const duplicatedIncome = {
+        ...income,
+        id: this.utils.id.generate('income'),
+        fuente: `${income.fuente} (Copia)`,
+        fechaCreacion: this.utils.time.now(),
+        fechaModificacion: this.utils.time.now()
+    };
+    
+    // 🎯 USAR MÉTODO DE TABLA MEJORADA PARA AGREGAR SIN REFRESCO
+    if (window.incomeTableEnhanced) {
+        // Guardar en storage
+        const ingresos = this.storage.getIngresos();
+        ingresos.desglose.push(duplicatedIncome);
+        ingresos.total = this.calculateTotal(ingresos.desglose);
+        this.storage.setIngresos(ingresos);
+        
+        // Solo agregar nueva fila
+        window.incomeTableEnhanced.addNewIncomeRow(duplicatedIncome);
+        if (window.gastosManager) {
+            window.gastosManager.updateHeaderTotals();
         }
         
-        // Crear duplicado con nuevo ID
-        const duplicatedIncome = {
-            ...income,
-            id: this.utils.id.generate('income'),
-            fuente: `${income.fuente} (Copia)`,
-            fechaCreacion: this.utils.time.now(),
-            fechaModificacion: this.utils.time.now()
-        };
-        
-        this.saveIncomeData(duplicatedIncome, false);
+        console.log('✅ Ingreso duplicado sin refresco');
+    } else {
+        // Fallback al método original
+        const ingresos = this.storage.getIngresos();
+        ingresos.desglose.push(duplicatedIncome);
+        ingresos.total = this.calculateTotal(ingresos.desglose);
+        this.storage.setIngresos(ingresos);
         this.updateDashboard();
-        this.modalSystem.showMessage('Ingreso duplicado correctamente', 'success');
     }
+    
+    this.modalSystem.showMessage('Ingreso duplicado correctamente', 'success');
+}
     
     // Llamado desde contextual-manager para mover arriba
     handleMoveUpAction(incomeId) {
@@ -362,9 +358,15 @@ class IngresosManager {
     
     // Llamado desde contextual-manager para eliminar
     handleDeleteAction(incomeId) {
-        console.log(`🗑️ Eliminando ingreso desde contextual-manager: ${incomeId}`);
+    console.log(`🗑️ Eliminando ingreso desde contextual-manager: ${incomeId}`);
+    
+    // 🎯 USAR MÉTODO DE TABLA MEJORADA EN LUGAR DEL MODAL
+    if (window.incomeTableEnhanced) {
+        window.incomeTableEnhanced.deleteIncome(incomeId);
+    } else {
         this.showDeleteModal(incomeId);
     }
+}
     
     /**
      * MOVER INGRESOS ARRIBA/ABAJO (NUEVA FUNCIONALIDAD)

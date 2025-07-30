@@ -1,13 +1,15 @@
 /**
  * INCOME-TABLE-ENHANCED.JS - Tabla de Ingresos Mejorada
- * Control de Gastos Familiares - Versión 1.0.0
+ * Control de Gastos Familiares - Versión 2.0.0 CORREGIDA
  * 
- * 🎯 RESPONSABILIDADES:
- * ✅ Renderizado de tabla mejorada de ingresos
+ * 🎯 FUNCIONALIDADES COMPLETAS:
+ * ✅ Sin refresco de pantalla en acciones del menú contextual
+ * ✅ Navegación Enter: Fuente → Monto → Guardar
+ * ✅ Eliminación, edición y duplicación optimizadas
+ * ✅ Renderizado de tabla mejorada
  * ✅ Funciones de ordenamiento y filtrado
- * ✅ Gestión de acciones (editar, ver, eliminar)
- * ✅ Cálculo de estadísticas
- * ✅ Eventos interactivos
+ * ✅ Cálculo de estadísticas en tiempo real
+ * ✅ Eventos interactivos optimizados
  */
 
 class IncomeTableEnhanced {
@@ -17,7 +19,11 @@ class IncomeTableEnhanced {
         this.sortDirection = {};
         this.currentFilter = '';
         
-        console.log('📊 IncomeTableEnhanced inicializado');
+        // 🆕 Bindings para eventos Enter
+        this.handleFuenteEnter = null;
+        this.handleMontoEnter = null;
+        
+        console.log('📊 IncomeTableEnhanced v2.0.0 inicializado - SIN REFRESCO');
     }
 
     /**
@@ -31,7 +37,8 @@ class IncomeTableEnhanced {
                 <div class="income-header-enhanced">
                     <div class="header-content">
                         <h2 class="income-title">💰 Desglose de Ingresos</h2>
-                        </div>
+                        <p class="income-subtitle">Gestiona tus fuentes de ingresos mensuales</p>
+                    </div>
                     <div class="header-controls">
                         <div class="search-container">
                             <input type="text" 
@@ -46,59 +53,57 @@ class IncomeTableEnhanced {
                     </div>
                 </div>
 
+                <div class="income-stats-bar">
+                    <div class="stats-item">
+                        <span class="stats-label">📈 Promedio:</span>
+                        <span class="stats-value">${this.gastosManager.formatNumber(this.calculateAverage(ingresos.desglose))}</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="stats-label">🏆 Mayor:</span>
+                        <span class="stats-value">${this.gastosManager.formatNumber(this.getHighestIncome(ingresos.desglose))}</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="stats-label">💼 Fuentes activas:</span>
+                        <span class="stats-value">${ingresos.desglose.filter(item => item.activo !== false).length}</span>
+                    </div>
+                    <div class="stats-item" id="filter-results">
+                        <span class="stats-label">👁️ Mostrando:</span>
+                        <span class="stats-value">${ingresos.desglose.length} de ${ingresos.desglose.length} ingresos</span>
+                    </div>
+                </div>
+
                 <div class="table-wrapper">
                     <table class="income-table-enhanced">
                         <thead>
                             <tr>
-                                <th class="sortable" onclick="window.incomeTableEnhanced.sortIncomes('fuente')">
-                                    📝 Fuente de Ingresos 
-                                    <span class="sort-indicator" data-column="fuente">↕️</span>
+                                <th class="sortable" onclick="window.incomeTableEnhanced.sortIncomes('fuente')" data-column="fuente">
+                                    📋 Fuente de Ingresos
+                                    <span class="sort-indicator">↕️</span>
                                 </th>
-                                <th class="sortable amount-col" onclick="window.incomeTableEnhanced.sortIncomes('monto')">
-                                    💰 Monto 
-                                    <span class="sort-indicator" data-column="monto">↕️</span>
+                                <th class="sortable amount-col" onclick="window.incomeTableEnhanced.sortIncomes('monto')" data-column="monto">
+                                    💰 Monto
+                                    <span class="sort-indicator">↕️</span>
                                 </th>
                                 <th class="percentage-col">
                                     📊 % del Total
                                 </th>
-                                <th class="actions-col">⚡ Acciones</th>
+                                <th class="actions-col">
+                                    🎯 Acciones
+                                </th>
                             </tr>
                         </thead>
                         <tbody id="income-table-body">
                             ${this.generateIncomeRows(ingresos)}
                         </tbody>
                         <tfoot>
-                            <tr class="total-row">
-                                <td><strong>📊 Total Ingresos</strong></td>
-                                <td class="total-amount"><strong>${this.gastosManager.formatNumber(ingresos.total)}</strong></td>
+                            <tr class="total-row" id="income-total-row">
+                                <td><strong>💼 Total Ingresos</strong></td>
+                                <td class="amount"><strong>${this.gastosManager.formatNumber(ingresos.total)}</strong></td>
                                 <td><strong>100%</strong></td>
                                 <td></td>
                             </tr>
                         </tfoot>
                     </table>
-                </div>
-
-                <div class="income-stats-bar">
-                    <div class="stats-item">
-                        <span class="stats-icon">📈</span>
-                        <span class="stats-label">Promedio:</span>
-                        <span class="stats-value">${this.gastosManager.formatNumber(this.calculateAverage(ingresos.desglose))}</span>
-                    </div>
-                    <div class="stats-item">
-                        <span class="stats-icon">🏆</span>
-                        <span class="stats-label">Mayor:</span>
-                        <span class="stats-value">${this.gastosManager.formatNumber(this.getHighestIncome(ingresos.desglose))}</span>
-                    </div>
-                    <div class="stats-item">
-                        <span class="stats-icon">🎯</span>
-                        <span class="stats-label">Fuentes activas:</span>
-                        <span class="stats-value">${ingresos.desglose.length}</span>
-                    </div>
-                    <div class="stats-item" id="filter-results">
-                        <span class="stats-icon">🔍</span>
-                        <span class="stats-label">Mostrando:</span>
-                        <span class="stats-value">${ingresos.desglose.length} de ${ingresos.desglose.length} ingresos</span>
-                    </div>
                 </div>
             </section>
         `;
@@ -187,6 +192,357 @@ class IncomeTableEnhanced {
     }
 
     /**
+     * ⚡ ACCIONES DE LA TABLA - OPTIMIZADAS SIN REFRESCO
+     */
+    editIncome(id) {
+        const ingresos = this.storage.getIngresos();
+        const income = ingresos.desglose.find(item => item.id === id);
+        
+        if (!income) {
+            window.modalSystem.showMessage('Ingreso no encontrado', 'error');
+            return;
+        }
+
+        // Modal de edición
+        window.modalSystem.form({
+            title: 'Editar Ingreso',
+            submitText: 'Actualizar',
+            fields: [
+                {
+                    type: 'text',
+                    name: 'fuente',
+                    label: 'Fuente de Ingresos',
+                    required: true,
+                    value: income.fuente,
+                    placeholder: 'Ej: Sueldo, Freelance, etc.'
+                },
+                {
+                    type: 'number',
+                    name: 'monto',
+                    label: 'Monto Mensual',
+                    required: true,
+                    value: income.monto,
+                    placeholder: '0'
+                }
+            ]
+        }).then(data => {
+            if (data) {
+                // Actualizar el ingreso
+                income.fuente = data.fuente;
+                income.monto = parseInt(data.monto) || 0;
+                
+                // Recalcular total
+                ingresos.total = ingresos.desglose.reduce((total, item) => total + (item.monto || 0), 0);
+                
+                // Guardar datos
+                this.storage.setIngresos(ingresos);
+
+                // 🎯 SOLUCIÓN: Solo actualizar fila específica sin recargar tabla
+                this.updateIncomeRow(id, data);
+                this.gastosManager.updateHeaderTotals();
+                this.recalculatePercentages();
+                
+                window.modalSystem.showMessage('Ingreso actualizado correctamente', 'success');
+            }
+        });
+
+        // 🎯 CONFIGURAR NAVEGACIÓN ENTER DESPUÉS DE QUE EL MODAL EXISTA
+        setTimeout(() => {
+            this.setupEnterNavigation();
+        }, 300);
+    }
+
+    /**
+     * 🎯 CONFIGURAR NAVEGACIÓN ENTER PARA MODAL - CORREGIDO
+     */
+    setupEnterNavigation() {
+        // Intentar múltiples veces hasta encontrar el modal
+        let attempts = 0;
+        const maxAttempts = 10;
+        
+        const trySetup = () => {
+            attempts++;
+            console.log(`🔍 Intento ${attempts} de configurar Enter navigation`);
+            
+            const modal = document.querySelector('.modal-overlay, .modern-overlay');
+            if (!modal) {
+                if (attempts < maxAttempts) {
+                    setTimeout(trySetup, 100);
+                }
+                return;
+            }
+
+            const fuenteInput = modal.querySelector('input[name="fuente"]');
+            const montoInput = modal.querySelector('input[name="monto"]');
+            const submitButton = modal.querySelector('button[data-action="save"], button[data-action="submit"], .btn-primary');
+            
+            console.log('🔍 Elementos encontrados:', {
+                modal: !!modal,
+                fuenteInput: !!fuenteInput,
+                montoInput: !!montoInput,
+                submitButton: !!submitButton
+            });
+            
+            if (!fuenteInput || !montoInput || !submitButton) {
+                if (attempts < maxAttempts) {
+                    setTimeout(trySetup, 100);
+                }
+                return;
+            }
+
+            // 🎯 CONFIGURAR ENTER EN FUENTE
+            const handleFuenteEnter = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    console.log('🎯 Enter en Fuente - navegando a Monto');
+                    montoInput.focus();
+                    montoInput.select();
+                }
+            };
+
+            // 🎯 CONFIGURAR ENTER EN MONTO
+            const handleMontoEnter = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    console.log('🎯 Enter en Monto - guardando');
+                    
+                    // Validar campos
+                    if (!fuenteInput.value.trim()) {
+                        console.log('⚠️ Fuente vacía, volviendo a ese campo');
+                        fuenteInput.focus();
+                        return;
+                    }
+                    if (!montoInput.value.trim() || parseFloat(montoInput.value) <= 0) {
+                        console.log('⚠️ Monto inválido, permaneciendo en ese campo');
+                        montoInput.focus();
+                        return;
+                    }
+                    
+                    console.log('✅ Validación OK, haciendo click en submit');
+                    submitButton.click();
+                }
+            };
+
+            // 🔧 DESACTIVAR Enter global del modal
+            const disableModalEnter = (e) => {
+                if (e.key === 'Enter' && (e.target === fuenteInput || e.target === montoInput)) {
+                    e.stopImmediatePropagation();
+                }
+            };
+
+            // Agregar listeners con capture
+            fuenteInput.addEventListener('keydown', handleFuenteEnter, true);
+            montoInput.addEventListener('keydown', handleMontoEnter, true);
+            modal.addEventListener('keydown', disableModalEnter, true);
+
+            console.log('✅ Navegación Enter configurada correctamente');
+        };
+        
+        // Iniciar el proceso
+        trySetup();
+    }
+
+    /**
+     * 🎯 ACTUALIZAR SOLO LA FILA EDITADA SIN RECARGAR TABLA
+     */
+    updateIncomeRow(id, newData) {
+        const row = document.querySelector(`[data-id="${id}"]`);
+        if (!row) {
+            console.log('⚠️ Fila no encontrada, recargando tabla');
+            this.renderIncomeSection(this.gastosManager.getMainContainer());
+            return;
+        }
+
+        // Actualizar nombre de la fuente
+        const sourceNameElement = row.querySelector('.source-name, .breakdown-name');
+        if (sourceNameElement) {
+            sourceNameElement.textContent = newData.fuente;
+        }
+
+        // Actualizar monto
+        const amountElement = row.querySelector('.breakdown-amount, .amount-value');
+        if (amountElement) {
+            amountElement.textContent = this.formatNumber(newData.monto);
+        }
+
+        // Animación de actualización
+        row.style.transition = 'background-color 0.3s ease';
+        row.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
+        setTimeout(() => {
+            row.style.backgroundColor = '';
+        }, 800);
+    }
+
+    /**
+     * 🗑️ ELIMINAR INGRESO SIN REFRESCO - MODAL RESTAURADO
+     */
+    deleteIncome(id) {
+        const ingresos = this.storage.getIngresos();
+        const income = ingresos.desglose.find(item => item.id === id);
+        
+        if (!income) {
+            console.error('❌ Ingreso no encontrado:', id);
+            return;
+        }
+
+        // 🎯 USAR MODALYSTEM NORMAL (RESTAURADO)
+        window.modalSystem.confirm(
+            `¿Estás seguro de que quieres eliminar "${income.fuente}"?`,
+            'Esta acción no se puede deshacer.'
+        ).then(confirmed => {
+            if (confirmed) {
+                this.executeDelete(id, ingresos);
+            }
+        });
+    }
+
+    /**
+     * 🎯 EJECUTAR ELIMINACIÓN REAL
+     */
+    executeDelete(id, ingresos) {
+        // 🎯 SOLUCIÓN: Eliminar fila del DOM primero
+        const row = document.querySelector(`[data-id="${id}"]`);
+        if (row) {
+            row.style.transition = 'opacity 0.2s ease';
+            row.style.opacity = '0';
+            setTimeout(() => {
+                if (row.parentNode) {
+                    row.remove();
+                }
+            }, 200);
+        }
+        
+        // Eliminar del array
+        ingresos.desglose = ingresos.desglose.filter(item => item.id !== id);
+        ingresos.total = ingresos.desglose.reduce((total, item) => total + (item.monto || 0), 0);
+        
+        // Guardar datos
+        this.storage.setIngresos(ingresos);
+        
+        // 🎯 SOLO actualizar totales, NO recargar tabla
+        this.gastosManager.updateHeaderTotals();
+        this.updateTableTotals(ingresos.total);
+        
+        console.log('✅ Ingreso eliminado sin refresco');
+    }
+
+    /**
+     * 🎯 ACTUALIZAR SOLO LOS TOTALES SIN RECARGAR TABLA
+     */
+    updateTableTotals(newTotal) {
+        const totalElement = document.querySelector('.income-total-value');
+        if (totalElement) {
+            totalElement.textContent = this.gastosManager.formatNumber(newTotal);
+        }
+        
+        const totalRowElement = document.querySelector('#income-total-row .amount');
+        if (totalRowElement) {
+            totalRowElement.textContent = this.gastosManager.formatNumber(newTotal);
+        }
+    }
+
+    /**
+     * 🎯 RECALCULAR PORCENTAJES SIN RECARGAR
+     */
+    recalculatePercentages() {
+        const ingresos = this.storage.getIngresos();
+        const total = ingresos.total;
+        
+        ingresos.desglose.forEach(item => {
+            const percentage = ((item.monto / total) * 100).toFixed(1);
+            const row = document.querySelector(`[data-id="${item.id}"]`);
+            if (row) {
+                const percentageCell = row.querySelector('.breakdown-percentage, .percentage-text');
+                if (percentageCell) {
+                    percentageCell.textContent = `${percentage}%`;
+                }
+                
+                // Actualizar barra de progreso
+                const progressFill = row.querySelector('.progress-fill');
+                if (progressFill) {
+                    progressFill.style.width = `${percentage}%`;
+                    progressFill.className = `progress-fill ${this.getProgressClass(percentage)}`;
+                }
+            }
+        });
+
+        // Actualizar total en la tabla
+        this.updateTableTotals(total);
+    }
+
+    /**
+     * 📊 AGREGAR NUEVA FILA SIN RECARGAR TABLA
+     */
+    addNewIncomeRow(incomeData) {
+        const tableBody = document.getElementById('income-table-body');
+        if (!tableBody) {
+            // Si no hay tabla, recargar completamente
+            this.renderIncomeSection(this.gastosManager.getMainContainer());
+            return;
+        }
+
+        // Remover fila vacía si existe
+        const emptyRow = tableBody.querySelector('.empty-row');
+        if (emptyRow) {
+            emptyRow.remove();
+        }
+
+        const percentage = 10; // Se calculará después
+        const newRowHTML = `
+            <tr class="income-row" data-id="${incomeData.id}" style="opacity: 0;">
+                <td class="source-cell">
+                    <div class="source-content breakdown-item" data-id="${incomeData.id}">
+                        <span class="source-name breakdown-name">${incomeData.fuente}</span>
+                    </div>
+                </td>
+                <td class="amount-cell">
+                    <div class="breakdown-item" data-id="${incomeData.id}">
+                        <span class="amount-value breakdown-amount">${this.formatNumber(incomeData.monto)}</span>
+                    </div>
+                </td>
+                <td class="percentage-cell">
+                    <div class="percentage-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill ${this.getProgressClass(percentage)}" 
+                                 style="width: ${percentage}%"></div>
+                        </div>
+                        <span class="percentage-text">${percentage.toFixed(1)}%</span>
+                    </div>
+                </td>
+                <td class="actions-cell">
+                    <div class="action-buttons">
+                        <button class="action-btn btn-edit" onclick="window.incomeTableEnhanced.editIncome('${incomeData.id}')" title="Editar">
+                            ✏️
+                        </button>
+                        <button class="action-btn btn-delete" onclick="window.incomeTableEnhanced.deleteIncome('${incomeData.id}')" title="Eliminar">
+                            🗑️
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        // Agregar nueva fila
+        tableBody.insertAdjacentHTML('beforeend', newRowHTML);
+        
+        // Animar entrada
+        const newRow = tableBody.querySelector(`[data-id="${incomeData.id}"]`);
+        if (newRow) {
+            setTimeout(() => {
+                newRow.style.transition = 'opacity 0.3s ease';
+                newRow.style.opacity = '1';
+            }, 10);
+        }
+
+        // Actualizar totales y porcentajes
+        this.recalculatePercentages();
+    }
+
+    /**
      * 📊 FUNCIONES DE CÁLCULO
      */
     getProgressClass(percentage) {
@@ -244,7 +600,7 @@ class IncomeTableEnhanced {
             indicator.textContent = '↕️';
         });
         
-        const currentIndicator = document.querySelector(`[data-column="${column}"]`);
+        const currentIndicator = document.querySelector(`[data-column="${column}"] .sort-indicator`);
         if (currentIndicator) {
             currentIndicator.textContent = direction === 'asc' ? '⬆️' : '⬇️';
         }
@@ -282,114 +638,6 @@ class IncomeTableEnhanced {
     }
 
     /**
-     * ⚡ ACCIONES DE LA TABLA
-     */
-    editIncome(id) {
-        const ingresos = this.storage.getIngresos();
-        const income = ingresos.desglose.find(item => item.id === id);
-        
-        if (!income) {
-            window.modalSystem.showMessage('Ingreso no encontrado', 'error');
-            return;
-        }
-
-        // Modal de edición
-        window.modalSystem.form({
-            title: 'Editar Ingreso',
-            submitText: 'Actualizar',
-            fields: [
-                {
-                    type: 'text',
-                    name: 'fuente',
-                    label: 'Fuente de Ingresos',
-                    required: true,
-                    value: income.fuente,
-                    placeholder: 'Ej: Sueldo, Freelance, etc.'
-                },
-                {
-                    type: 'number',
-                    name: 'monto',
-                    label: 'Monto Mensual',
-                    required: true,
-                    value: income.monto,
-                    placeholder: '0'
-                }
-            ]
-        }).then(data => {
-            if (data) {
-                // Actualizar el ingreso
-                income.fuente = data.fuente;
-                income.monto = parseInt(data.monto) || 0;
-                
-                // Recalcular total
-                ingresos.total = ingresos.desglose.reduce((total, item) => total + (item.monto || 0), 0);
-                
-                // Guardar y refrescar
-                this.storage.setIngresos(ingresos);
-                this.renderIncomeSection(this.gastosManager.getMainContainer());
-                this.gastosManager.updateHeaderTotals();
-                
-                window.modalSystem.showMessage('Ingreso actualizado correctamente', 'success');
-            }
-        });
-    }
-
-    viewIncomeDetails(id) {
-        const ingresos = this.storage.getIngresos();
-        const income = ingresos.desglose.find(item => item.id === id);
-        
-        if (!income) {
-            window.modalSystem.showMessage('Ingreso no encontrado', 'error');
-            return;
-        }
-        
-        const percentage = ((income.monto / ingresos.total) * 100).toFixed(1);
-        
-        // Modal de detalles
-        window.modalSystem.showMessage(
-            `<div style="text-align: left;">
-                <h3 style="margin-bottom: 12px; color: #059669;">📊 Detalles del Ingreso</h3>
-                <p><strong>Fuente:</strong> ${income.fuente}</p>
-                <p><strong>Monto:</strong> ${this.gastosManager.formatNumber(income.monto)}</p>
-                <p><strong>Porcentaje del total:</strong> ${percentage}%</p>
-                <p><strong>Estado:</strong> ${income.activo !== false ? 'Activo' : 'Inactivo'}</p>
-                <p><strong>Fecha de creación:</strong> ${income.fechaCreacion || 'No disponible'}</p>
-                <p><strong>ID:</strong> ${income.id}</p>
-            </div>`,
-            'info'
-        );
-    }
-
-    deleteIncome(id) {
-        const ingresos = this.storage.getIngresos();
-        const income = ingresos.desglose.find(item => item.id === id);
-        
-        if (!income) {
-            window.modalSystem.showMessage('Ingreso no encontrado', 'error');
-            return;
-        }
-
-        // Confirmación
-        window.modalSystem.confirm(
-            `¿Estás seguro de que quieres eliminar "${income.fuente}"?`,
-            'Esta acción no se puede deshacer.'
-        ).then(confirmed => {
-            if (confirmed) {
-                // Eliminar del array
-                ingresos.desglose = ingresos.desglose.filter(item => item.id !== id);
-                ingresos.total = ingresos.desglose.reduce((total, item) => total + (item.monto || 0), 0);
-                
-                // Guardar y refrescar
-                this.storage.setIngresos(ingresos);
-                this.renderIncomeSection(this.gastosManager.getMainContainer());
-                this.gastosManager.updateHeaderTotals();
-                
-                window.modalSystem.showMessage('Ingreso eliminado correctamente', 'success');
-            }
-        });
-    }
-
-    /**
      * 🆕 CONFIGURAR EVENTOS DE TABLA (MENÚ CONTEXTUAL + EDICIÓN INLINE)
      */
     setupTableEvents() {
@@ -410,10 +658,31 @@ class IncomeTableEnhanced {
 
         console.log('✅ Eventos de tabla configurados - Menú contextual y edición inline activos');
     }
+
+    /**
+     * 🎯 FORMATEAR NÚMERO (HELPER)
+     */
+    formatNumber(amount) {
+        return this.gastosManager.formatNumber ? 
+               this.gastosManager.formatNumber(amount) : 
+               new Intl.NumberFormat('es-CL').format(amount);
     }
+}
 
 // Crear instancia global
 if (typeof window !== 'undefined') {
     window.IncomeTableEnhanced = IncomeTableEnhanced;
-    console.log('📊 IncomeTableEnhanced disponible globalmente');
+    console.log('📊 IncomeTableEnhanced v2.0.0 disponible globalmente - CORREGIDO');
 }
+
+/**
+ * 🎯 EXPORTAR PARA MÓDULOS
+ */
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = IncomeTableEnhanced;
+}
+
+console.log('📊 Income-table-enhanced.js v2.0.0 cargado - TODAS LAS CORRECCIONES APLICADAS');
+console.log('✅ Sin refresco en menú contextual');
+console.log('✅ Navegación Enter: Fuente → Monto → Guardar');
+console.log('✅ Optimizaciones de rendimiento aplicadas');

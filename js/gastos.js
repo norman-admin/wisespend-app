@@ -290,13 +290,104 @@ if (window.IncomeTableEnhanced) {
         
         this.storage.setIngresos(ingresos);
 
-        // Recargar vista y mostrar mensaje
-        this.renderIncomeSection(this.getMainContainer());
+        // 🎯 SOLUCIÓN: Solo agregar fila nueva sin recargar tabla
+        this.addNewIncomeRow(incomeData);
         this.updateHeaderTotals();
         window.modalSystem.showMessage('Nuevo ingreso agregado correctamente', 'success');
         
         console.log('✅ Nuevo ingreso agregado:', incomeData);
     }
+
+    /**
+ * 🎯 AGREGAR NUEVA FILA SIN RECARGAR TABLA
+ */
+addNewIncomeRow(incomeData) {
+    const tableBody = document.getElementById('income-table-body');
+    if (!tableBody) {
+        // Si no hay tabla, recargar completamente
+        this.renderIncomeSection(this.getMainContainer());
+        return;
+    }
+
+    // Remover fila vacía si existe
+    const emptyRow = tableBody.querySelector('.empty-row');
+    if (emptyRow) {
+        emptyRow.remove();
+    }
+
+    const percentage = 10; // Se calculará después
+    const newRowHTML = `
+        <tr class="income-row" data-id="${incomeData.id}" style="opacity: 0;">
+            <td class="source-cell">
+                <div class="source-content breakdown-item" data-id="${incomeData.id}">
+                    <span class="source-name breakdown-name">${incomeData.fuente}</span>
+                </div>
+            </td>
+            <td class="amount-cell">
+                <span class="breakdown-amount">${this.formatNumber(incomeData.monto)}</span>
+            </td>
+            <td class="percentage-cell">
+                <span class="breakdown-percentage">${percentage.toFixed(1)}%</span>
+            </td>
+            <td class="actions-cell">
+                <div class="action-buttons">
+                    <button class="btn-action btn-edit" onclick="window.incomeTableEnhanced.editIncome('${incomeData.id}')" title="Editar">
+                        ✏️
+                    </button>
+                    <button class="btn-action btn-delete" onclick="window.incomeTableEnhanced.deleteIncome('${incomeData.id}')" title="Eliminar">
+                        🗑️
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `;
+
+    // Agregar nueva fila
+    tableBody.insertAdjacentHTML('beforeend', newRowHTML);
+    
+    // Animar entrada
+    const newRow = tableBody.querySelector(`[data-id="${incomeData.id}"]`);
+    if (newRow) {
+        setTimeout(() => {
+            newRow.style.transition = 'opacity 0.3s ease';
+            newRow.style.opacity = '1';
+        }, 10);
+    }
+
+    // Actualizar totales y porcentajes
+    this.recalculatePercentages();
+}
+
+/**
+ * 🎯 RECALCULAR PORCENTAJES SIN RECARGAR
+ */
+recalculatePercentages() {
+    const ingresos = this.storage.getIngresos();
+    const total = ingresos.total;
+    
+    ingresos.desglose.forEach(item => {
+        const percentage = ((item.monto / total) * 100).toFixed(1);
+        const row = document.querySelector(`[data-id="${item.id}"]`);
+        if (row) {
+            const percentageCell = row.querySelector('.breakdown-percentage');
+            if (percentageCell) {
+                percentageCell.textContent = `${percentage}%`;
+            }
+        }
+    });
+
+    // Actualizar total en la tabla
+    this.updateTableTotals(total);
+}
+
+/**
+ * 🎯 FORMATEAR NÚMERO (HELPER)
+ */
+formatNumber(amount) {
+    return this.gastosManager.formatNumber ? 
+           this.gastosManager.formatNumber(amount) : 
+           new Intl.NumberFormat('es-CL').format(amount);
+}
 
     /**
  * Renderizar sección de gastos (botones para elegir tipo) - VERSIÓN ORIGINAL RESTAURADA

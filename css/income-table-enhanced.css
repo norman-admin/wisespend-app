@@ -11,6 +11,41 @@
  * ✅ Compatible con temas light/dark
  */
 
+ /* ===== BOTONES DE ACCIÓN - SIN FOCUS PERSISTENTE ===== */
+
+.btn-action {
+    outline: none !important;
+    border: none !important;
+}
+
+.btn-action:focus,
+.btn-action:active {
+    outline: none !important;
+    box-shadow: none !important;
+    background: none !important;
+    border: none !important;
+}
+
+.btn-edit:focus,
+.btn-edit:active,
+.btn-delete:focus,
+.btn-delete:active {
+    outline: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Mantener solo el hover, quitar focus */
+.btn-edit:hover {
+    background: rgba(59, 130, 246, 0.1) !important;
+    transform: scale(1.05) !important;
+}
+
+.btn-delete:hover {
+    background: rgba(239, 68, 68, 0.1) !important;
+    transform: scale(1.05) !important;
+}
+
 /* ===== HEADER MEJORADO DE INGRESOS ===== */
 
 .income-header-enhanced {

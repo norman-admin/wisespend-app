@@ -249,102 +249,123 @@ class IncomeTableEnhanced {
         // 🎯 CONFIGURAR NAVEGACIÓN ENTER DESPUÉS DE QUE EL MODAL EXISTA
         setTimeout(() => {
             this.setupEnterNavigation();
-        }, 300);
+        }, 500);
     }
 
     /**
      * 🎯 CONFIGURAR NAVEGACIÓN ENTER PARA MODAL - CORREGIDO
      */
-    setupEnterNavigation() {
-        // Intentar múltiples veces hasta encontrar el modal
-        let attempts = 0;
-        const maxAttempts = 10;
+   setupEnterNavigation() {
+    console.log('🎯 Iniciando configuración de navegación Enter');
+    
+    // Esperar más tiempo para que el modal se renderice completamente
+    let attempts = 0;
+    const maxAttempts = 15; // Aumentado de 10 a 15
+    
+    const trySetup = () => {
+        attempts++;
+        console.log(`🔍 Intento ${attempts} de configurar Enter navigation`);
         
-        const trySetup = () => {
-            attempts++;
-            console.log(`🔍 Intento ${attempts} de configurar Enter navigation`);
-            
-            const modal = document.querySelector('.modal-overlay, .modern-overlay');
-            if (!modal) {
-                if (attempts < maxAttempts) {
-                    setTimeout(trySetup, 100);
-                }
-                return;
+        // Buscar modal con selectores más específicos
+        const modal = document.querySelector('.modal-overlay .modal-content, .modern-overlay');
+        
+        if (!modal) {
+            if (attempts < maxAttempts) {
+                setTimeout(trySetup, 150); // Aumentado de 100 a 150ms
+            } else {
+                console.warn('⚠️ No se pudo encontrar el modal después de', maxAttempts, 'intentos');
             }
+            return;
+        }
 
-            const fuenteInput = modal.querySelector('input[name="fuente"]');
-            const montoInput = modal.querySelector('input[name="monto"]');
-            const submitButton = modal.querySelector('button[data-action="save"], button[data-action="submit"], .btn-primary');
-            
-            console.log('🔍 Elementos encontrados:', {
-                modal: !!modal,
-                fuenteInput: !!fuenteInput,
-                montoInput: !!montoInput,
-                submitButton: !!submitButton
-            });
-            
-            if (!fuenteInput || !montoInput || !submitButton) {
-                if (attempts < maxAttempts) {
-                    setTimeout(trySetup, 100);
-                }
-                return;
+        // Buscar inputs con selectores más específicos
+        const fuenteInput = modal.querySelector('input[name="fuente"], #fuente, input[placeholder*="fuente" i]');
+        const montoInput = modal.querySelector('input[name="monto"], #monto, input[type="number"]');
+        const submitButton = modal.querySelector('button[data-action="save"], button[data-action="submit"], .btn-primary, button[type="submit"]');
+        
+        console.log('🔍 Elementos encontrados:', {
+            modal: !!modal,
+            fuenteInput: !!fuenteInput,
+            montoInput: !!montoInput,
+            submitButton: !!submitButton
+        });
+        
+        if (!fuenteInput || !montoInput || !submitButton) {
+            if (attempts < maxAttempts) {
+                setTimeout(trySetup, 150);
+            } else {
+                console.warn('⚠️ No se encontraron todos los elementos necesarios');
             }
+            return;
+        }
 
-            // 🎯 CONFIGURAR ENTER EN FUENTE
-            const handleFuenteEnter = (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    e.stopImmediatePropagation();
-                    console.log('🎯 Enter en Fuente - navegando a Monto');
+        // Limpiar eventos anteriores
+        fuenteInput.removeEventListener('keydown', this.handleFuenteEnter);
+        montoInput.removeEventListener('keydown', this.handleMontoEnter);
+
+        // 🎯 CONFIGURAR ENTER EN FUENTE
+        this.handleFuenteEnter = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                console.log('🎯 Enter en Fuente - navegando a Monto');
+                
+                // Validar que el campo no esté vacío
+                if (!fuenteInput.value.trim()) {
+                    console.log('⚠️ Fuente vacía, permaneciendo en el campo');
+                    return;
+                }
+                
+                montoInput.focus();
+                montoInput.select();
+            }
+        };
+
+        // 🎯 CONFIGURAR ENTER EN MONTO
+        this.handleMontoEnter = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                console.log('🎯 Enter en Monto - guardando');
+                
+                // Validar campos antes de guardar
+                if (!fuenteInput.value.trim()) {
+                    console.log('⚠️ Fuente vacía, volviendo a ese campo');
+                    fuenteInput.focus();
+                    return;
+                }
+                
+                const montoValue = parseFloat(montoInput.value);
+                if (!montoInput.value.trim() || isNaN(montoValue) || montoValue <= 0) {
+                    console.log('⚠️ Monto inválido, permaneciendo en ese campo');
                     montoInput.focus();
                     montoInput.select();
+                    return;
                 }
-            };
-
-            // 🎯 CONFIGURAR ENTER EN MONTO
-            const handleMontoEnter = (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    e.stopImmediatePropagation();
-                    console.log('🎯 Enter en Monto - guardando');
-                    
-                    // Validar campos
-                    if (!fuenteInput.value.trim()) {
-                        console.log('⚠️ Fuente vacía, volviendo a ese campo');
-                        fuenteInput.focus();
-                        return;
-                    }
-                    if (!montoInput.value.trim() || parseFloat(montoInput.value) <= 0) {
-                        console.log('⚠️ Monto inválido, permaneciendo en ese campo');
-                        montoInput.focus();
-                        return;
-                    }
-                    
-                    console.log('✅ Validación OK, haciendo click en submit');
-                    submitButton.click();
-                }
-            };
-
-            // 🔧 DESACTIVAR Enter global del modal
-            const disableModalEnter = (e) => {
-                if (e.key === 'Enter' && (e.target === fuenteInput || e.target === montoInput)) {
-                    e.stopImmediatePropagation();
-                }
-            };
-
-            // Agregar listeners con capture
-            fuenteInput.addEventListener('keydown', handleFuenteEnter, true);
-            montoInput.addEventListener('keydown', handleMontoEnter, true);
-            modal.addEventListener('keydown', disableModalEnter, true);
-
-            console.log('✅ Navegación Enter configurada correctamente');
+                
+                console.log('✅ Validación OK, guardando...');
+                submitButton.click();
+            }
         };
-        
-        // Iniciar el proceso
-        trySetup();
-    }
+
+        // Agregar event listeners
+        fuenteInput.addEventListener('keydown', this.handleFuenteEnter, true);
+        montoInput.addEventListener('keydown', this.handleMontoEnter, true);
+
+        // Focus inicial en fuente y seleccionar texto
+        setTimeout(() => {
+            fuenteInput.focus();
+            fuenteInput.select();
+        }, 50);
+
+        console.log('✅ Navegación Enter configurada correctamente');
+    };
+    
+    // Iniciar el proceso con un delay inicial
+    setTimeout(trySetup, 200); // Delay inicial de 200ms
+}
 
     /**
      * 🎯 ACTUALIZAR SOLO LA FILA EDITADA SIN RECARGAR TABLA
@@ -654,6 +675,28 @@ class IncomeTableEnhanced {
             if (itemId && window.contextualManager) {
                 window.contextualManager.showContextMenu(e, 'income', itemId, row);
             }
+
+            // 🆕 EDICIÓN INLINE CON DOBLE CLIC
+tableBody.addEventListener('dblclick', (e) => {
+    const row = e.target.closest('.income-row');
+    if (!row) return;
+    
+    const itemId = row.dataset.id;
+    if (!itemId) return;
+    
+    // Determinar qué campo se está editando
+    const isSourceField = e.target.closest('.breakdown-name, .source-name');
+    const isAmountField = e.target.closest('.breakdown-amount, .amount-value');
+    
+    if (isSourceField && window.ingresosManager) {
+        console.log('🖱️ Doble clic en fuente - iniciando edición inline');
+        window.ingresosManager.startInlineEdit(itemId, 'fuente', isSourceField);
+    } else if (isAmountField && window.ingresosManager) {
+        console.log('🖱️ Doble clic en monto - iniciando edición inline');
+        window.ingresosManager.startInlineEdit(itemId, 'monto', isAmountField);
+    }
+});
+
         });
 
         console.log('✅ Eventos de tabla configurados - Menú contextual y edición inline activos');
@@ -666,6 +709,95 @@ class IncomeTableEnhanced {
         return this.gastosManager.formatNumber ? 
                this.gastosManager.formatNumber(amount) : 
                new Intl.NumberFormat('es-CL').format(amount);
+    }
+    /**
+     * 🎯 REORDENAR FILAS SIN RECARGAR TABLA COMPLETA
+     */
+    reorderIncomeRows(movedItemId, direction) {
+        console.log(`🔄 Reordenando fila: ${movedItemId} hacia ${direction}`);
+        
+        const tableBody = document.querySelector('.income-table-enhanced tbody');
+        if (!tableBody) {
+            console.warn('⚠️ Tabla no encontrada, recargando...');
+            this.renderIncomeSection(this.gastosManager.getMainContainer());
+            return;
+        }
+        
+        const currentRow = tableBody.querySelector(`[data-id="${movedItemId}"]`);
+        if (!currentRow) {
+            console.warn('⚠️ Fila no encontrada, recargando...');
+            this.renderIncomeSection(this.gastosManager.getMainContainer());
+            return;
+        }
+        
+        let targetRow;
+        if (direction === 'up') {
+            targetRow = currentRow.previousElementSibling;
+            if (targetRow) {
+                tableBody.insertBefore(currentRow, targetRow);
+            }
+        } else if (direction === 'down') {
+            targetRow = currentRow.nextElementSibling;
+            if (targetRow) {
+                tableBody.insertBefore(currentRow, targetRow.nextElementSibling);
+            }
+        }
+        
+        // Efecto visual para mostrar el movimiento
+        currentRow.style.transition = 'background-color 0.3s ease';
+        currentRow.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
+        
+        setTimeout(() => {
+            currentRow.style.backgroundColor = '';
+            setTimeout(() => {
+                currentRow.style.transition = '';
+            }, 300);
+        }, 600);
+        
+        // Recalcular porcentajes con los nuevos datos
+        this.recalculatePercentages();
+        
+        console.log('✅ Fila reordenada sin refresco');
+    }
+    /**
+     * 🎯 ACTUALIZAR SOLO LA FILA EDITADA INLINE SIN RECARGAR TABLA
+     */
+    updateIncomeRowInline(incomeId, field, newValue) {
+        console.log(`🔄 Actualizando campo ${field} de fila ${incomeId} inline`);
+        
+        const row = document.querySelector(`[data-id="${incomeId}"]`);
+        if (!row) {
+            console.warn('⚠️ Fila no encontrada para actualización inline');
+            return;
+        }
+        
+        // Actualizar el campo específico
+        if (field === 'fuente') {
+            const fuenteCell = row.querySelector('.breakdown-name, .income-source');
+            if (fuenteCell) {
+                fuenteCell.textContent = newValue;
+            }
+        } else if (field === 'monto') {
+            const montoCell = row.querySelector('.breakdown-amount, .income-amount');
+            if (montoCell) {
+                montoCell.textContent = this.gastosManager ? 
+                    this.gastosManager.formatNumber(newValue) : 
+                    new Intl.NumberFormat('es-CL').format(newValue);
+            }
+        }
+        
+        // Efecto visual para mostrar la actualización
+        row.style.transition = 'background-color 0.3s ease';
+        row.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
+        
+        setTimeout(() => {
+            row.style.backgroundColor = '';
+            setTimeout(() => {
+                row.style.transition = '';
+            }, 300);
+        }, 600);
+        
+        console.log('✅ Fila actualizada inline sin refresco');
     }
 }
 

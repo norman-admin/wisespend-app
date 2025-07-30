@@ -400,14 +400,26 @@ handleDuplicateAction(incomeId) {
         // Actualizar timestamps
         movedItem.fechaModificacion = this.utils.time.now();
         
-        // Guardar cambios
-        this.storage.setIngresos(ingresos);
-        this.updateDashboard();
-        
-        this.modalSystem.showMessage(
-            `Ingreso movido ${direction === 'up' ? 'arriba' : 'abajo'} correctamente`,
-            'success'
-        );
+// Guardar cambios
+this.storage.setIngresos(ingresos);
+
+// 🎯 ACTUALIZACIÓN OPTIMIZADA SIN REFRESCO
+if (window.incomeTableEnhanced) {
+    // Solo reordenar las filas visualmente
+    window.incomeTableEnhanced.reorderIncomeRows(incomeId, direction);
+    // Actualizar totales
+    if (window.gastosManager) {
+        window.gastosManager.updateHeaderTotals();
+    }
+} else {
+    // Fallback al método original
+    this.updateDashboard();
+}
+
+this.modalSystem.showMessage(
+    `Ingreso movido ${direction === 'up' ? 'arriba' : 'abajo'} correctamente`,
+    'success'
+);
     }
 
     startInlineEdit(incomeId, field, element) {
@@ -531,18 +543,32 @@ handleDuplicateAction(incomeId) {
     }
 
     updateIncomeField(incomeId, field, value) {
-        const ingresos = this.storage.getIngresos();
-        const income = ingresos.desglose.find(item => item.id === incomeId);
+    const ingresos = this.storage.getIngresos();
+    const income = ingresos.desglose.find(item => item.id === incomeId);
+    
+    if (income) {
+        income[field] = value;
+        income.fechaModificacion = this.utils.time.now();
+        ingresos.total = this.calculateTotal(ingresos.desglose);
+        this.storage.setIngresos(ingresos);
         
-        if (income) {
-            income[field] = value;
-            income.fechaModificacion = this.utils.time.now();
-            ingresos.total = this.calculateTotal(ingresos.desglose);
-            this.storage.setIngresos(ingresos);
+        // 🎯 ACTUALIZACIÓN OPTIMIZADA SIN REFRESCO
+        if (window.incomeTableEnhanced) {
+            // Solo actualizar la fila específica
+            window.incomeTableEnhanced.updateIncomeRowInline(incomeId, field, value);
+            // Actualizar totales y porcentajes
+            window.incomeTableEnhanced.recalculatePercentages();
+            if (window.gastosManager) {
+                window.gastosManager.updateHeaderTotals();
+            }
+        } else {
+            // Fallback al método original
             this.updateDashboard();
-            this.modalSystem.showMessage('Ingreso actualizado correctamente', 'success');
         }
+        
+        this.modalSystem.showMessage('Ingreso actualizado correctamente', 'success');
     }
+}
 
     deleteIncome(incomeId) {
         const ingresos = this.storage.getIngresos();
@@ -630,13 +656,27 @@ handleDuplicateAction(incomeId) {
     }
 
     updateDashboard() {
-    // 🔧 USAR TABLA MEJORADA EN LUGAR DE BREAKDOWN
+    console.log('⚠️ updateDashboard() llamado - se debería evitar para edición inline');
+    
+    // 🎯 INTENTAR ACTUALIZACIÓN INTELIGENTE PRIMERO
+    if (window.incomeTableEnhanced) {
+        // Solo recalcular porcentajes y totales, NO recargar tabla
+        console.log('🔄 Actualización inteligente sin refresco');
+        window.incomeTableEnhanced.recalculatePercentages();
+        if (window.gastosManager) {
+            window.gastosManager.updateHeaderTotals();
+        }
+        return; // ✅ SALIR AQUÍ EVITA EL REFRESCO
+    }
+    
+    // Fallback: Solo si no hay tabla mejorada disponible
     if (window.IncomeTableEnhanced && window.gastosManager) {
+        console.log('⚠️ Fallback: Recargando tabla completa');
         const tableInstance = new window.IncomeTableEnhanced(window.gastosManager);
         tableInstance.renderIncomeSection(window.gastosManager.getMainContainer());
     }
     
-    // Actualizar totales si existe gastosManager
+    // Actualizar totales
     if (window.gastosManager?.updateHeaderTotals) {
         setTimeout(() => window.gastosManager.updateHeaderTotals(), 100);
     }

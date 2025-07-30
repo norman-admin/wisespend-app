@@ -511,23 +511,27 @@ renderExpensesSection(container) {
      * 🆕 NUEVO: Guardar gasto desde modal unificado
      */
     saveGastoFromModal(data, tipo) {
-        const gastoData = {
-            categoria: data.categoria,
-            monto: parseInt(data.monto) || 0,
-            activo: true,
-            id: Utils.id.generate(`gasto_${tipo}`),
-            fechaCreacion: Utils.time.now()
-        };
+    const gastoData = {
+        categoria: data.categoria,
+        monto: parseInt(data.monto) || 0,
+        activo: true,
+        id: Utils.id.generate(`gasto_${tipo}`),
+        fechaCreacion: Utils.time.now()
+    };
 
-        if (!gastoData.categoria || !gastoData.monto) {
-            window.modalSystem.showMessage('Por favor complete todos los campos requeridos', 'error');
-            return;
-        }
-
-        this.addGasto(gastoData, tipo);
-        this.loadGastosView();
-        window.modalSystem.showMessage(`Gasto ${this.getTipoDisplayName(tipo).toLowerCase()} agregado correctamente`, 'success');
+    if (!gastoData.categoria || !gastoData.monto) {
+        window.modalSystem.showMessage('Por favor complete todos los campos requeridos', 'error');
+        return;
     }
+
+    this.addGasto(gastoData, tipo);
+    
+    // 🎯 SOLUCIÓN: Solo actualizar totales, NO recargar vista
+    this.updateHeaderTotals();
+    console.log('✅ Gasto agregado sin refresco');
+    
+    window.modalSystem.showMessage(`Gasto ${this.getTipoDisplayName(tipo).toLowerCase()} agregado correctamente`, 'success');
+}
 
     /**
      * Renderizar gastos fijos

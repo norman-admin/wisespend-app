@@ -881,7 +881,18 @@ class ContextualManager {
         }
         
         console.log('✅ Actualización inteligente completada SIN refresco');
-        return; // ← IMPORTANTE: Salir aquí para evitar recargar tabla
+        return;
+    } else if (type === 'expenses' || type === 'fixed' || type === 'variable' || type === 'extra') {
+        // 🆕 GASTOS: Usar actualización optimizada sin recargar sección
+        console.log('✅ Usando actualización optimizada para GASTOS SIN recargar sección');
+        
+        // Solo actualizar totales y estadísticas
+        if (window.gastosManager) {
+            window.gastosManager.updateHeaderTotals();
+        }
+        
+        console.log('✅ Actualización de gastos completada SIN refresco');
+        return;
     } else {
         // Para otros tipos, usar refresh normal
         this.refreshView();

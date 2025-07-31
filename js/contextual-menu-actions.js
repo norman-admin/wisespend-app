@@ -1,12 +1,13 @@
 /**
  * CONTEXTUAL-MENU-ACTIONS.JS - Acciones del Menú Contextual
- * Presupuesto Familiar - Versión 1.0.0
+ * Presupuesto Familiar - Versión 2.0.0 CORREGIDO
  * 
  * 🎯 RESPONSABILIDADES:
- * ✅ Modal de edición
+ * ✅ Modal de edición con navegación Enter
+ * ✅ Actualización sin refresco de pantalla
  * ✅ Duplicar elementos
  * ✅ Mover elementos arriba/abajo
- * ✅ Acciones específicas del menú
+ * ✅ Consistencia con sistema de ingresos
  */
 
 class ContextualMenuActions {
@@ -15,96 +16,247 @@ class ContextualMenuActions {
         this.storage = contextualManager.storage;
         this.currency = contextualManager.currency;
         
-        console.log('🎬 ContextualMenuActions inicializado');
+        console.log('🎬 ContextualMenuActions v2.0.0 inicializado - CORREGIDO');
     }
 
     /**
-     * MODAL DE EDICIÓN
+     * 🎯 MODAL DE EDICIÓN - CORREGIDO CON NAVEGACIÓN ENTER
      */
     showEditModal(type, itemId, itemData) {
-        const modal = this.createEditModal(type, itemId, itemData);
+        const fieldLabel = itemData.categoria !== undefined ? 'Categoría' : 'Fuente';
+        const fieldValue = itemData.categoria || itemData.fuente || '';
+        
+        // 🎯 CREAR MODAL HTML TRADICIONAL con soporte Enter
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Editar elemento</h3>
+                    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm" onsubmit="return false;">
+                        <div class="form-group">
+                            <label>${fieldLabel}:</label>
+                            <input type="text" id="editName" value="${fieldValue}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Monto:</label>
+                            <input type="number" id="editAmount" value="${itemData.monto || ''}" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveBtn">Actualizar</button>
+                </div>
+            </div>
+        `;
+        
         document.body.appendChild(modal);
         modal.style.display = 'flex';
         
-        // Focus en el primer input
-        setTimeout(() => {
-            const firstInput = modal.querySelector('input');
-            if (firstInput) firstInput.focus();
-        }, 100);
+        // 🎯 CONFIGURAR NAVEGACIÓN ENTER
+        const nameInput = modal.querySelector('#editName');
+        const amountInput = modal.querySelector('#editAmount');
+        const saveBtn = modal.querySelector('#saveBtn');
+        
+        // Focus inicial
+        nameInput.focus();
+        nameInput.select();
+        
+        // Navegación Enter: Nombre → Monto
+        nameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                amountInput.focus();
+                amountInput.select();
+            }
+        });
+        
+        // Navegación Enter: Monto → Guardar
+        amountInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveBtn.click();
+            }
+        });
+        
+        // Función de guardado
+        saveBtn.onclick = () => {
+            const data = {
+                nombre: nameInput.value.trim(),
+                monto: amountInput.value
+            };
+            
+            if (!data.nombre || !data.monto) {
+                window.modalSystem?.showMessage('Por favor complete todos los campos', 'error') || 
+                alert('Por favor complete todos los campos');
+                return;
+            }
+            
+            modal.remove();
+            this.saveEditedItem(type, itemId, data);
+        };
+        
+        console.log('✅ Modal de edición con navegación Enter configurado');
     }
 
-    createEditModal(type, itemId, itemData) {
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay modern-overlay';
-    
-    const displayName = itemData.categoria || itemData.fuente || 'Elemento';
-    const fieldLabel = itemData.categoria !== undefined ? 'Categoría' : 'Fuente';
-    
-    modal.innerHTML = `
-        <div class="modal-content modern-modal">
-            <div class="modal-header-modern">
-                <h2>Editar elemento</h2>
-                <p class="modal-subtitle">Modifica la información del elemento seleccionado</p>
-                <button class="modal-close-modern" onclick="this.closest('.modal-overlay').remove()">×</button>
-            </div>
-            
-            <div class="modal-body-modern">
-                <div class="form-group-modern">
-                    <label class="form-label-modern">${fieldLabel} <span class="required">*</span></label>
-                    <div class="input-wrapper-modern">
-                        <span class="input-icon">📝</span>
-                        <input type="text" id="editName" value="${displayName}" 
-                               placeholder="Ingresa el ${fieldLabel.toLowerCase()}" class="input-modern" required>
-                    </div>
-                </div>
-                
-                <div class="form-group-modern">
-                    <label class="form-label-modern">Monto <span class="required">*</span></label>
-                    <div class="input-wrapper-modern">
-                        <span class="input-icon">💰</span>
-                        <input type="number" id="editAmount" value="${itemData.monto}" 
-                               placeholder="Ingresa el monto" class="input-modern" step="0.01" required>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="modal-footer-modern">
-                <button type="button" class="btn-modern btn-primary-modern" 
-                        onclick="window.contextualMenuActions.saveEditModal('${type}', '${itemId}')">
-                    Guardar
-                </button>
-            </div>
-        </div>
-    `;
-    
-    return modal;
-}
-
-    saveEditModal(type, itemId) {
-        const modal = document.querySelector('.modal-overlay');
-        const name = document.getElementById('editName').value.trim();
-        const amount = parseFloat(document.getElementById('editAmount').value);
+    /**
+     * 💾 GUARDAR ELEMENTO EDITADO - CORREGIDO SIN REFRESCO
+     */
+    saveEditedItem(type, itemId, data) {
+        console.log('💾 Guardando elemento editado:', type, itemId, data);
         
-        if (!name || !amount || amount <= 0) {
-            alert('Por favor complete todos los campos correctamente');
-            return;
+        // Preparar datos según el tipo
+        const updatedData = {
+            monto: parseFloat(data.monto) || 0
+        };
+        
+        // Determinar el campo correcto según el tipo
+        if (type === 'ingresos') {
+            updatedData.fuente = data.nombre.trim();
+        } else {
+            updatedData.categoria = data.nombre.trim();
         }
         
-        // Usar métodos del contextualManager
-        const nameSuccess = this.contextualManager.updateItemField(type, itemId, 'name', name);
-        const amountSuccess = this.contextualManager.updateItemField(type, itemId, 'amount', amount);
+        // Actualizar según el tipo
+        let updateSuccess = false;
+        if (type === 'ingresos') {
+            updateSuccess = this.updateIncomeItem(itemId, updatedData);
+        } else if (type.includes('gastos')) {
+            updateSuccess = this.updateGastoItem(itemId, updatedData, type);
+        }
         
-        if (nameSuccess && amountSuccess) {
-            modal.remove();
-            this.contextualManager.smartRefresh('income', 'move');
-            this.contextualManager.showMessage('Elemento actualizado correctamente', 'success');
+        if (updateSuccess) {
+            // Mostrar mensaje de éxito
+            if (window.modalSystem) {
+                window.modalSystem.showMessage('Elemento actualizado correctamente', 'success');
+            }
+            
+            // 🎯 ACTUALIZACIÓN VISUAL INMEDIATA
+if (window.gastosManager) {
+    // Actualizar totales del header
+    window.gastosManager.updateHeaderTotals();
+    
+    // Detectar si estamos en vista combinada o individual
+const isViewCombinada = document.querySelector('.expenses-grid') !== null;
+if (isViewCombinada) {
+    // Mantener vista combinada "Gastos Fijos y Variables"
+    window.gastosManager.showFijosVariablesView();
+} else {
+    // Vista individual normal
+    window.gastosManager.loadGastosView();
+}
+    
+    // Reactivar menú contextual
+    setTimeout(() => {
+        if (window.contextualManager) {
+            window.contextualManager.bindExistingElements();
+        }
+    }, 200);
+}
+            
+            console.log('✅ Elemento editado sin refresco de pantalla');
         } else {
-            this.contextualManager.showMessage('Error al guardar cambios', 'error');
+            if (window.modalSystem) {
+                window.modalSystem.showMessage('Error al actualizar elemento', 'error');
+            } else {
+                alert('Error al actualizar elemento');
+            }
         }
     }
 
     /**
-     * DUPLICAR ELEMENTO
+     * 📝 ACTUALIZAR ELEMENTO DE INGRESOS
+     */
+    updateIncomeItem(itemId, updatedData) {
+        try {
+            if (window.ingresosManager) {
+                const income = window.ingresosManager.findIncomeById(itemId);
+                if (income) {
+                    Object.assign(income, updatedData);
+                    window.ingresosManager.updateIncomeInStorage(income);
+                    return true;
+                }
+            }
+            
+            // Fallback: acceso directo al storage
+            const ingresos = this.storage.getIngresos();
+            const incomeIndex = ingresos.desglose.findIndex(item => item.id === itemId);
+            if (incomeIndex !== -1) {
+                Object.assign(ingresos.desglose[incomeIndex], updatedData);
+                ingresos.total = ingresos.desglose.reduce((total, item) => total + (item.monto || 0), 0);
+                this.storage.setIngresos(ingresos);
+                return true;
+            }
+            
+            return false;
+        } catch (error) {
+            console.error('❌ Error actualizando ingreso:', error);
+            return false;
+        }
+    }
+
+    /**
+     * 💰 ACTUALIZAR ELEMENTO DE GASTOS
+     */
+    updateGastoItem(itemId, updatedData, type) {
+        try {
+            if (!window.gastosManager) return false;
+            
+            let gastos;
+            const tipoGasto = type.replace('gastos-', '');
+            
+            // Obtener gastos según el tipo
+            switch (tipoGasto) {
+                case 'fijos':
+                    gastos = this.storage.getGastosFijos();
+                    break;
+                case 'variables':
+                    gastos = this.storage.getGastosVariables();
+                    break;
+                case 'extras':
+                    gastos = this.storage.getGastosExtras();
+                    break;
+                default:
+                    console.error('Tipo de gasto no reconocido:', tipoGasto);
+                    return false;
+            }
+            
+            // Encontrar y actualizar el elemento
+            const itemIndex = gastos.items.findIndex(item => item.id === itemId);
+            if (itemIndex !== -1) {
+                Object.assign(gastos.items[itemIndex], updatedData);
+                gastos.total = window.gastosManager.calculateTotal(gastos.items);
+                
+                // Guardar en storage
+                switch (tipoGasto) {
+                    case 'fijos':
+                        this.storage.setGastosFijos(gastos);
+                        break;
+                    case 'variables':
+                        this.storage.setGastosVariables(gastos);
+                        break;
+                    case 'extras':
+                        this.storage.setGastosExtras(gastos);
+                        break;
+                }
+                
+                console.log('✅ Gasto actualizado:', tipoGasto, itemId);
+                return true;
+            }
+            
+            return false;
+        } catch (error) {
+            console.error('❌ Error actualizando gasto:', error);
+            return false;
+        }
+    }
+
+    /**
+     * 📄 DUPLICAR ELEMENTO
      */
     duplicateItem(type, itemId, itemData) {
         const newItem = {
@@ -130,15 +282,31 @@ class ContextualMenuActions {
             .reduce((total, item) => total + (item.monto || 0), 0);
         
         if (this.contextualManager.saveStorageData(type, data)) {
-            this.contextualManager.smartRefresh('income', 'duplicate');
-            this.contextualManager.showMessage('Elemento duplicado correctamente', 'success');
-        } else {
-            this.contextualManager.showMessage('Error al duplicar elemento', 'error');
+    // Detectar si estamos en vista combinada o individual
+    const isViewCombinada = document.querySelector('.expenses-grid') !== null;
+    if (isViewCombinada) {
+        // Mantener vista combinada "Gastos Fijos y Variables"
+        window.gastosManager.showFijosVariablesView();
+    } else {
+        // Vista individual normal
+        window.gastosManager.loadGastosView();
+    }
+    
+    // Reactivar menú contextual
+    setTimeout(() => {
+        if (window.contextualManager) {
+            window.contextualManager.bindExistingElements();
         }
+    }, 200);
+    
+    this.contextualManager.showMessage('Elemento duplicado correctamente', 'success');
+} else {
+    this.contextualManager.showMessage('Error al duplicar elemento', 'error');
+}
     }
 
     /**
-     * MOVER ELEMENTO
+     * ⬆️⬇️ MOVER ELEMENTO
      */
     moveItem(type, itemId, direction) {
         const data = this.contextualManager.getStorageData(type);
@@ -164,10 +332,56 @@ class ContextualMenuActions {
         [items[currentIndex], items[newIndex]] = [items[newIndex], items[currentIndex]];
         
         if (this.contextualManager.saveStorageData(type, data)) {
-            this.contextualManager.smartRefresh('income', 'edit');
-            this.contextualManager.showMessage(`Elemento movido ${direction === 'up' ? 'arriba' : 'abajo'}`, 'success');
-        } else {
-            this.contextualManager.showMessage('Error al mover elemento', 'error');
+    // Detectar si estamos en vista combinada o individual
+    const isViewCombinada = document.querySelector('.expenses-grid') !== null;
+    if (isViewCombinada) {
+        // Mantener vista combinada "Gastos Fijos y Variables"
+        window.gastosManager.showFijosVariablesView();
+    } else {
+        // Vista individual normal
+        window.gastosManager.loadGastosView();
+    }
+    
+    // Reactivar menú contextual
+    setTimeout(() => {
+        if (window.contextualManager) {
+            window.contextualManager.bindExistingElements();
+        }
+    }, 200);
+    
+    this.contextualManager.showMessage(`Elemento movido ${direction === 'up' ? 'arriba' : 'abajo'}`, 'success');
+} else {
+    this.contextualManager.showMessage('Error al mover elemento', 'error');
+}
+    }
+
+    /**
+     * 🗑️ ELIMINAR ELEMENTO (Función adicional de utilidad)
+     */
+    deleteItem(type, itemId, itemData) {
+        const itemName = itemData.categoria || itemData.fuente || 'elemento';
+        const confirmed = confirm(`¿Estás seguro de eliminar "${itemName}"?`);
+        
+        if (!confirmed) return;
+        
+        const data = this.contextualManager.getStorageData(type);
+        const items = this.contextualManager.getItemsArray(data);
+        
+        const itemIndex = items.findIndex(item => item.id === itemId);
+        if (itemIndex !== -1) {
+            items.splice(itemIndex, 1);
+            
+            // Recalcular total
+            data.total = items
+                .filter(item => item.activo !== false)
+                .reduce((total, item) => total + (item.monto || 0), 0);
+            
+            if (this.contextualManager.saveStorageData(type, data)) {
+                this.contextualManager.smartRefresh('income', 'delete');
+                this.contextualManager.showMessage('Elemento eliminado correctamente', 'success');
+            } else {
+                this.contextualManager.showMessage('Error al eliminar elemento', 'error');
+            }
         }
     }
 }
@@ -176,8 +390,8 @@ class ContextualMenuActions {
 setTimeout(() => {
     if (window.contextualManager) {
         window.contextualMenuActions = new ContextualMenuActions(window.contextualManager);
-        console.log('🎬 ContextualMenuActions auto-inicializado');
+        console.log('🎬 ContextualMenuActions v2.0.0 auto-inicializado - CORREGIDO');
     }
 }, 1000);
 
-console.log('🎬 contextual-menu-actions.js cargado');
+console.log('🎬 contextual-menu-actions.js v2.0.0 cargado - CON NAVEGACIÓN ENTER Y SIN REFRESCOS');

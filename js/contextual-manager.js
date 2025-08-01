@@ -521,44 +521,106 @@ class ContextualManager {
      */
 
     startInlineEdit(type, itemId, field, itemElement) {
-        if (this.editingElement) {
+    if (this.editingElement) {
+        this.cancelInlineEdit();
+    }
+
+    const itemData = this.getItemData(type, itemId);
+    if (!itemData) return;
+
+    const fieldElement = field.element || field;
+    const fieldType = field.type || (fieldElement.classList.contains('breakdown-amount') || 
+                                    fieldElement.classList.contains('gasto-amount') || 
+                                    fieldElement.classList.contains('expense-amount') ? 'amount' : 'name');
+    
+    const originalValue = fieldType === 'amount' ? 
+        (itemData.monto || 0) : 
+        (itemData.categoria || itemData.fuente || '');
+    
+    const currentText = fieldElement.textContent.trim();
+    
+    // Crear input con clase CSS
+    const input = document.createElement('input');
+    input.type = fieldType === 'amount' ? 'number' : 'text';
+    input.value = fieldType === 'amount' ? originalValue : currentText;
+    input.className = 'inline-edit-input';
+    
+    // Reemplazar contenido
+    fieldElement.innerHTML = '';
+    fieldElement.appendChild(input);
+    input.focus();
+    input.select();
+    
+    this.editingElement = { input, fieldElement, currentText, itemId, type, fieldType, itemData };
+    
+    // Función para guardar SIN PESTAÑEO
+    const saveEdit = () => {
+        const newValue = input.value.trim();
+        if (!newValue) {
+            this.cancelInlineEdit();
+            return;
+        }
+        
+        // Actualizar datos
+        const updatedData = { ...itemData };
+        if (fieldType === 'name') {
+            if (itemData.categoria !== undefined) {
+                updatedData.categoria = newValue;
+            } else {
+                updatedData.fuente = newValue;
+            }
+        } else {
+            updatedData.monto = parseFloat(newValue) || 0;
+        }
+        
+        // Guardar usando contextual-menu-actions
+        if (window.contextualMenuActions && window.contextualMenuActions.updateGastoItem(itemId, updatedData, type)) {
+            // ✅ ACTUALIZACIÓN SIN PESTAÑEO
+            fieldElement.textContent = fieldType === 'amount' ? 
+                this.formatCurrency(updatedData.monto) : newValue;
+            
+            // SOLO actualizar totales, NO recargar vista
+            if (window.gastosManager) {
+                window.gastosManager.updateHeaderTotals();
+            }
+            
+            // Efecto visual de éxito
+            itemElement.style.transition = 'background-color 0.3s ease';
+            itemElement.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
+            setTimeout(() => {
+                itemElement.style.backgroundColor = '';
+            }, 1000);
+            
+            console.log('✅ Edición inline completada SIN PESTAÑEO');
+            this.editingElement = null;
+        } else {
             this.cancelInlineEdit();
         }
+    };
+    
+    // Event listeners
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveEdit();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            this.cancelInlineEdit();
+        }
+    });
+    
+    input.addEventListener('blur', saveEdit);
+}
 
-        const itemData = this.getItemData(type, itemId);
-        if (!itemData) return;
-
-        const fieldElement = field.element;
-        const fieldType = field.type;
-        
-        const originalValue = fieldType === 'amount' ? 
-            this.formatCurrencyInput(itemData.monto) : 
-            (itemData.categoria || itemData.fuente);
-
-        const input = this.createInlineInput(fieldType, originalValue);
-        const controls = this.createInlineControls();
-
-        fieldElement.style.display = 'none';
-        fieldElement.parentNode.insertBefore(input, fieldElement.nextSibling);
-        fieldElement.parentNode.insertBefore(controls, input.nextSibling);
-
-        this.editingElement = {
-            type,
-            itemId,
-            fieldType,
-            fieldElement,
-            input,
-            controls,
-            originalValue
-        };
-
-        this.setupInlineEvents();
-
-        input.focus();
-        input.select();
-
-        console.log(`✏️ Edición inline iniciada: ${type}:${itemId}:${fieldType}`);
+/**
+ * ❌ CANCELAR EDICIÓN INLINE
+ */
+cancelInlineEdit() {
+    if (this.editingElement) {
+        this.editingElement.fieldElement.textContent = this.editingElement.currentText;
+        this.editingElement = null;
     }
+}
 
     createInlineInput(fieldType, value) {
         const input = document.createElement('input');

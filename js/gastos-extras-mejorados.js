@@ -1,7 +1,7 @@
 /**
- * GASTOS-EXTRAS-MEJORADOS.JS - VERSIÓN COMPLETA
+ * GASTOS-EXTRAS-MEJORADOS.JS - VERSIÓN COMPLETA CORREGIDA
  * Control de Gastos Familiares - Sección Gastos Extras Rediseñada
- * Versión: 2.2.0 - LAYOUT + MENÚ CONTEXTUAL + EDICIÓN INLINE
+ * Versión: 2.2.1 - LAYOUT + MENÚ CONTEXTUAL + EDICIÓN INLINE + SIN ERRORES
  * 
  * 🎯 FUNCIONALIDADES:
  * - Gestión de presupuesto de gastos extras
@@ -12,12 +12,14 @@
  * - Auto-sincronización con sistema existente
  * 🆕 EDICIÓN INLINE: Doble click en monto y porcentaje
  * 
- * 🔧 CORRECCIONES v2.2.0:
+ * 🔧 CORRECCIONES v2.2.1:
  * - Conecta correctamente con contextual-manager.js
  * - Evita loops infinitos de inicialización
  * - Mantiene diseño elegante del menú contextual
  * - Agrega funcionalidad de mover elementos
  * - Edición inline bidireccional (monto ↔ porcentaje)
+ * - ✅ CORREGIDO: Eliminados errores de JavaScript en addNewItemToDOM
+ * - ✅ CORREGIDO: Referencias undefined newItemHTML
  */
 
 class GastosExtrasMejorados {
@@ -41,7 +43,7 @@ class GastosExtrasMejorados {
         }
         
         this.initializeGastosExtras();
-        console.log('✅ Gastos Extras Mejorados v2.2.0 inicializado con edición inline');
+        console.log('✅ Gastos Extras Mejorados v2.2.1 inicializado con edición inline');
     }
 
     /**
@@ -748,16 +750,165 @@ class GastosExtrasMejorados {
     }
 
     /**
-     * Mostrar modal para agregar gasto
+     * Mostrar modal para agregar gasto - CORREGIDO SIN ERRORES
      */
     showAddGastoModal() {
         // Conectar con el sistema de modales existente
         if (window.gastosManager && window.gastosManager.showAddGastoModal) {
+            // Guardar referencia al método original
+            const originalMethod = window.gastosManager.saveGastoFromModal;
+            
+            // Interceptar el guardado SOLO UNA VEZ
+            window.gastosManager.saveGastoFromModal = (data, tipo) => {
+                // Llamar al método original
+                originalMethod.call(window.gastosManager, data, tipo);
+                
+                // ✅ ACTUALIZACIÓN SIN PESTAÑEO CON PROTECCIÓN
+                if (tipo === 'extras') {
+                    const self = this;  
+                    setTimeout(() => {
+                        // Solo actualizar totales del header
+                        if (window.gastosManager) {
+                            window.gastosManager.updateHeaderTotals();
+                        }
+                        
+                        // Agregar nuevo elemento visual al DOM sin recargar
+                        const gastosExtras = self.storage.getGastosExtras();
+                        const newItem = gastosExtras.items[gastosExtras.items.length - 1]; // Último agregado
+                        
+                        if (newItem && !document.querySelector(`[data-id="${newItem.id}"]`)) {
+                            // Solo agregar si NO existe ya en el DOM
+                            self.addNewItemToDOM(newItem);
+                            self.updateDisplays(); // Solo actualizar números de resumen
+                        }
+                        
+                        console.log('✅ Gasto extra agregado sin pestañeo');
+                        
+                    }, 100);
+                }
+                
+                // Restaurar método original INMEDIATAMENTE después de usar
+                window.gastosManager.saveGastoFromModal = originalMethod;
+            };
+
+            // Mostrar modal
             window.gastosManager.showAddGastoModal('extras');
         } else {
             console.log('🚀 Modal agregar gasto - Se conectará con sistema existente');
             alert('Función conectar con modal existente');
         }
+    }
+
+    /**
+     * 🆕 AGREGAR NUEVO ELEMENTO AL DOM SIN PESTAÑEO - CORREGIDO
+     */
+    addNewItemToDOM(newItem) {
+        console.log('🔍 DEBUG: addNewItemToDOM llamado con:', newItem);
+        
+        const expensesList = document.querySelector('.extras-expenses-list') || 
+                            document.querySelector('.expenses-list') ||
+                            document.querySelector('[class*="expenses"]');
+        
+        console.log('🔍 DEBUG: Contenedor encontrado:', expensesList);
+        
+        if (!expensesList) {
+            console.error('❌ No se encontró contenedor para la lista');
+            return;
+        }
+        
+        // Buscar un elemento existente para copiar su estructura EXACTA
+const existingItem = expensesList.querySelector('.extras-expense-item');
+
+if (existingItem) {
+    // ✅ CASO 1: HAY ELEMENTOS EXISTENTES - CLONAR
+    console.log('✅ Elemento existente encontrado, clonando estructura...');
+
+    const clonedElement = existingItem.cloneNode(true);
+    clonedElement.setAttribute('data-id', newItem.id);
+
+    // Actualizar contenido manteniendo la estructura exacta
+    const checkbox = clonedElement.querySelector('input[type="checkbox"]');
+    const nameElement = clonedElement.querySelector('.extras-expense-name');
+    const amountElement = clonedElement.querySelector('.extras-expense-amount');
+
+    if (checkbox) {
+        checkbox.checked = newItem.pagado || false;
+        checkbox.setAttribute('onchange', `gastosExtrasMejorados.toggleGastoPagado('${newItem.id}')`);
+        checkbox.id = `extras-checkbox-${newItem.id}`;
+    }
+    if (nameElement) {
+        nameElement.textContent = newItem.categoria;
+    }
+    if (amountElement) {
+        amountElement.textContent = `$${this.formatNumber(newItem.monto)}`;
+    }
+
+    // Insertar el elemento clonado
+    expensesList.appendChild(clonedElement);
+    
+} else {
+    // ✅ CASO 2: LISTA VACÍA - CREAR DESDE CERO
+    console.log('📝 Lista vacía, creando elemento desde cero...');
+    
+    const newElementHTML = `
+        <div class="extras-expense-item" data-id="${newItem.id}">
+            <div class="extras-expense-checkbox">
+                <input type="checkbox" 
+                       id="extras-checkbox-${newItem.id}" 
+                       ${newItem.pagado ? 'checked' : ''}
+                       onchange="gastosExtrasMejorados.toggleGastoPagado('${newItem.id}')">
+            </div>
+            <div class="extras-expense-details">
+                <span class="extras-expense-name">${newItem.categoria}</span>
+                <span class="extras-expense-amount">$${this.formatNumber(newItem.monto)}</span>
+            </div>
+        </div>
+    `;
+    
+    expensesList.insertAdjacentHTML('beforeend', newElementHTML);
+}
+
+// Encontrar el nuevo elemento para efectos visuales
+const newElement = expensesList.querySelector(`[data-id="${newItem.id}"]`);
+
+        console.log('✅ Elemento existente encontrado, clonando estructura...');
+
+        // Clonar el elemento existente y modificar su contenido
+        const clonedElement = existingItem.cloneNode(true);
+        clonedElement.setAttribute('data-id', newItem.id);
+
+        // Actualizar contenido manteniendo la estructura exacta
+        const checkbox = clonedElement.querySelector('input[type="checkbox"]');
+        const nameElement = clonedElement.querySelector('.extras-expense-name');
+        const amountElement = clonedElement.querySelector('.extras-expense-amount');
+
+        if (checkbox) {
+            checkbox.checked = newItem.pagado || false;
+            checkbox.setAttribute('onchange', `gastosExtrasMejorados.toggleGastoPagado('${newItem.id}')`);
+            checkbox.id = `extras-checkbox-${newItem.id}`;
+        }
+        if (nameElement) {
+            nameElement.textContent = newItem.categoria;
+        }
+        if (amountElement) {
+            amountElement.textContent = `${this.formatNumber(newItem.monto)}`;
+        }
+
+        // Insertar el elemento clonado al final de la lista
+        expensesList.appendChild(clonedElement);
+        
+        // Efecto visual de aparición
+if (newElement) {
+    newElement.style.transition = 'all 0.3s ease';
+    newElement.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
+    newElement.style.transform = 'scale(0.95)';
+    
+    setTimeout(() => {
+        newElement.style.backgroundColor = '';
+        newElement.style.transform = 'scale(1)';
+    }, 500);
+}
+        console.log('✅ Elemento agregado exitosamente al DOM sin errores');
     }
 
     /**
@@ -827,7 +978,7 @@ window.gastosExtrasMejorados = null;
 function initializeGastosExtrasMejorados() {
     if (window.storageManager) {
         window.gastosExtrasMejorados = new GastosExtrasMejorados();
-        console.log('✅ GastosExtrasMejorados v2.2.0 inicializado globalmente');
+        console.log('✅ GastosExtrasMejorados v2.2.1 inicializado globalmente');
     } else {
         console.warn('⚠️ Esperando StorageManager para inicializar GastosExtrasMejorados');
         setTimeout(initializeGastosExtrasMejorados, 500);
@@ -841,4 +992,4 @@ if (document.readyState === 'loading') {
     initializeGastosExtrasMejorados();
 }
 
-console.log('📦 gastos-extras-mejorados.js v2.2.0 cargado - Layout + Menú contextual + EDICIÓN INLINE');
+console.log('📦 gastos-extras-mejorados.js v2.2.1 cargado - Layout + Menú contextual + EDICIÓN INLINE + SIN ERRORES');

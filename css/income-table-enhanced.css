@@ -654,3 +654,36 @@
         width: 50px;
     }
 }
+
+/* ===== EDICIÓN INLINE - GASTOS FIJOS Y VARIABLES ===== */
+
+.inline-edit-input {
+    width: 100% !important;
+    padding: 4px 8px !important;
+    border: 2px solid var(--primary-600, #3b82f6) !important;
+    border-radius: 4px !important;
+    background: var(--bg-primary, #ffffff) !important;
+    color: var(--text-primary, #1e293b) !important;
+    font-size: inherit !important;
+    font-family: inherit !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    transition: all 0.2s ease !important;
+}
+
+.inline-edit-input:focus {
+    border-color: var(--primary-700, #1d4ed8) !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+}
+
+.inline-edit-input[type="number"] {
+    text-align: right !important;
+}
+
+/* Compatibilidad con temas oscuros */
+.dark-theme .inline-edit-input,
+.soft-dark-theme .inline-edit-input {
+    background: var(--bg-secondary, #374151) !important;
+    color: var(--text-primary, #f9fafb) !important;
+    border-color: var(--primary-500, #6366f1) !important;
+}

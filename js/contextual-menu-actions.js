@@ -20,89 +20,158 @@ class ContextualMenuActions {
         console.log('🎬 ContextualMenuActions v2.0.0 inicializado - FINAL CORREGIDO DEFINITIVO');
     }
 
-    /**
-     * 🎯 MODAL DE EDICIÓN - CORREGIDO CON NAVEGACIÓN ENTER
-     */
-    showEditModal(type, itemId, itemData) {
-        const fieldLabel = itemData.categoria !== undefined ? 'Categoría' : 'Fuente';
-        const fieldValue = itemData.categoria || itemData.fuente || '';
-        
-        // 🎯 CREAR MODAL HTML TRADICIONAL con soporte Enter
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Editar elemento</h3>
-                    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
-                </div>
-                <div class="modal-body">
-                    <form id="editForm" onsubmit="return false;">
-                        <div class="form-group">
-                            <label>${fieldLabel}:</label>
-                            <input type="text" id="editName" value="${fieldValue}" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Monto:</label>
-                            <input type="number" id="editAmount" value="${itemData.monto || ''}" required>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="saveBtn">Actualizar</button>
-                </div>
+/**
+ * 🎯 MODAL DE EDICIÓN - CON NAVEGACIÓN ENTER Y SIN PESTAÑEO
+ */
+showEditModal(type, itemId, itemData) {
+    const fieldLabel = itemData.categoria !== undefined ? 'Categoría' : 'Fuente';
+    const fieldValue = itemData.categoria || itemData.fuente || '';
+    
+    // 🎯 CREAR MODAL HTML TRADICIONAL con soporte Enter
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar elemento</h3>
+                <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
             </div>
-        `;
-        
-        document.body.appendChild(modal);
-        modal.style.display = 'flex';
-        
-        // 🎯 CONFIGURAR NAVEGACIÓN ENTER
-        const nameInput = modal.querySelector('#editName');
-        const amountInput = modal.querySelector('#editAmount');
-        const saveBtn = modal.querySelector('#saveBtn');
-        
-        // Focus inicial
-        nameInput.focus();
-        nameInput.select();
-        
-        // Navegación Enter: Nombre → Monto
-        nameInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                amountInput.focus();
-                amountInput.select();
-            }
-        });
-        
-        // Navegación Enter: Monto → Guardar
-        amountInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                saveBtn.click();
-            }
-        });
-        
-        // Función de guardado
-        saveBtn.onclick = () => {
-            const data = {
-                nombre: nameInput.value.trim(),
-                monto: amountInput.value
-            };
-            
-            if (!data.nombre || !data.monto) {
-                window.modalSystem?.showMessage('Por favor complete todos los campos', 'error') || 
-                alert('Por favor complete todos los campos');
-                return;
-            }
-            
-            modal.remove();
-            this.saveEditedItem(type, itemId, data);
-        };
-        
-        console.log('✅ Modal de edición con navegación Enter configurado');
+            <div class="modal-body">
+                <form id="editForm" onsubmit="return false;">
+                    <div class="form-group">
+                        <label>${fieldLabel}:</label>
+                        <input type="text" id="editName" value="${fieldValue}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Monto:</label>
+                        <input type="number" id="editAmount" value="${itemData.monto || ''}" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="saveBtn">Actualizar</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.style.display = 'flex';
+    
+    // 🎯 CONFIGURAR NAVEGACIÓN ENTER Y EVENTOS MEJORADOS
+const nameInput = modal.querySelector('#editName');
+const amountInput = modal.querySelector('#editAmount');
+const saveBtn = modal.querySelector('#saveBtn');
+
+// Función para cerrar modal
+const closeModal = () => {
+    modal.remove();
+};
+
+// Navegación Enter: Nombre → Monto → Guardar
+nameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        amountInput.focus();
+        amountInput.select(); // Seleccionar todo el texto
+    } else if (e.key === 'Escape') {
+        e.preventDefault();
+        closeModal();
     }
+});
+
+amountInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        saveBtn.click();
+    } else if (e.key === 'Escape') {
+        e.preventDefault();
+        closeModal();
+    }
+});
+
+// Escape global para cerrar modal
+modal.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        e.preventDefault();
+        closeModal();
+    }
+});
+
+// Click fuera del modal para cerrar
+modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+        closeModal();
+    }
+});
+
+// Enfocar primer campo y seleccionar texto
+nameInput.focus();
+nameInput.select();
+    
+    // 🎯 GUARDAR CON ACTUALIZACIÓN SIN PESTAÑEO
+    saveBtn.addEventListener('click', () => {
+        const newName = nameInput.value.trim();
+        const newAmount = parseFloat(amountInput.value) || 0;
+        
+        if (!newName) {
+            nameInput.focus();
+            return;
+        }
+        
+        // Preparar datos actualizados
+        const updatedData = { ...itemData };
+        if (itemData.categoria !== undefined) {
+            updatedData.categoria = newName;
+        } else {
+            updatedData.fuente = newName;
+        }
+        updatedData.monto = newAmount;
+        
+        // Guardar en storage
+        if (this.updateGastoItem(itemId, updatedData, type)) {
+
+
+            // ✅ ACTUALIZACIÓN VISUAL AUTOMÁTICA SIN PESTAÑEO
+if (window.gastosManager) {
+    window.gastosManager.updateHeaderTotals();  // Actualizar totales
+}
+
+// 🎯 ACTUALIZAR ELEMENTO VISUAL EN LA TABLA
+const itemElement = document.querySelector(`[data-id="${itemId}"]`);
+if (itemElement) {
+    // Buscar y actualizar nombre/categoría
+    const nameElement = itemElement.querySelector('.gasto-name, .expense-name, [class*="name"], .breakdown-name');
+    if (nameElement) {
+        nameElement.textContent = newName;
+    }
+    
+    // Buscar y actualizar monto
+    const amountElement = itemElement.querySelector('.gasto-amount, .expense-amount, [class*="amount"], .breakdown-amount');
+    if (amountElement) {
+        amountElement.textContent = this.contextualManager.formatCurrency(newAmount);
+    }
+    
+    // Efecto visual de actualización
+    itemElement.style.transition = 'background-color 0.3s ease';
+    itemElement.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
+    setTimeout(() => {
+        itemElement.style.backgroundColor = '';
+    }, 1000);
+}
+
+// Cerrar modal
+modal.remove();
+            
+            // Mostrar mensaje de éxito
+            this.contextualManager.showMessage('Elemento actualizado correctamente', 'success');
+            
+            console.log('✅ Elemento editado sin pestañeo');
+        } else {
+            this.contextualManager.showMessage('Error al actualizar elemento', 'error');
+        }
+    });
+}
 
     /**
      * 💾 GUARDAR ELEMENTO EDITADO - CORREGIDO SIN REFRESCO
@@ -141,15 +210,10 @@ class ContextualMenuActions {
                 // Actualizar totales del header
                 window.gastosManager.updateHeaderTotals();
                 
-                // Detectar si estamos en vista combinada o individual
-                const isViewCombinada = document.querySelector('.expenses-grid') !== null;
-                if (isViewCombinada) {
-                    // Mantener vista combinada "Gastos Fijos y Variables"
-                    window.gastosManager.showFijosVariablesView();
-                } else {
-                    // Vista individual normal
-                    window.gastosManager.loadGastosView();
-                }
+                // ✅ SOLO ACTUALIZAR TOTALES SIN PESTAÑEO
+            if (window.gastosManager) {
+                window.gastosManager.updateHeaderTotals();
+            }
                 
                 // Reactivar menú contextual
                 setTimeout(() => {
@@ -282,28 +346,55 @@ class ContextualMenuActions {
             .filter(item => item.activo !== false)
             .reduce((total, item) => total + (item.monto || 0), 0);
         
-        if (this.contextualManager.saveStorageData(type, data)) {
-            // Detectar si estamos en vista combinada o individual
-            const isViewCombinada = document.querySelector('.expenses-grid') !== null;
-            if (isViewCombinada) {
-                // Mantener vista combinada "Gastos Fijos y Variables"
-                window.gastosManager.showFijosVariablesView();
-            } else {
-                // Vista individual normal
-                window.gastosManager.loadGastosView();
-            }
-            
-            // Reactivar menú contextual
-            setTimeout(() => {
-                if (window.contextualManager) {
-                    window.contextualManager.bindExistingElements();
-                }
-            }, 200);
-            
-            this.contextualManager.showMessage('Elemento duplicado correctamente', 'success');
-        } else {
-            this.contextualManager.showMessage('Error al duplicar elemento', 'error');
+       if (this.contextualManager.saveStorageData(type, data)) {
+    // Solo actualizar totales del header
+    if (window.gastosManager) {
+        window.gastosManager.updateHeaderTotals();
+    }
+    
+    // 🎯 AGREGAR NUEVO ELEMENTO VISUAL AL DOM
+    const originalElement = document.querySelector(`[data-id="${itemId}"]`);
+    if (originalElement) {
+        // Clonar elemento original
+        const newElement = originalElement.cloneNode(true);
+        newElement.setAttribute('data-id', newItem.id);
+        
+        // Actualizar contenido del duplicado
+        const nameElement = newElement.querySelector('.gasto-name, .expense-name, [class*="name"], .breakdown-name');
+        const amountElement = newElement.querySelector('.gasto-amount, .expense-amount, [class*="amount"], .breakdown-amount');
+        
+        if (nameElement) {
+            nameElement.textContent = newItem.categoria || newItem.fuente;
         }
+        if (amountElement) {
+            amountElement.textContent = this.contextualManager.formatCurrency(newItem.monto);
+        }
+        
+        // Insertar después del original
+        originalElement.parentNode.insertBefore(newElement, originalElement.nextSibling);
+        
+        // Efecto visual de creación
+        newElement.style.transition = 'all 0.3s ease';
+        newElement.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+        newElement.style.transform = 'scale(0.95)';
+        
+        setTimeout(() => {
+            newElement.style.backgroundColor = '';
+            newElement.style.transform = 'scale(1)';
+        }, 500);
+        
+        // Reactivar menú contextual para el nuevo elemento
+        setTimeout(() => {
+            if (window.contextualManager) {
+                window.contextualManager.bindExistingElements();
+            }
+        }, 100);
+    }
+    
+    this.contextualManager.showMessage('Elemento duplicado correctamente', 'success');
+} else {
+    this.contextualManager.showMessage('Error al duplicar elemento', 'error');
+}
     }
 
     /**
@@ -332,28 +423,49 @@ class ContextualMenuActions {
         // Intercambiar elementos
         [items[currentIndex], items[newIndex]] = [items[newIndex], items[currentIndex]];
         
-        if (this.contextualManager.saveStorageData(type, data)) {
-            // Detectar si estamos en vista combinada o individual
-            const isViewCombinada = document.querySelector('.expenses-grid') !== null;
-            if (isViewCombinada) {
-                // Mantener vista combinada "Gastos Fijos y Variables"
-                window.gastosManager.showFijosVariablesView();
-            } else {
-                // Vista individual normal
-                window.gastosManager.loadGastosView();
-            }
-            
-            // Reactivar menú contextual
-            setTimeout(() => {
-                if (window.contextualManager) {
-                    window.contextualManager.bindExistingElements();
-                }
-            }, 200);
-            
-            this.contextualManager.showMessage(`Elemento movido ${direction === 'up' ? 'arriba' : 'abajo'}`, 'success');
-        } else {
-            this.contextualManager.showMessage('Error al mover elemento', 'error');
+       if (this.contextualManager.saveStorageData(type, data)) {
+    // Solo actualizar totales del header
+    if (window.gastosManager) {
+        window.gastosManager.updateHeaderTotals();
+    }
+    
+    // 🎯 MOVER ELEMENTO VISUALMENTE EN EL DOM
+    const currentElement = document.querySelector(`[data-id="${itemId}"]`);
+    if (currentElement) {
+        const container = currentElement.parentNode;
+        const allElements = Array.from(container.children);
+        const currentIndex = allElements.indexOf(currentElement);
+        
+        if (direction === 'up' && currentIndex > 0) {
+            const targetElement = allElements[currentIndex - 1];
+            container.insertBefore(currentElement, targetElement);
+        } else if (direction === 'down' && currentIndex < allElements.length - 1) {
+            const targetElement = allElements[currentIndex + 1];
+            container.insertBefore(currentElement, targetElement.nextSibling);
         }
+        
+        // Efecto visual de movimiento
+        currentElement.style.transition = 'all 0.3s ease';
+        currentElement.style.backgroundColor = 'rgba(139, 69, 19, 0.1)';
+        currentElement.style.transform = 'scale(1.02)';
+        
+        setTimeout(() => {
+            currentElement.style.backgroundColor = '';
+            currentElement.style.transform = 'scale(1)';
+        }, 500);
+        
+        // Reactivar menú contextual
+        setTimeout(() => {
+            if (window.contextualManager) {
+                window.contextualManager.bindExistingElements();
+            }
+        }, 100);
+    }
+    
+    this.contextualManager.showMessage(`Elemento movido ${direction === 'up' ? 'arriba' : 'abajo'}`, 'success');
+} else {
+    this.contextualManager.showMessage('Error al mover elemento', 'error');
+}
     }
 
     /**

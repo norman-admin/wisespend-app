@@ -1009,12 +1009,28 @@ class ContextualManager {
             const success = this.saveStorageData(type, data);
             
             if (success) {
-                // 🔧 USAR REFRESCO INTELIGENTE SIN PESTAÑEO
-                this.smartRefresh(type, 'delete');
-                this.showMessage('Elemento eliminado correctamente', 'success');
-            } else {
-                this.showMessage('Error al eliminar elemento', 'error');
-            }
+    // 🎯 ACTUALIZACIÓN OPTIMIZADA SIN REFRESCO
+    // Detectar si estamos en vista combinada o individual
+    const isViewCombinada = document.querySelector('.expenses-grid') !== null;
+    if (isViewCombinada) {
+        // Mantener vista combinada "Gastos Fijos y Variables"
+        window.gastosManager.showFijosVariablesView();
+    } else {
+        // Vista individual normal
+        window.gastosManager.loadGastosView();
+    }
+    
+    // Reactivar menú contextual
+    setTimeout(() => {
+        if (window.contextualManager) {
+            window.contextualManager.bindExistingElements();
+        }
+    }, 200);
+    
+    this.showMessage('Elemento eliminado correctamente', 'success');
+} else {
+    this.showMessage('Error al eliminar elemento', 'error');
+}
             
             return success;
 

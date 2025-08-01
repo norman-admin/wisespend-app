@@ -1,13 +1,14 @@
 /**
  * CONTEXTUAL-MENU-ACTIONS.JS - Acciones del Menú Contextual
- * Presupuesto Familiar - Versión 2.0.0 CORREGIDO
+ * Presupuesto Familiar - Versión 2.0.0 FINAL CORREGIDO
  * 
  * 🎯 RESPONSABILIDADES:
  * ✅ Modal de edición con navegación Enter
  * ✅ Actualización sin refresco de pantalla
  * ✅ Duplicar elementos
  * ✅ Mover elementos arriba/abajo
- * ✅ Consistencia con sistema de ingresos
+ * ✅ Eliminar con modal elegante
+ * ✅ Consistencia total con sistema de ingresos
  */
 
 class ContextualMenuActions {
@@ -16,7 +17,7 @@ class ContextualMenuActions {
         this.storage = contextualManager.storage;
         this.currency = contextualManager.currency;
         
-        console.log('🎬 ContextualMenuActions v2.0.0 inicializado - CORREGIDO');
+        console.log('🎬 ContextualMenuActions v2.0.0 inicializado - FINAL CORREGIDO');
     }
 
     /**
@@ -136,27 +137,27 @@ class ContextualMenuActions {
             }
             
             // 🎯 ACTUALIZACIÓN VISUAL INMEDIATA
-if (window.gastosManager) {
-    // Actualizar totales del header
-    window.gastosManager.updateHeaderTotals();
-    
-    // Detectar si estamos en vista combinada o individual
-const isViewCombinada = document.querySelector('.expenses-grid') !== null;
-if (isViewCombinada) {
-    // Mantener vista combinada "Gastos Fijos y Variables"
-    window.gastosManager.showFijosVariablesView();
-} else {
-    // Vista individual normal
-    window.gastosManager.loadGastosView();
-}
-    
-    // Reactivar menú contextual
-    setTimeout(() => {
-        if (window.contextualManager) {
-            window.contextualManager.bindExistingElements();
-        }
-    }, 200);
-}
+            if (window.gastosManager) {
+                // Actualizar totales del header
+                window.gastosManager.updateHeaderTotals();
+                
+                // Detectar si estamos en vista combinada o individual
+                const isViewCombinada = document.querySelector('.expenses-grid') !== null;
+                if (isViewCombinada) {
+                    // Mantener vista combinada "Gastos Fijos y Variables"
+                    window.gastosManager.showFijosVariablesView();
+                } else {
+                    // Vista individual normal
+                    window.gastosManager.loadGastosView();
+                }
+                
+                // Reactivar menú contextual
+                setTimeout(() => {
+                    if (window.contextualManager) {
+                        window.contextualManager.bindExistingElements();
+                    }
+                }, 200);
+            }
             
             console.log('✅ Elemento editado sin refresco de pantalla');
         } else {
@@ -282,27 +283,27 @@ if (isViewCombinada) {
             .reduce((total, item) => total + (item.monto || 0), 0);
         
         if (this.contextualManager.saveStorageData(type, data)) {
-    // Detectar si estamos en vista combinada o individual
-    const isViewCombinada = document.querySelector('.expenses-grid') !== null;
-    if (isViewCombinada) {
-        // Mantener vista combinada "Gastos Fijos y Variables"
-        window.gastosManager.showFijosVariablesView();
-    } else {
-        // Vista individual normal
-        window.gastosManager.loadGastosView();
-    }
-    
-    // Reactivar menú contextual
-    setTimeout(() => {
-        if (window.contextualManager) {
-            window.contextualManager.bindExistingElements();
+            // Detectar si estamos en vista combinada o individual
+            const isViewCombinada = document.querySelector('.expenses-grid') !== null;
+            if (isViewCombinada) {
+                // Mantener vista combinada "Gastos Fijos y Variables"
+                window.gastosManager.showFijosVariablesView();
+            } else {
+                // Vista individual normal
+                window.gastosManager.loadGastosView();
+            }
+            
+            // Reactivar menú contextual
+            setTimeout(() => {
+                if (window.contextualManager) {
+                    window.contextualManager.bindExistingElements();
+                }
+            }, 200);
+            
+            this.contextualManager.showMessage('Elemento duplicado correctamente', 'success');
+        } else {
+            this.contextualManager.showMessage('Error al duplicar elemento', 'error');
         }
-    }, 200);
-    
-    this.contextualManager.showMessage('Elemento duplicado correctamente', 'success');
-} else {
-    this.contextualManager.showMessage('Error al duplicar elemento', 'error');
-}
     }
 
     /**
@@ -332,35 +333,41 @@ if (isViewCombinada) {
         [items[currentIndex], items[newIndex]] = [items[newIndex], items[currentIndex]];
         
         if (this.contextualManager.saveStorageData(type, data)) {
-    // Detectar si estamos en vista combinada o individual
-    const isViewCombinada = document.querySelector('.expenses-grid') !== null;
-    if (isViewCombinada) {
-        // Mantener vista combinada "Gastos Fijos y Variables"
-        window.gastosManager.showFijosVariablesView();
-    } else {
-        // Vista individual normal
-        window.gastosManager.loadGastosView();
-    }
-    
-    // Reactivar menú contextual
-    setTimeout(() => {
-        if (window.contextualManager) {
-            window.contextualManager.bindExistingElements();
+            // Detectar si estamos en vista combinada o individual
+            const isViewCombinada = document.querySelector('.expenses-grid') !== null;
+            if (isViewCombinada) {
+                // Mantener vista combinada "Gastos Fijos y Variables"
+                window.gastosManager.showFijosVariablesView();
+            } else {
+                // Vista individual normal
+                window.gastosManager.loadGastosView();
+            }
+            
+            // Reactivar menú contextual
+            setTimeout(() => {
+                if (window.contextualManager) {
+                    window.contextualManager.bindExistingElements();
+                }
+            }, 200);
+            
+            this.contextualManager.showMessage(`Elemento movido ${direction === 'up' ? 'arriba' : 'abajo'}`, 'success');
+        } else {
+            this.contextualManager.showMessage('Error al mover elemento', 'error');
         }
-    }, 200);
-    
-    this.contextualManager.showMessage(`Elemento movido ${direction === 'up' ? 'arriba' : 'abajo'}`, 'success');
-} else {
-    this.contextualManager.showMessage('Error al mover elemento', 'error');
-}
     }
 
     /**
-     * 🗑️ ELIMINAR ELEMENTO (Función adicional de utilidad)
+     * 🗑️ ELIMINAR ELEMENTO - CORREGIDO PARA SEGUIR PATRÓN DE INGRESOS
      */
-    deleteItem(type, itemId, itemData) {
+    async deleteItem(type, itemId, itemData) {
         const itemName = itemData.categoria || itemData.fuente || 'elemento';
-        const confirmed = confirm(`¿Estás seguro de eliminar "${itemName}"?`);
+        const itemAmount = this.currency?.format(itemData.monto) || `$${itemData.monto}`;
+        
+        // 🎯 USAR MISMO MODAL ELEGANTE QUE INGRESOS
+        const confirmed = await window.simpleModal.confirmDelete({
+            itemName: itemName,
+            itemAmount: itemAmount
+        });
         
         if (!confirmed) return;
         
@@ -377,7 +384,21 @@ if (isViewCombinada) {
                 .reduce((total, item) => total + (item.monto || 0), 0);
             
             if (this.contextualManager.saveStorageData(type, data)) {
-                this.contextualManager.smartRefresh('income', 'delete');
+                // 🎯 ACTUALIZACIÓN OPTIMIZADA IGUAL QUE LAS OTRAS FUNCIONES
+                const isViewCombinada = document.querySelector('.expenses-grid') !== null;
+                if (isViewCombinada) {
+                    window.gastosManager.showFijosVariablesView();
+                } else {
+                    window.gastosManager.loadGastosView();
+                }
+                
+                // Reactivar menú contextual
+                setTimeout(() => {
+                    if (window.contextualManager) {
+                        window.contextualManager.bindExistingElements();
+                    }
+                }, 200);
+                
                 this.contextualManager.showMessage('Elemento eliminado correctamente', 'success');
             } else {
                 this.contextualManager.showMessage('Error al eliminar elemento', 'error');
@@ -386,11 +407,11 @@ if (isViewCombinada) {
     }
 }
 
-// Auto-inicializar cuando contextualManager esté listo
+// 🎯 AUTO-INICIALIZACIÓN CORREGIDA
 setTimeout(() => {
     if (window.contextualManager) {
         window.contextualMenuActions = new ContextualMenuActions(window.contextualManager);
-        console.log('🎬 ContextualMenuActions v2.0.0 auto-inicializado - CORREGIDO');
+        console.log('🎬 ContextualMenuActions v2.0.0 auto-inicializado - FINAL CORREGIDO');
     }
 }, 1000);
 

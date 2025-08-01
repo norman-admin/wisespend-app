@@ -506,10 +506,13 @@ modal.remove();
                 .reduce((total, item) => total + (item.monto || 0), 0);
             
             if (this.contextualManager.saveStorageData(type, data)) {
-                // 🎯 ACTUALIZACIÓN INTELIGENTE SIN RECARGAR - IGUAL QUE INGRESOS
+               // 🎯 ACTUALIZACIÓN INTELIGENTE SIN RECARGAR - IGUAL QUE INGRESOS
                 if (window.gastosManager) {
                     window.gastosManager.updateHeaderTotals();
                 }
+                
+                // 🆕 ACTUALIZAR TOTALES ESPECÍFICOS POR SECCIÓN
+                this.updateSectionTotals(type, data);
                 
                 // Forzar eliminación visual del elemento
                 const elementToRemove = document.querySelector(`[data-id="${itemId}"]`);
@@ -533,6 +536,50 @@ modal.remove();
                 this.contextualManager.showMessage('Error al eliminar elemento', 'error');
             }
         }
+    }
+
+   /**
+     * 🆕 ACTUALIZAR TOTALES ESPECÍFICOS POR SECCIÓN
+     */
+    updateSectionTotals(type, data) {
+        if (type === 'gastos-extras' && window.gastosExtrasMejorados) {
+            // Actualizar gastos extras
+            const gastosExtras = this.storage.getGastosExtras();
+            const totalRealizado = gastosExtras.items.reduce((total, item) => total + (item.monto || 0), 0);
+            
+            // Actualizar total de gastos extras
+            const totalElement = document.querySelector('#extras-total-amount');
+            if (totalElement) {
+                totalElement.textContent = `$${window.gastosExtrasMejorados.formatNumber(totalRealizado)}`;
+            }
+            
+            // Actualizar cajas de resumen
+            const gastosRealizadosElement = document.querySelector('.extras-summary-card.gastos .extras-summary-amount');
+            if (gastosRealizadosElement) {
+                gastosRealizadosElement.textContent = `$${window.gastosExtrasMejorados.formatNumber(totalRealizado)}`;
+            }
+            
+            const disponible = window.gastosExtrasMejorados.presupuestoActual - totalRealizado;
+            const disponibleElement = document.querySelector('.extras-summary-card.disponible .extras-summary-amount');
+            if (disponibleElement) {
+                disponibleElement.textContent = `$${window.gastosExtrasMejorados.formatNumber(disponible)}`;
+            }
+            
+        } else if (type === 'gastos-fijos' || type === 'gastos-variables') {
+            // Actualizar totales de gastos fijos/variables - SIMPLE Y FUNCIONAL
+            setTimeout(() => {
+                // Recargar la vista para actualizar totales
+                if (window.gastosManager && window.gastosManager.showFijosVariablesView) {
+                    window.gastosManager.showFijosVariablesView();
+                }
+            }, 100);
+        }
+        
+        console.log('✅ Totales de sección actualizados:', type);
+    }
+
+    formatNumber(number) {
+        return new Intl.NumberFormat('es-CL').format(number);
     }
 }
 

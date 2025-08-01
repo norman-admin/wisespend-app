@@ -584,6 +584,50 @@ class GastosExtrasMejorados {
                              document.querySelector('#dynamic-content');
             if (container) {
                 this.renderGastosExtrasMejorados(container);
+
+                // 🆕 ACTUALIZAR TOTALES DESPUÉS DE ELIMINAR
+        this.updateDisplays();
+        
+        // 🔧 ACTUALIZACIÓN DIRECTA DEL TOTAL
+        const totalRealizado = this.calculateGastoRealizado(gastosExtras.items);
+        const totalElement = document.querySelector('#extras-total-amount');
+        if (totalElement) {
+            totalElement.textContent = `$${this.formatNumber(totalRealizado)}`;
+        }
+        
+        // Forzar actualización de tarjetas dinámicas
+        this.notifyDynamicCards();
+        
+        console.log('💰 Total actualizado después de eliminar:', totalRealizado);
+        // 🔧 FORZAR ACTUALIZACIÓN VISUAL DE TODAS LAS CAJAS
+        setTimeout(() => {
+            // Actualizar caja "Gastos realizados"
+            const gastosRealizadosElement = document.querySelector('.extras-summary-card.gastos .extras-summary-amount');
+            if (gastosRealizadosElement) {
+                gastosRealizadosElement.textContent = `$${this.formatNumber(totalRealizado)}`;
+            }
+            
+            // Actualizar caja "Disponible"
+            const disponible = this.presupuestoActual - totalRealizado;
+            const disponibleElement = document.querySelector('.extras-summary-card.disponible .extras-summary-amount');
+            if (disponibleElement) {
+                disponibleElement.textContent = `$${this.formatNumber(disponible)}`;
+            }
+            
+            console.log('✅ Cajas de resumen actualizadas forzadamente');
+        }, 100);
+        
+        // 🔥 ELIMINAR ELEMENTO VISUAL DEL DOM
+        const elementToRemove = document.querySelector(`[data-id="${itemId}"]`);
+        if (elementToRemove) {
+            elementToRemove.style.transition = 'opacity 0.3s ease';
+            elementToRemove.style.opacity = '0';
+            setTimeout(() => {
+                elementToRemove.remove();
+                console.log('🔥 Elemento visual eliminado del DOM');
+            }, 300);
+        }
+
             }
 
             console.log('🗑️ Gasto extra eliminado:', item.categoria);
@@ -798,82 +842,37 @@ class GastosExtrasMejorados {
             alert('Función conectar con modal existente');
         }
     }
-
-    /**
-     * 🆕 AGREGAR NUEVO ELEMENTO AL DOM SIN PESTAÑEO - CORREGIDO
-     */
-    addNewItemToDOM(newItem) {
-        console.log('🔍 DEBUG: addNewItemToDOM llamado con:', newItem);
-        
-        const expensesList = document.querySelector('.extras-expenses-list') || 
-                            document.querySelector('.expenses-list') ||
-                            document.querySelector('[class*="expenses"]');
-        
-        console.log('🔍 DEBUG: Contenedor encontrado:', expensesList);
-        
-        if (!expensesList) {
-            console.error('❌ No se encontró contenedor para la lista');
-            return;
-        }
-        
-        // Buscar un elemento existente para copiar su estructura EXACTA
-const existingItem = expensesList.querySelector('.extras-expense-item');
-
-if (existingItem) {
-    // ✅ CASO 1: HAY ELEMENTOS EXISTENTES - CLONAR
-    console.log('✅ Elemento existente encontrado, clonando estructura...');
-
-    const clonedElement = existingItem.cloneNode(true);
-    clonedElement.setAttribute('data-id', newItem.id);
-
-    // Actualizar contenido manteniendo la estructura exacta
-    const checkbox = clonedElement.querySelector('input[type="checkbox"]');
-    const nameElement = clonedElement.querySelector('.extras-expense-name');
-    const amountElement = clonedElement.querySelector('.extras-expense-amount');
-
-    if (checkbox) {
-        checkbox.checked = newItem.pagado || false;
-        checkbox.setAttribute('onchange', `gastosExtrasMejorados.toggleGastoPagado('${newItem.id}')`);
-        checkbox.id = `extras-checkbox-${newItem.id}`;
-    }
-    if (nameElement) {
-        nameElement.textContent = newItem.categoria;
-    }
-    if (amountElement) {
-        amountElement.textContent = `$${this.formatNumber(newItem.monto)}`;
-    }
-
-    // Insertar el elemento clonado
-    expensesList.appendChild(clonedElement);
+/**
+ * 🆕 AGREGAR NUEVO ELEMENTO AL DOM SIN PESTAÑEO - CORREGIDO
+ */
+addNewItemToDOM(newItem) {
+    console.log('🔍 DEBUG: addNewItemToDOM llamado con:', newItem);
     
-} else {
-    // ✅ CASO 2: LISTA VACÍA - CREAR DESDE CERO
-    console.log('📝 Lista vacía, creando elemento desde cero...');
+    // 🛡️ GUARD ANTI-DUPLICACIÓN
+    const existingElement = document.querySelector(`[data-id="${newItem.id}"]`);
+    if (existingElement) {
+        console.log('🚫 DUPLICACIÓN EVITADA: Elemento ya existe en DOM:', newItem.id);
+        return;
+    }
     
-    const newElementHTML = `
-        <div class="extras-expense-item" data-id="${newItem.id}">
-            <div class="extras-expense-checkbox">
-                <input type="checkbox" 
-                       id="extras-checkbox-${newItem.id}" 
-                       ${newItem.pagado ? 'checked' : ''}
-                       onchange="gastosExtrasMejorados.toggleGastoPagado('${newItem.id}')">
-            </div>
-            <div class="extras-expense-details">
-                <span class="extras-expense-name">${newItem.categoria}</span>
-                <span class="extras-expense-amount">$${this.formatNumber(newItem.monto)}</span>
-            </div>
-        </div>
-    `;
+    const expensesList = document.querySelector('.extras-expenses-list') || 
+                        document.querySelector('.expenses-list') ||
+                        document.querySelector('[class*="expenses"]');
     
-    expensesList.insertAdjacentHTML('beforeend', newElementHTML);
-}
+    console.log('🔍 DEBUG: Contenedor encontrado:', expensesList);
+    
+    if (!expensesList) {
+        console.error('❌ No se encontró contenedor para la lista');
+        return;
+    }
+    
+    // Buscar un elemento existente para copiar su estructura EXACTA
+    const existingItem = expensesList.querySelector('.extras-expense-item');
 
-// Encontrar el nuevo elemento para efectos visuales
-const newElement = expensesList.querySelector(`[data-id="${newItem.id}"]`);
-
+    if (existingItem) {
+        // ✅ CASO 1: HAY ELEMENTOS EXISTENTES - CLONAR
         console.log('✅ Elemento existente encontrado, clonando estructura...');
 
-        // Clonar el elemento existente y modificar su contenido
         const clonedElement = existingItem.cloneNode(true);
         clonedElement.setAttribute('data-id', newItem.id);
 
@@ -891,25 +890,74 @@ const newElement = expensesList.querySelector(`[data-id="${newItem.id}"]`);
             nameElement.textContent = newItem.categoria;
         }
         if (amountElement) {
-            amountElement.textContent = `${this.formatNumber(newItem.monto)}`;
+            amountElement.textContent = `$${this.formatNumber(newItem.monto)}`;
         }
 
-        // Insertar el elemento clonado al final de la lista
+        // Insertar el elemento clonado
         expensesList.appendChild(clonedElement);
         
-        // Efecto visual de aparición
-if (newElement) {
-    newElement.style.transition = 'all 0.3s ease';
-    newElement.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
-    newElement.style.transform = 'scale(0.95)';
-    
-    setTimeout(() => {
-        newElement.style.backgroundColor = '';
-        newElement.style.transform = 'scale(1)';
-    }, 500);
-}
-        console.log('✅ Elemento agregado exitosamente al DOM sin errores');
+    } else {
+        // ✅ CASO 2: LISTA VACÍA - CREAR DESDE CERO
+        console.log('📝 Lista vacía, creando elemento desde cero...');
+        
+        const newElementHTML = `
+            <div class="extras-expense-item" data-id="${newItem.id}">
+                <div class="extras-expense-checkbox">
+                    <input type="checkbox" 
+                           id="extras-checkbox-${newItem.id}" 
+                           ${newItem.pagado ? 'checked' : ''}
+                           onchange="gastosExtrasMejorados.toggleGastoPagado('${newItem.id}')">
+                </div>
+                <div class="extras-expense-details">
+                    <span class="extras-expense-name">${newItem.categoria}</span>
+                    <span class="extras-expense-amount">$${this.formatNumber(newItem.monto)}</span>
+                </div>
+            </div>
+        `;
+        
+        expensesList.insertAdjacentHTML('beforeend', newElementHTML);
     }
+
+    // Encontrar el nuevo elemento para efectos visuales
+    const newElement = expensesList.querySelector(`[data-id="${newItem.id}"]`);
+    if (newElement) {
+        newElement.style.transition = 'all 0.3s ease';
+        newElement.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
+        newElement.style.transform = 'scale(0.95)';
+        
+        setTimeout(() => {
+            newElement.style.backgroundColor = '';
+            newElement.style.transform = 'scale(1)';
+        }, 500);
+    }
+    
+   // 🆕 ACTUALIZAR TOTALES Y ELIMINAR MENSAJE VACÍO
+    this.updateDisplays();
+    
+    // 🔧 ACTUALIZACIÓN DIRECTA DEL TOTAL
+    const gastosExtras = this.storage.getGastosExtras();
+    const totalRealizado = this.calculateGastoRealizado(gastosExtras.items);
+    const totalElement = document.querySelector('#extras-total-amount');
+    if (totalElement) {
+        totalElement.textContent = `$${this.formatNumber(totalRealizado)}`;
+        console.log('💰 Total actualizado directamente:', totalRealizado);
+    }
+    
+   // Eliminar mensaje de lista vacía - BÚSQUEDA AMPLIADA
+    const emptyMessage = expensesList.querySelector('.empty-message, .no-expenses-message') ||
+                        expensesList.querySelector('p, div, span') ||
+                        document.querySelector('.extras-expenses-list p');
+    
+    if (emptyMessage && emptyMessage.textContent.includes('No hay gastos')) {
+        emptyMessage.remove();
+        console.log('🗑️ Mensaje de lista vacía eliminado');
+    }
+    
+    // Forzar actualización de tarjetas dinámicas
+    this.notifyDynamicCards();
+    
+    console.log('✅ Elemento agregado exitosamente al DOM sin errores');
+}
 
     /**
      * Notificar a tarjetas dinámicas

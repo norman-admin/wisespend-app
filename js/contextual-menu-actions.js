@@ -1,13 +1,13 @@
 /**
  * CONTEXTUAL-MENU-ACTIONS.JS - Acciones del Menú Contextual
- * Presupuesto Familiar - Versión 2.0.0 FINAL CORREGIDO
+ * Presupuesto Familiar - Versión 2.0.0 FINAL CORREGIDO DEFINITIVO
  * 
  * 🎯 RESPONSABILIDADES:
  * ✅ Modal de edición con navegación Enter
  * ✅ Actualización sin refresco de pantalla
  * ✅ Duplicar elementos
  * ✅ Mover elementos arriba/abajo
- * ✅ Eliminar con modal elegante
+ * ✅ Eliminar con modal elegante correcto
  * ✅ Consistencia total con sistema de ingresos
  */
 
@@ -17,7 +17,7 @@ class ContextualMenuActions {
         this.storage = contextualManager.storage;
         this.currency = contextualManager.currency;
         
-        console.log('🎬 ContextualMenuActions v2.0.0 inicializado - FINAL CORREGIDO');
+        console.log('🎬 ContextualMenuActions v2.0.0 inicializado - FINAL CORREGIDO DEFINITIVO');
     }
 
     /**
@@ -357,17 +357,27 @@ class ContextualMenuActions {
     }
 
     /**
-     * 🗑️ ELIMINAR ELEMENTO - CORREGIDO PARA SEGUIR PATRÓN DE INGRESOS
+     * 🗑️ ELIMINAR ELEMENTO - ACTUALIZACIÓN INTELIGENTE SIN RECARGAR
      */
     async deleteItem(type, itemId, itemData) {
         const itemName = itemData.categoria || itemData.fuente || 'elemento';
         const itemAmount = this.currency?.format(itemData.monto) || `$${itemData.monto}`;
         
-        // 🎯 USAR MISMO MODAL ELEGANTE QUE INGRESOS
-        const confirmed = await window.simpleModal.confirmDelete({
-            itemName: itemName,
-            itemAmount: itemAmount
-        });
+        // 🎯 USAR EL MODAL REALMENTE ELEGANTE QUE FUNCIONA EN INGRESOS
+        let confirmed;
+        try {
+            if (window.modalSystem) {
+                confirmed = await window.modalSystem.confirm(
+                    `¿Estás seguro de que quieres eliminar "${itemName}"?`,
+                    'Esta acción no se puede deshacer.'
+                );
+            } else {
+                confirmed = confirm(`¿Estás seguro de eliminar "${itemName}" (${itemAmount})?`);
+            }
+        } catch (error) {
+            console.error('Error en modal:', error);
+            confirmed = confirm(`¿Estás seguro de eliminar "${itemName}" (${itemAmount})?`);
+        }
         
         if (!confirmed) return;
         
@@ -384,20 +394,27 @@ class ContextualMenuActions {
                 .reduce((total, item) => total + (item.monto || 0), 0);
             
             if (this.contextualManager.saveStorageData(type, data)) {
-                // 🎯 ACTUALIZACIÓN OPTIMIZADA IGUAL QUE LAS OTRAS FUNCIONES
-                const isViewCombinada = document.querySelector('.expenses-grid') !== null;
-                if (isViewCombinada) {
-                    window.gastosManager.showFijosVariablesView();
-                } else {
-                    window.gastosManager.loadGastosView();
+                // 🎯 ACTUALIZACIÓN INTELIGENTE SIN RECARGAR - IGUAL QUE INGRESOS
+                if (window.gastosManager) {
+                    window.gastosManager.updateHeaderTotals();
                 }
                 
-                // Reactivar menú contextual
+                // Forzar eliminación visual del elemento
+                const elementToRemove = document.querySelector(`[data-id="${itemId}"]`);
+                if (elementToRemove) {
+                    elementToRemove.style.transition = 'opacity 0.3s ease';
+                    elementToRemove.style.opacity = '0';
+                    setTimeout(() => {
+                        elementToRemove.remove();
+                    }, 300);
+                }
+                
+                // Reactivar menú contextual SIN recargar vista
                 setTimeout(() => {
                     if (window.contextualManager) {
                         window.contextualManager.bindExistingElements();
                     }
-                }, 200);
+                }, 400);
                 
                 this.contextualManager.showMessage('Elemento eliminado correctamente', 'success');
             } else {
@@ -411,7 +428,7 @@ class ContextualMenuActions {
 setTimeout(() => {
     if (window.contextualManager) {
         window.contextualMenuActions = new ContextualMenuActions(window.contextualManager);
-        console.log('🎬 ContextualMenuActions v2.0.0 auto-inicializado - FINAL CORREGIDO');
+        console.log('🎬 ContextualMenuActions v2.0.0 auto-inicializado - FINAL CORREGIDO DEFINITIVO');
     }
 }, 1000);
 

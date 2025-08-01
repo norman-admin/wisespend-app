@@ -480,8 +480,8 @@ class ContextualManager {
                     window.contextualMenuActions.moveItem(type, itemId, 'down');
                     break;
                 case 'delete':
-                    this.showDeleteConfirmation(type, itemId, itemData);
-                    break;
+                    window.contextualMenuActions.deleteItem(type, itemId, itemData);
+                break;
             }
             this.closeContextMenu();
         });

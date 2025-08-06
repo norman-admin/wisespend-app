@@ -580,9 +580,15 @@ class ContextualManager {
                 this.formatCurrency(updatedData.monto) : newValue;
             
             // SOLO actualizar totales, NO recargar vista
-            if (window.gastosManager) {
-                window.gastosManager.updateHeaderTotals();
-            }
+if (window.gastosManager) {
+    window.gastosManager.updateHeaderTotals();
+}
+
+// 🆕 ACTUALIZAR TOTALES DE LA SECCIÓN ESPECÍFICA
+if (window.contextualMenuActions && window.contextualMenuActions.updateSectionTotalsVisual) {
+    window.contextualMenuActions.updateSectionTotalsVisual(type);
+    console.log('✅ Totales de sección actualizados desde edición inline');
+}
             
             // Efecto visual de éxito
             itemElement.style.transition = 'background-color 0.3s ease';

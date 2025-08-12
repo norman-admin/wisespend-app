@@ -703,13 +703,15 @@ tableBody.addEventListener('dblclick', (e) => {
     const isSourceField = e.target.closest('.breakdown-name, .source-name');
     const isAmountField = e.target.closest('.breakdown-amount, .amount-value');
     
-    if (isSourceField && window.ingresosManager) {
-        console.log('🖱️ Doble clic en fuente - iniciando edición inline');
-        window.ingresosManager.startInlineEdit(itemId, 'fuente', isSourceField);
-    } else if (isAmountField && window.ingresosManager) {
-        console.log('🖱️ Doble clic en monto - iniciando edición inline');
-        window.ingresosManager.startInlineEdit(itemId, 'monto', isAmountField);
-    }
+    if (isSourceField && window.contextualManager) {
+    console.log('🖱️ Doble clic en fuente - iniciando edición inline');
+    const field = { type: 'name', element: isSourceField };
+    window.contextualManager.startInlineEdit('income', itemId, field, row);
+} else if (isAmountField && window.contextualManager) {
+    console.log('🖱️ Doble clic en monto - iniciando edición inline');
+    const field = { type: 'amount', element: isAmountField };
+    window.contextualManager.startInlineEdit('income', itemId, field, row);
+}
 });
 
         });

@@ -525,6 +525,14 @@ class ContextualManager {
         this.cancelInlineEdit();
     }
 
+    // 🔒 FIX: BLOQUEAR BOTÓN DE USUARIO DURANTE EDICIÓN
+    const userButton = document.querySelector('.user-menu-button, .user-button, [class*="user"], button[aria-label*="user" i]');
+    if (userButton) {
+        userButton.style.pointerEvents = 'none';
+        userButton.setAttribute('tabindex', '-1');
+        userButton.blur(); // Quitar foco si lo tiene
+    }  
+
     const itemData = this.getItemData(type, itemId);
     if (!itemData) return;
 
@@ -533,16 +541,30 @@ class ContextualManager {
                                     fieldElement.classList.contains('gasto-amount') || 
                                     fieldElement.classList.contains('expense-amount') ? 'amount' : 'name');
     
-    const originalValue = fieldType === 'amount' ? 
-        (itemData.monto || 0) : 
-        (itemData.categoria || itemData.fuente || '');
-    
-    const currentText = fieldElement.textContent.trim();
+    // 🔧 FIX: Obtener valor correcto para todos los tipos
+let originalValue;
+if (fieldType === 'amount') {
+    originalValue = itemData.monto || 0;
+} else {
+    // Para ingresos usa 'fuente', para gastos usa 'categoria'
+    if (type === 'income') {
+        originalValue = itemData.fuente || '';
+    } else {
+        originalValue = itemData.categoria || '';
+    }
+}
+
+const currentText = fieldElement.textContent.trim();
+
+// 🔧 FIX: Para campos de texto, usar el valor original de los datos, no el texto formateado
+const inputValue = fieldType === 'amount' ? 
+    originalValue : 
+    originalValue; // Usar originalValue en vez de currentText
     
     // Crear input con clase CSS
     const input = document.createElement('input');
     input.type = fieldType === 'amount' ? 'number' : 'text';
-    input.value = fieldType === 'amount' ? originalValue : currentText;
+    input.value = fieldType === 'amount' ? originalValue : originalValue;
     input.className = 'inline-edit-input';
     
     // Reemplazar contenido
@@ -615,7 +637,21 @@ if (window.contextualMenuActions && window.contextualMenuActions.updateSectionTo
         }
     });
     
-    input.addEventListener('blur', saveEdit);
+    input.addEventListener('blur', (e) => {
+    // Ignorar blur si el foco va al botón de usuario
+    setTimeout(() => {
+        const activeElement = document.activeElement;
+        const isUserButton = activeElement && (
+            activeElement.classList.contains('user-button') ||
+            activeElement.classList.contains('user-menu-button') ||
+            activeElement.getAttribute('aria-label')?.includes('user')
+        );
+        
+        if (!isUserButton) {
+            saveEdit();
+        }
+    }, 100);
+});
 }
 
 /**
@@ -625,6 +661,13 @@ cancelInlineEdit() {
     if (this.editingElement) {
         this.editingElement.fieldElement.textContent = this.editingElement.currentText;
         this.editingElement = null;
+    }
+    
+    // 🔓 RESTAURAR BOTÓN DE USUARIO
+    const userButton = document.querySelector('.user-menu-button, .user-button, [class*="user"], button[aria-label*="user" i]');
+    if (userButton) {
+        userButton.style.pointerEvents = '';
+        userButton.removeAttribute('tabindex');
     }
 }
 

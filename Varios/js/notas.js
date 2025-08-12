@@ -329,7 +329,7 @@ if (remindersOptionsMenu) {
                            onchange="window.notasManager.toggleTask('${task.id}')">
                 </div>
                 <div class="task-content-original">
-                    <div class="task-title-original inline-editable" data-original-text="${task.title}">${task.title}</div>
+                    <div class="task-title-original" data-original-text="${task.title}">${task.title}</div>
                     <div class="task-meta-original">
                         <span class="category-tag ${task.category}">${this.getCategoryName(task.category)}</span>
                         <span class="date-tag">${this.formatOriginalDate(task.dueDate)}</span>
@@ -401,10 +401,10 @@ if (remindersOptionsMenu) {
             </div>
             <div class="reminder-content-original">
                 <div class="reminder-header-original">
-                    <div class="reminder-title-original inline-editable" data-original-text="${reminder.title}">
+                    <div class="reminder-title-original" data-original-text="${reminder.title}">
                         ${reminder.title}
                     </div>
-                    <div class="reminder-amount-original inline-editable" data-original-text="${this.formatCurrency(reminder.amount)}">
+                    <div class="reminder-amount-original" data-original-text="${this.formatCurrency(reminder.amount)}">
                         ${this.formatCurrency(reminder.amount)}
                     </div>
                 </div>

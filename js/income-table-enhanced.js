@@ -113,15 +113,15 @@ class IncomeTableEnhanced {
 
         container.innerHTML = html;
        
-        // Activar menú contextual y edición inline
-        setTimeout(() => {
-            if (window.contextualManager) {
-                window.contextualManager.refresh();
-            }
-            
-            // 🆕 CONECTAR EVENTOS DE MENÚ CONTEXTUAL Y EDICIÓN INLINE
-            this.setupTableEvents();
-        }, 100);
+// Activar menú contextual
+setTimeout(() => {
+    if (window.contextualManager) {
+        window.contextualManager.refresh();
+    }
+    
+    // 🆕 CONECTAR EVENTOS DE MENÚ CONTEXTUAL
+    this.setupTableEvents();
+}, 100);
     }
 
     /**
@@ -676,7 +676,7 @@ console.log('🔍 incomeData:', incomeData);
     /**
      * 🆕 CONFIGURAR EVENTOS DE TABLA (MENÚ CONTEXTUAL + EDICIÓN INLINE)
      */
-    setupTableEvents() {
+   setupTableEvents() {
         const tableBody = document.getElementById('income-table-body');
         if (!tableBody) return;
 
@@ -690,33 +690,9 @@ console.log('🔍 incomeData:', incomeData);
             if (itemId && window.contextualManager) {
                 window.contextualManager.showContextMenu(e, 'income', itemId, row);
             }
-
-            // 🆕 EDICIÓN INLINE CON DOBLE CLIC
-tableBody.addEventListener('dblclick', (e) => {
-    const row = e.target.closest('.income-row');
-    if (!row) return;
-    
-    const itemId = row.dataset.id;
-    if (!itemId) return;
-    
-    // Determinar qué campo se está editando
-    const isSourceField = e.target.closest('.breakdown-name, .source-name');
-    const isAmountField = e.target.closest('.breakdown-amount, .amount-value');
-    
-    if (isSourceField && window.contextualManager) {
-    console.log('🖱️ Doble clic en fuente - iniciando edición inline');
-    const field = { type: 'name', element: isSourceField };
-    window.contextualManager.startInlineEdit('income', itemId, field, row);
-} else if (isAmountField && window.contextualManager) {
-    console.log('🖱️ Doble clic en monto - iniciando edición inline');
-    const field = { type: 'amount', element: isAmountField };
-    window.contextualManager.startInlineEdit('income', itemId, field, row);
-}
-});
-
         });
 
-        console.log('✅ Eventos de tabla configurados - Menú contextual y edición inline activos');
+        console.log('✅ Eventos de tabla configurados - Solo menú contextual activo');
     }
 
     /**

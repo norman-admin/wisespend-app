@@ -304,12 +304,12 @@ if (window.gastosManager && window.gastosManager.incomeTableEnhanced) {
     /**
      * ACCIONES PARA CONTEXTUAL-MANAGER (NUEVAS)
      */
-    
+
     // Llamado desde contextual-manager para editar
-    handleEditAction(incomeId) {
+handleEditAction(incomeId) {
     console.log(`✏️ Editando ingreso desde contextual-manager: ${incomeId}`);
     
-    // 🎯 USAR MÉTODO DE TABLA MEJORADA EN LUGAR DEL MODAL VIEJO
+    // Usar método de tabla mejorada
     if (window.incomeTableEnhanced) {
         window.incomeTableEnhanced.editIncome(incomeId);
     } else {
@@ -439,68 +439,6 @@ this.modalSystem.showMessage(
     `Ingreso movido ${direction === 'up' ? 'arriba' : 'abajo'} correctamente`,
     'success'
 );
-    }
-
-    startInlineEdit(incomeId, field, element) {
-        const income = this.findIncomeById(incomeId);
-        if (!income) return;
-        
-        const originalValue = field === 'monto' ? 
-            this.utils.currency.formatForInput(income[field]) : 
-            income[field];
-            
-        const input = this.utils.dom.create('input', {
-            type: 'text',
-            value: originalValue,
-            className: `inline-edit ${field === 'monto' ? 'currency-field' : ''}`
-        });
-        
-        // Controles
-        const controls = this.utils.dom.create('div', {
-            className: 'inline-controls'
-        }, `
-            <button class="inline-btn save">✓</button>
-            <button class="inline-btn cancel">✗</button>
-        `);
-        
-        // Reemplazar elemento
-        element.style.display = 'none';
-        element.parentNode.insertBefore(input, element.nextSibling);
-        element.parentNode.insertBefore(controls, input.nextSibling);
-        
-        // Funciones de control
-        const cleanup = () => {
-            input.remove();
-            controls.remove();
-            element.style.display = '';
-        };
-        
-        const save = () => {
-            const newValue = field === 'monto' ? 
-                this.utils.currency.parseInput(input.value) : 
-                input.value.trim();
-                
-            if (this.validateInlineValue(field, newValue, incomeId)) {
-                this.updateIncomeField(incomeId, field, newValue);
-                cleanup();
-            }
-        };
-        
-        // Event listeners
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') save();
-            else if (e.key === 'Escape') cleanup();
-        });
-        
-        controls.querySelector('.save').addEventListener('click', save);
-        controls.querySelector('.cancel').addEventListener('click', cleanup);
-        
-        if (field === 'monto') {
-            input.addEventListener('input', (e) => this.utils.currency.formatAsYouType(e.target));
-        }
-        
-        input.focus();
-        input.select();
     }
 
     /**

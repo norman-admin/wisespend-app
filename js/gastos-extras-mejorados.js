@@ -146,19 +146,17 @@ class GastosExtrasMejorados {
                         
                         <!-- Configuración principal -->
                         <div class="extras-config-main">
-                            <!-- 🆕 MONTO EDITABLE CON DOBLE CLICK -->
-                            <div class="extras-config-amount editable-field" 
-                                 id="extras-config-amount" 
-                                 data-field="amount"
-                                 title="Doble click para editar">$${this.formatNumber(this.presupuestoActual)}</div>
+                            <!-- 💰 MONTO DEL PRESUPUESTO -->
+                            <div class="extras-config-amount"
+                            id="extras-config-amount"
+                            title="Monto del presupuesto">${this.formatNumber(this.presupuestoActual)}</div>
                             
                             <!-- Control de porcentaje -->
                             <div class="extras-percentage-control">
-                                <!-- 🆕 PORCENTAJE EDITABLE CON DOBLE CLICK -->
-                                <div class="extras-percentage-display editable-field" 
-                                     id="extras-percentage-display" 
-                                     data-field="percentage"
-                                     title="Doble click para editar">${this.porcentajeActual}%</div>
+                                <!-- 📊 PORCENTAJE DEL PRESUPUESTO -->
+                                <div class="extras-percentage-display"
+                                id="extras-percentage-display"
+                                title="Porcentaje del presupuesto">${this.porcentajeActual}%</div>
                                 <input type="range" 
                                        id="extras-percentage-slider" 
                                        class="extras-percentage-slider"

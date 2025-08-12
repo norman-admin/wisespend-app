@@ -1134,59 +1134,6 @@
     background: #2563eb;
 }
 
-/* ===== SISTEMA DE EDICIÓN INLINE ===== */
-
-.inline-editable {
-    cursor: pointer;
-    border-radius: 4px;
-    padding: 2px 4px;
-    transition: all 0.2s ease;
-    position: relative;
-}
-
-.inline-editable:hover {
-    background: rgba(59, 130, 246, 0.05);
-    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
-}
-
-.inline-editable.editing {
-    background: white;
-    box-shadow: 0 0 0 2px #3b82f6;
-    padding: 0;
-}
-
-.inline-edit-input {
-    width: 100%;
-    border: none;
-    outline: none;
-    background: transparent;
-    font-family: inherit;
-    font-size: inherit;
-    font-weight: inherit;
-    color: inherit;
-    padding: 2px 4px;
-    border-radius: 4px;
-    box-shadow: 0 0 0 2px #3b82f6;
-}
-
-.inline-edit-input:focus {
-    box-shadow: 0 0 0 2px #2563eb;
-}
-
-/* Específico para títulos */
-.task-title-original.inline-editable,
-.reminder-title-original.inline-editable {
-    display: block;
-    min-height: 20px;
-}
-
-/* Específico para montos */
-.reminder-amount-original.inline-editable {
-    display: inline-block;
-    min-width: 60px;
-    text-align: right;
-}
-
 /* ===== CHECKBOX DE RECORDATORIOS ===== */
 .reminder-checkbox-original {
     flex-shrink: 0;

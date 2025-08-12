@@ -162,20 +162,14 @@ class ContextualManager {
      * Configurar eventos en item individual
      */
     setupItemEvents(item, type) {
-        item.dataset.contextualBound = 'true';
-        
-        item.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this.handleContextMenu(e, type);
-        });
-        
-        item.addEventListener('dblclick', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this.handleDoubleClick(e, type);
-        });
-    }
+    item.dataset.contextualBound = 'true';
+    
+    item.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.handleContextMenu(e, type);
+    });
+}
 
     /**
      * Vincular elementos de gastos
@@ -237,12 +231,6 @@ class ContextualManager {
                 this.handleContextMenu(e, type);
                 this.isProcessing = false;
             }, 50);
-        });
-
-        container.addEventListener('dblclick', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this.handleDoubleClick(e, type);
         });
 
         // Soporte móvil (long press)
@@ -347,21 +335,6 @@ class ContextualManager {
         id = this.generateId(type);
         element.dataset.id = id;
         return id;
-    }
-
-    getEditableField(target) {
-        const nameFields = ['.breakdown-name', '.expense-name', '.gasto-nome'];
-        const amountFields = ['.breakdown-amount', '.expense-amount', '.gasto-monto'];
-        
-        for (const selector of nameFields) {
-            if (target.closest(selector)) return { type: 'name', element: target.closest(selector) };
-        }
-        
-        for (const selector of amountFields) {
-            if (target.closest(selector)) return { type: 'amount', element: target.closest(selector) };
-        }
-        
-        return null;
     }
 
     /**
@@ -496,71 +469,6 @@ class ContextualManager {
             this.activeMenu.remove();
             this.activeMenu = null;
         }
-    }
-
-    setupInlineEvents() {
-        const { input, controls, fieldType } = this.editingElement;
-
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                this.saveInlineEdit();
-            } else if (e.key === 'Escape') {
-                this.cancelInlineEdit();
-            }
-        });
-
-        if (fieldType === 'amount') {
-            input.addEventListener('input', () => {
-                this.formatCurrencyAsYouType(input);
-            });
-        }
-
-        controls.querySelector('.save').addEventListener('click', () => {
-            this.saveInlineEdit();
-        });
-
-        controls.querySelector('.cancel').addEventListener('click', () => {
-            this.cancelInlineEdit();
-        });
-    }
-
-    saveInlineEdit() {
-        if (!this.editingElement) return;
-
-        const { type, itemId, fieldType, input } = this.editingElement;
-        const newValue = fieldType === 'amount' ? 
-            this.parseCurrencyInput(input.value) : 
-            input.value.trim();
-
-        if (!this.validateInlineValue(fieldType, newValue)) {
-            this.showInlineError('Valor inválido');
-            return;
-        }
-
-        const success = this.updateItemField(type, itemId, fieldType, newValue);
-        if (success) {
-            this.finishInlineEdit();
-            this.smartRefresh(type, 'update');
-            this.showMessage('Elemento actualizado correctamente', 'success');
-        } else {
-            this.showInlineError('Error al guardar');
-        }
-    }
-
-    cancelInlineEdit() {
-        this.finishInlineEdit();
-    }
-
-    finishInlineEdit() {
-        if (!this.editingElement) return;
-
-        const { fieldElement, input, controls } = this.editingElement;
-        
-        input.remove();
-        controls.remove();
-        fieldElement.style.display = '';
-
-        this.editingElement = null;
     }
 
     /**
@@ -814,7 +722,6 @@ class ContextualManager {
         console.log('📝 Abriendo modal de edición:', type, itemId);
         const name = itemData.categoria || itemData.fuente;
         const amount = this.formatCurrency(itemData.monto);
-        alert(`Editar "${name}": ${amount}\n\nUsa doble clic para edición inline rápida`);
     }
 
     /**
@@ -923,7 +830,6 @@ class ContextualManager {
     refresh() {
         console.log('🔄 Refrescando ContextualManager...');
         this.closeContextMenu();
-        this.cancelInlineEdit();
         
         const boundContainers = document.querySelectorAll('[data-contextual-bound]');
         boundContainers.forEach(container => {

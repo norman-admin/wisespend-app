@@ -17,7 +17,7 @@
 - ✅ **Temas Dinámicos** (claro, oscuro, pastel, automático)
 
 ### 💰 **Gestión Financiera**
-- ✅ **Ingresos**: Tabla mejorada con edición inline y menú contextual
+- ✅ **Ingresos**: Tabla mejorada y menú contextual
 - ✅ **Gastos Fijos**: Administración de gastos recurrentes
 - ✅ **Gastos Variables**: Control de gastos ocasionales  
 - ✅ **Gastos Extras**: Sistema mejorado v2.2.0 con edición inline

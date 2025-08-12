@@ -753,7 +753,7 @@ console.log('🔍 incomeData:', incomeData);
         console.log('✅ Fila reordenada sin refresco');
     }
     /**
-     * 🎯 ACTUALIZAR SOLO LA FILA EDITADA INLINE SIN RECARGAR TABLA
+     * 🎯 ACTUALIZAR SOLO LA FILA EDITADA 
      */
     updateIncomeRowInline(incomeId, field, newValue) {
     console.log('🎯 DEBUGGING: updateIncomeRowInline() llamado con:', {incomeId, field, newValue});

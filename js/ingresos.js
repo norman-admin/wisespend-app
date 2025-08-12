@@ -4,7 +4,6 @@
  * 
  * ✅ FUNCIONALIDADES COMPLETAS MANTENIDAS:
  * 🖱️ Menú contextual (click derecho / long press móvil)
- * ✏️ Edición inline (doble clic en nombre/monto)
  * 🗑️ Eliminación con confirmación
  * 📱 Compatible móvil
  * 💰 Formato automático de moneda
@@ -274,31 +273,6 @@ if (window.gastosManager && window.gastosManager.incomeTableEnhanced) {
             const saveBtn = document.querySelector('[data-action="save"]');
             if (saveBtn && !saveBtn.disabled) saveBtn.click();
         });
-    }
-
-    /**
-     * MENÚ CONTEXTUAL USANDO CONTEXTUAL-MANAGER (CORREGIDO)
-     */
-    setupIncomeItemEvents(container) {
-        // Solo configurar doble clic para edición inline
-        container.addEventListener('dblclick', (e) => this.handleDoubleClick(e));
-        
-        // El menú contextual lo maneja contextual-manager.js automáticamente
-        console.log('🎯 Eventos de ingresos configurados - Menú contextual delegado a contextual-manager');
-    }
-
-    handleDoubleClick(e) {
-        const item = e.target.closest('[data-id]');
-        if (!item) return;
-        
-        const field = e.target.closest('.breakdown-name, .breakdown-amount');
-        if (!field) return;
-        
-        this.startInlineEdit(
-            item.dataset.id, 
-            field.classList.contains('breakdown-amount') ? 'monto' : 'fuente', 
-            field
-        );
     }
 
     /**

@@ -113,15 +113,15 @@ class IncomeTableEnhanced {
 
         container.innerHTML = html;
        
-        // Activar menú contextual y edición inline
-        setTimeout(() => {
-            if (window.contextualManager) {
-                window.contextualManager.refresh();
-            }
-            
-            // 🆕 CONECTAR EVENTOS DE MENÚ CONTEXTUAL Y EDICIÓN INLINE
-            this.setupTableEvents();
-        }, 100);
+// Activar menú contextual
+setTimeout(() => {
+    if (window.contextualManager) {
+        window.contextualManager.refresh();
+    }
+    
+    // 🆕 CONECTAR EVENTOS DE MENÚ CONTEXTUAL
+    this.setupTableEvents();
+}, 100);
     }
 
     /**
@@ -676,7 +676,7 @@ console.log('🔍 incomeData:', incomeData);
     /**
      * 🆕 CONFIGURAR EVENTOS DE TABLA (MENÚ CONTEXTUAL + EDICIÓN INLINE)
      */
-    setupTableEvents() {
+   setupTableEvents() {
         const tableBody = document.getElementById('income-table-body');
         if (!tableBody) return;
 
@@ -690,6 +690,7 @@ console.log('🔍 incomeData:', incomeData);
             if (itemId && window.contextualManager) {
                 window.contextualManager.showContextMenu(e, 'income', itemId, row);
             }
+<<<<<<< HEAD
 
 // ✅ Edición inline deshabilitada intencionalmente
         // Los usuarios deben usar los botones de edición (✏️) para modificar ingresos
@@ -698,6 +699,11 @@ console.log('🔍 incomeData:', incomeData);
        });
 
         console.log('✅ Eventos de tabla configurados - Menú contextual activo');
+=======
+        });
+
+        console.log('✅ Eventos de tabla configurados - Solo menú contextual activo');
+>>>>>>> 131b469937414917e463e1d75ed839fa923043c8
     }
 
     /**
@@ -758,7 +764,7 @@ console.log('🔍 incomeData:', incomeData);
         console.log('✅ Fila reordenada sin refresco');
     }
     /**
-     * 🎯 ACTUALIZAR SOLO LA FILA EDITADA INLINE SIN RECARGAR TABLA
+     * 🎯 ACTUALIZAR SOLO LA FILA EDITADA 
      */
     updateIncomeRowInline(incomeId, field, newValue) {
     console.log('🎯 DEBUGGING: updateIncomeRowInline() llamado con:', {incomeId, field, newValue});

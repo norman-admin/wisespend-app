@@ -12,32 +12,31 @@
 
 class ContextualManager {
     constructor() {
-        this.storage = window.storageManager;
-        this.currency = window.currencyManager;
-        this.activeMenu = null;
-        this.editingElement = null;
-        this.isProcessing = false;
-        this.currentViewContext = null;
-        this.registeredHandlers = new Map();
-        
-        if (!this.storage) {
-            console.error('❌ StorageManager no disponible');
-            return;
-        }
-        
-        this.initializeContextual();
-        console.log('🎯 ContextualManager v1.3 inicializado - SIN PESTAÑEO');
-        
-        // Inicializar módulo de acciones
-        setTimeout(() => {
-            if (typeof ContextualMenuActions !== 'undefined') {
-                window.contextualMenuActions = new ContextualMenuActions(this);
-                console.log('🎬 ContextualMenuActions inicializado');
-            } else {
-                console.error('❌ ContextualMenuActions no encontrado');
-            }
-        }, 500);
+    this.storage = window.storageManager;
+    this.currency = window.currencyManager;
+    this.activeMenu = null;
+    this.isProcessing = false;
+    this.currentViewContext = null;
+    this.registeredHandlers = new Map();
+    
+    if (!this.storage) {
+        console.error('❌ StorageManager no disponible');
+        return;
     }
+    
+    this.initializeContextual();
+    console.log('🎯 ContextualManager v1.3 inicializado - SIN PESTAÑEO');
+    
+    // Inicializar módulo de acciones
+    setTimeout(() => {
+        if (typeof ContextualMenuActions !== 'undefined') {
+            window.contextualMenuActions = new ContextualMenuActions(this);
+            console.log('🎯 ContextualMenuActions inicializado');
+        } else {
+            console.error('❌ ContextualMenuActions no encontrado');
+        }
+    }, 500);
+}
 
     /**
      * 🆕 REGISTRO DE HANDLERS EXTERNOS
@@ -78,7 +77,6 @@ class ContextualManager {
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 this.closeContextMenu();
-                this.cancelInlineEdit();
             }
         });
 
@@ -164,20 +162,14 @@ class ContextualManager {
      * Configurar eventos en item individual
      */
     setupItemEvents(item, type) {
-        item.dataset.contextualBound = 'true';
-        
-        item.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this.handleContextMenu(e, type);
-        });
-        
-        item.addEventListener('dblclick', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this.handleDoubleClick(e, type);
-        });
-    }
+    item.dataset.contextualBound = 'true';
+    
+    item.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.handleContextMenu(e, type);
+    });
+}
 
     /**
      * Vincular elementos de gastos
@@ -241,12 +233,6 @@ class ContextualManager {
             }, 50);
         });
 
-        container.addEventListener('dblclick', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this.handleDoubleClick(e, type);
-        });
-
         // Soporte móvil (long press)
         let longPressTimer;
         container.addEventListener('touchstart', (e) => {
@@ -300,22 +286,6 @@ class ContextualManager {
     }
 
     /**
-     * Manejar doble clic para edición
-     */
-    handleDoubleClick(e, type) {
-        const item = this.findItemElement(e.target);
-        if (!item) return;
-
-        const field = this.getEditableField(e.target);
-        if (!field) return;
-
-        const itemId = this.getItemId(item, type);
-        if (!itemId) return;
-
-        this.startInlineEdit(type, itemId, field, item);
-    }
-
-    /**
      * UTILIDADES DE ELEMENTOS
      */
 
@@ -365,21 +335,6 @@ class ContextualManager {
         id = this.generateId(type);
         element.dataset.id = id;
         return id;
-    }
-
-    getEditableField(target) {
-        const nameFields = ['.breakdown-name', '.expense-name', '.gasto-nome'];
-        const amountFields = ['.breakdown-amount', '.expense-amount', '.gasto-monto'];
-        
-        for (const selector of nameFields) {
-            if (target.closest(selector)) return { type: 'name', element: target.closest(selector) };
-        }
-        
-        for (const selector of amountFields) {
-            if (target.closest(selector)) return { type: 'amount', element: target.closest(selector) };
-        }
-        
-        return null;
     }
 
     /**
@@ -514,239 +469,6 @@ class ContextualManager {
             this.activeMenu.remove();
             this.activeMenu = null;
         }
-    }
-
-    /**
-     * EDICIÓN INLINE
-     */
-
-    startInlineEdit(type, itemId, field, itemElement) {
-    if (this.editingElement) {
-        this.cancelInlineEdit();
-    }
-
-    const itemData = this.getItemData(type, itemId);
-    if (!itemData) return;
-
-    const fieldElement = field.element || field;
-    const fieldType = field.type || (fieldElement.classList.contains('breakdown-amount') || 
-                                    fieldElement.classList.contains('gasto-amount') || 
-                                    fieldElement.classList.contains('expense-amount') ? 'amount' : 'name');
-    
-    const originalValue = fieldType === 'amount' ? 
-        (itemData.monto || 0) : 
-        (itemData.categoria || itemData.fuente || '');
-    
-    const currentText = fieldElement.textContent.trim();
-    
-    // Crear input con clase CSS
-    const input = document.createElement('input');
-    input.type = fieldType === 'amount' ? 'number' : 'text';
-    input.value = fieldType === 'amount' ? originalValue : currentText;
-    input.className = 'inline-edit-input';
-    
-    // Reemplazar contenido
-    fieldElement.innerHTML = '';
-    fieldElement.appendChild(input);
-    input.focus();
-    input.select();
-    
-    this.editingElement = { input, fieldElement, currentText, itemId, type, fieldType, itemData };
-    
-    // Función para guardar SIN PESTAÑEO
-    const saveEdit = () => {
-        const newValue = input.value.trim();
-        if (!newValue) {
-            this.cancelInlineEdit();
-            return;
-        }
-        
-        // Actualizar datos
-        const updatedData = { ...itemData };
-        if (fieldType === 'name') {
-            if (itemData.categoria !== undefined) {
-                updatedData.categoria = newValue;
-            } else {
-                updatedData.fuente = newValue;
-            }
-        } else {
-            updatedData.monto = parseFloat(newValue) || 0;
-        }
-        
-        // Guardar usando contextual-menu-actions
-        if (window.contextualMenuActions && window.contextualMenuActions.updateGastoItem(itemId, updatedData, type)) {
-            // ✅ ACTUALIZACIÓN SIN PESTAÑEO
-            fieldElement.textContent = fieldType === 'amount' ? 
-                this.formatCurrency(updatedData.monto) : newValue;
-            
-            // SOLO actualizar totales, NO recargar vista
-            if (window.gastosManager) {
-                window.gastosManager.updateHeaderTotals();
-            }
-            
-            // Efecto visual de éxito
-            itemElement.style.transition = 'background-color 0.3s ease';
-            itemElement.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
-            setTimeout(() => {
-                itemElement.style.backgroundColor = '';
-            }, 1000);
-            
-            console.log('✅ Edición inline completada SIN PESTAÑEO');
-            this.editingElement = null;
-        } else {
-            this.cancelInlineEdit();
-        }
-    };
-    
-    // Event listeners
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            saveEdit();
-        } else if (e.key === 'Escape') {
-            e.preventDefault();
-            this.cancelInlineEdit();
-        }
-    });
-    
-    input.addEventListener('blur', saveEdit);
-}
-
-/**
- * ❌ CANCELAR EDICIÓN INLINE
- */
-cancelInlineEdit() {
-    if (this.editingElement) {
-        this.editingElement.fieldElement.textContent = this.editingElement.currentText;
-        this.editingElement = null;
-    }
-}
-
-    createInlineInput(fieldType, value) {
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = value;
-        input.className = `inline-edit ${fieldType === 'amount' ? 'currency-field' : ''}`;
-        
-        Object.assign(input.style, {
-            font: 'inherit',
-            color: 'inherit',
-            background: 'white',
-            border: '2px solid #3b82f6',
-            borderRadius: '4px',
-            padding: '4px 8px',
-            width: '100%',
-            maxWidth: '200px'
-        });
-
-        return input;
-    }
-
-    createInlineControls() {
-        const controls = document.createElement('div');
-        controls.className = 'inline-controls';
-        controls.innerHTML = `
-            <button class="inline-btn save" type="button">✓</button>
-            <button class="inline-btn cancel" type="button">✗</button>
-        `;
-
-        Object.assign(controls.style, {
-            display: 'inline-flex',
-            gap: '4px',
-            marginLeft: '8px'
-        });
-
-        controls.querySelectorAll('.inline-btn').forEach(btn => {
-            Object.assign(btn.style, {
-                width: '24px',
-                height: '24px',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: 'bold'
-            });
-        });
-
-        const saveBtn = controls.querySelector('.save');
-        const cancelBtn = controls.querySelector('.cancel');
-
-        Object.assign(saveBtn.style, {
-            background: '#10b981',
-            color: 'white'
-        });
-
-        Object.assign(cancelBtn.style, {
-            background: '#6b7280',
-            color: 'white'
-        });
-
-        return controls;
-    }
-
-    setupInlineEvents() {
-        const { input, controls, fieldType } = this.editingElement;
-
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                this.saveInlineEdit();
-            } else if (e.key === 'Escape') {
-                this.cancelInlineEdit();
-            }
-        });
-
-        if (fieldType === 'amount') {
-            input.addEventListener('input', () => {
-                this.formatCurrencyAsYouType(input);
-            });
-        }
-
-        controls.querySelector('.save').addEventListener('click', () => {
-            this.saveInlineEdit();
-        });
-
-        controls.querySelector('.cancel').addEventListener('click', () => {
-            this.cancelInlineEdit();
-        });
-    }
-
-    saveInlineEdit() {
-        if (!this.editingElement) return;
-
-        const { type, itemId, fieldType, input } = this.editingElement;
-        const newValue = fieldType === 'amount' ? 
-            this.parseCurrencyInput(input.value) : 
-            input.value.trim();
-
-        if (!this.validateInlineValue(fieldType, newValue)) {
-            this.showInlineError('Valor inválido');
-            return;
-        }
-
-        const success = this.updateItemField(type, itemId, fieldType, newValue);
-        if (success) {
-            this.finishInlineEdit();
-            this.smartRefresh(type, 'update');
-            this.showMessage('Elemento actualizado correctamente', 'success');
-        } else {
-            this.showInlineError('Error al guardar');
-        }
-    }
-
-    cancelInlineEdit() {
-        this.finishInlineEdit();
-    }
-
-    finishInlineEdit() {
-        if (!this.editingElement) return;
-
-        const { fieldElement, input, controls } = this.editingElement;
-        
-        input.remove();
-        controls.remove();
-        fieldElement.style.display = '';
-
-        this.editingElement = null;
     }
 
     /**
@@ -1000,7 +722,6 @@ cancelInlineEdit() {
         console.log('📝 Abriendo modal de edición:', type, itemId);
         const name = itemData.categoria || itemData.fuente;
         const amount = this.formatCurrency(itemData.monto);
-        alert(`Editar "${name}": ${amount}\n\nUsa doble clic para edición inline rápida`);
     }
 
     /**
@@ -1109,7 +830,6 @@ cancelInlineEdit() {
     refresh() {
         console.log('🔄 Refrescando ContextualManager...');
         this.closeContextMenu();
-        this.cancelInlineEdit();
         
         const boundContainers = document.querySelectorAll('[data-contextual-bound]');
         boundContainers.forEach(container => {

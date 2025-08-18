@@ -7,7 +7,7 @@
  * ✅ Botón "Agregar Ingresos" del menú lateral → SOLO navegación (sin modal)
  * ✅ Modal de agregar ingresos → SOLO en botón azul del contenido
  * ✅ Sin funcionalidad duplicada
- * 🆕 AGREGADO: Menú contextual y edición inline
+ * 🆕 AGREGADO: Menú contextual 
  * 🆕 AGREGADO: data-id en todos los elementos
  * 🆕 AGREGADO: Integración con contextualManager
  */

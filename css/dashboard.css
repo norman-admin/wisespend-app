@@ -1379,59 +1379,6 @@ min-height: 20px;
     transform: translateY(0) !important;
 }
 
-/* ===== EDICIÓN INLINE ===== */
-
-.inline-edit {
-    font-family: inherit !important;
-    font-size: inherit !important;
-    font-weight: inherit !important;
-    color: #111827 !important;
-    background: white !important;
-    border: 2px solid #3b82f6 !important;
-    border-radius: 4px !important;
-    padding: 4px 8px !important;
-    outline: none !important;
-    width: 100% !important;
-    max-width: 200px !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-}
-
-.inline-edit.currency-field {
-    text-align: right !important;
-    font-weight: 600 !important;
-}
-
-.inline-controls {
-    display: inline-flex !important;
-    gap: 4px !important;
-    margin-left: 8px !important;
-    align-items: center !important;
-}
-
-.inline-btn {
-    width: 24px !important;
-    height: 24px !important;
-    border: none !important;
-    border-radius: 4px !important;
-    cursor: pointer !important;
-    font-size: 12px !important;
-    font-weight: bold !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    transition: all 0.15s ease !important;
-}
-
-.inline-btn.save {
-    background: #10b981 !important;
-    color: white !important;
-}
-
-.inline-btn.cancel {
-    background: #6b7280 !important;
-    color: white !important;
-}
-
 /* ===== INDICADORES VISUALES ===== */
 
 .breakdown-item:hover,
@@ -1439,31 +1386,6 @@ min-height: 20px;
     background: rgba(59, 130, 246, 0.05) !important;
     border-radius: 6px !important;
     cursor: pointer !important;
-}
-
-.breakdown-item:hover .breakdown-name::after,
-.breakdown-item:hover .breakdown-amount::after {
-    content: "👆 Doble clic para editar • Click derecho para menú";
-    position: absolute;
-    bottom: -25px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    white-space: nowrap;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    z-index: 1000;
-    font-weight: normal;
-}
-
-.breakdown-item:hover .breakdown-name:hover::after,
-.breakdown-item:hover .breakdown-amount:hover::after {
-    opacity: 1;
 }
 
 .section-subtitle {

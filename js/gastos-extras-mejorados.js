@@ -1,7 +1,7 @@
 /**
  * GASTOS-EXTRAS-MEJORADOS.JS - VERSIÓN COMPLETA CORREGIDA
  * Control de Gastos Familiares - Sección Gastos Extras Rediseñada
- * Versión: 2.2.1 - LAYOUT + MENÚ CONTEXTUAL + EDICIÓN INLINE + SIN ERRORES
+ * Versión: 2.2.1 - LAYOUT + MENÚ CONTEXTUAl.
  * 
  * 🎯 FUNCIONALIDADES:
  * - Gestión de presupuesto de gastos extras
@@ -10,14 +10,12 @@
  * - Scroll vertical en lista
  * - Integración con tarjetas dinámicas
  * - Auto-sincronización con sistema existente
- * 🆕 EDICIÓN INLINE: Doble click en monto y porcentaje
  * 
  * 🔧 CORRECCIONES v2.2.1:
  * - Conecta correctamente con contextual-manager.js
  * - Evita loops infinitos de inicialización
  * - Mantiene diseño elegante del menú contextual
  * - Agrega funcionalidad de mover elementos
- * - Edición inline bidireccional (monto ↔ porcentaje)
  * - ✅ CORREGIDO: Eliminados errores de JavaScript en addNewItemToDOM
  * - ✅ CORREGIDO: Referencias undefined newItemHTML
  */
@@ -29,21 +27,13 @@ class GastosExtrasMejorados {
         this.presupuestoActual = 0;
         this.porcentajeActual = 10;
         
-        // 🆕 CONTROL DE EDICIÓN INLINE
-        this.isEditing = {
-            amount: false,
-            percentage: false
-        };
-        this.editingElement = null;
-        this.originalValue = null;
-        
         if (!this.storage) {
             console.error('❌ StorageManager no está disponible para gastos extras');
             return;
         }
         
         this.initializeGastosExtras();
-        console.log('✅ Gastos Extras Mejorados v2.2.1 inicializado con edición inline');
+        console.log('✅ Gastos Extras Mejorados v2.3.0 inicializado');
     }
 
     /**
@@ -156,19 +146,17 @@ class GastosExtrasMejorados {
                         
                         <!-- Configuración principal -->
                         <div class="extras-config-main">
-                            <!-- 🆕 MONTO EDITABLE CON DOBLE CLICK -->
-                            <div class="extras-config-amount editable-field" 
-                                 id="extras-config-amount" 
-                                 data-field="amount"
-                                 title="Doble click para editar">$${this.formatNumber(this.presupuestoActual)}</div>
+                            <!-- 💰 MONTO DEL PRESUPUESTO -->
+                            <div class="extras-config-amount"
+                            id="extras-config-amount"
+                            title="Monto del presupuesto">${this.formatNumber(this.presupuestoActual)}</div>
                             
                             <!-- Control de porcentaje -->
                             <div class="extras-percentage-control">
-                                <!-- 🆕 PORCENTAJE EDITABLE CON DOBLE CLICK -->
-                                <div class="extras-percentage-display editable-field" 
-                                     id="extras-percentage-display" 
-                                     data-field="percentage"
-                                     title="Doble click para editar">${this.porcentajeActual}%</div>
+                                <!-- 📊 PORCENTAJE DEL PRESUPUESTO -->
+                                <div class="extras-percentage-display"
+                                id="extras-percentage-display"
+                                title="Porcentaje del presupuesto">${this.porcentajeActual}%</div>
                                 <input type="range" 
                                        id="extras-percentage-slider" 
                                        class="extras-percentage-slider"
@@ -186,178 +174,12 @@ class GastosExtrasMejorados {
         container.innerHTML = html;
         
         // Bind events después de renderizar
-        setTimeout(() => {
-            this.bindEvents();
-            this.setupInlineEditing(); // 🆕 CONFIGURAR EDICIÓN INLINE
-            this.setupContextMenu(); // Agregar menú contextual
-            // Notificar actualización a tarjetas dinámicas
-            this.notifyDynamicCards();
-           }, 100);
-    }
-
-    /**
-     * 🆕 CONFIGURAR EDICIÓN INLINE
-     */
-    setupInlineEditing() {
-        const editableFields = document.querySelectorAll('.editable-field');
-        
-        editableFields.forEach(field => {
-            // Doble click para editar
-            field.addEventListener('dblclick', (e) => {
-                this.startInlineEdit(e.target);
-            });
-            
-            // Agregar cursor pointer
-            field.style.cursor = 'pointer';
-        });
-        
-        console.log('✅ Edición inline configurada para', editableFields.length, 'campos');
-    }
-
-    /**
-     * 🆕 INICIAR EDICIÓN INLINE
-     */
-    startInlineEdit(element) {
-        const fieldType = element.dataset.field;
-        
-        // Evitar edición múltiple
-        if (this.isEditing.amount || this.isEditing.percentage) {
-            return;
-        }
-        
-        this.isEditing[fieldType === 'amount' ? 'amount' : 'percentage'] = true;
-        this.editingElement = element;
-        
-        // Obtener valor actual sin formato
-        let currentValue;
-        if (fieldType === 'amount') {
-            currentValue = this.presupuestoActual;
-        } else {
-            currentValue = this.porcentajeActual;
-        }
-        
-        this.originalValue = currentValue;
-        
-        // Crear input
-        const input = document.createElement('input');
-        input.type = 'number';
-        input.className = 'inline-edit-input';
-        input.value = currentValue;
-        
-        // Configurar input según tipo
-        if (fieldType === 'amount') {
-            input.min = Math.round((this.ingresosTotales * 1) / 100); // 1%
-            input.max = Math.round((this.ingresosTotales * 50) / 100); // 50%
-            input.step = 1000;
-            input.placeholder = 'Monto en pesos';
-        } else {
-            input.min = 1;
-            input.max = 50;
-            input.step = 0.1;
-            input.placeholder = 'Porcentaje';
-        }
-        
-        // Estilos del input
-        input.style.cssText = `
-            width: 100%;
-            padding: 4px 8px;
-            border: 2px solid #3b82f6;
-            border-radius: 4px;
-            font-size: inherit;
-            font-weight: inherit;
-            text-align: center;
-            background: #fff;
-            color: #374151;
-        `;
-        
-        // Eventos del input
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                this.finishInlineEdit(true);
-            } else if (e.key === 'Escape') {
-                this.finishInlineEdit(false);
-            }
-        });
-        
-        input.addEventListener('blur', () => {
-            setTimeout(() => this.finishInlineEdit(true), 100);
-        });
-        
-        // Reemplazar elemento con input
-        element.style.display = 'none';
-        element.parentNode.insertBefore(input, element.nextSibling);
-        
-        // Focus y seleccionar
-        input.focus();
-        input.select();
-        
-        console.log(`📝 Iniciando edición inline para ${fieldType}:`, currentValue);
-    }
-
-    /**
-     * 🆕 FINALIZAR EDICIÓN INLINE
-     */
-    finishInlineEdit(save) {
-        if (!this.editingElement) return;
-        
-        const fieldType = this.editingElement.dataset.field;
-        const input = this.editingElement.nextSibling;
-        
-        if (save && input && input.classList.contains('inline-edit-input')) {
-            const newValue = parseFloat(input.value) || 0;
-            
-            // Validar rango
-            if (fieldType === 'amount') {
-                const minAmount = Math.round((this.ingresosTotales * 1) / 100);
-                const maxAmount = Math.round((this.ingresosTotales * 50) / 100);
-                
-                if (newValue < minAmount || newValue > maxAmount) {
-                    alert(`El monto debe estar entre $${this.formatNumber(minAmount)} (1%) y $${this.formatNumber(maxAmount)} (50%)`);
-                    this.resetInlineEdit();
-                    return;
-                }
-                
-                // Actualizar desde monto
-                this.updateBudgetFromAmount(newValue);
-                
-            } else if (fieldType === 'percentage') {
-                if (newValue < 1 || newValue > 50) {
-                    alert('El porcentaje debe estar entre 1% y 50%');
-                    this.resetInlineEdit();
-                    return;
-                }
-                
-                // Actualizar desde porcentaje
-                this.updateBudgetFromPercentage(newValue);
-            }
-            
-            console.log(`💾 Guardando edición inline ${fieldType}:`, newValue);
-        }
-        
-        // Limpiar edición
-        this.resetInlineEdit();
-    }
-
-    /**
-     * 🆕 RESETEAR EDICIÓN INLINE
-     */
-    resetInlineEdit() {
-        if (this.editingElement) {
-            const input = this.editingElement.nextSibling;
-            if (input && input.classList.contains('inline-edit-input')) {
-                input.remove();
-            }
-            
-            this.editingElement.style.display = '';
-            this.editingElement = null;
-        }
-        
-        this.isEditing.amount = false;
-        this.isEditing.percentage = false;
-        this.originalValue = null;
-        
-        // Actualizar displays para reflejar valores actuales
-        this.updateDisplays();
+setTimeout(() => {
+    this.bindEvents();
+    this.setupContextMenu(); // Agregar menú contextual
+    // Notificar actualización a tarjetas dinámicas
+    this.notifyDynamicCards();
+}, 100);
     }
 
     /**
@@ -646,29 +468,6 @@ class GastosExtrasMejorados {
     }
 
     /**
-     * Vincular eventos - MEJORADO CON SOPORTE INLINE
-     */
-    bindEvents() {
-        const percentageSlider = document.getElementById('extras-percentage-slider');
-        
-        if (percentageSlider) {
-            percentageSlider.addEventListener('input', (e) => {
-                // Solo actualizar si no estamos editando
-                if (!this.isEditing.percentage) {
-                    this.updateBudgetFromPercentage(parseFloat(e.target.value));
-                }
-            });
-        }
-        
-        // 🆕 EVENT LISTENER GLOBAL PARA ESCAPAR DE EDICIÓN
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && (this.isEditing.amount || this.isEditing.percentage)) {
-                this.finishInlineEdit(false);
-            }
-        });
-    }
-
-    /**
      * Actualizar presupuesto desde porcentaje - MEJORADO
      */
     updateBudgetFromPercentage(percentage) {
@@ -715,42 +514,6 @@ class GastosExtrasMejorados {
         this.notifyDynamicCards();
         
         console.log(`💰 Actualizado desde monto: $${this.formatNumber(monto)} = ${this.porcentajeActual}%`);
-    }
-
-    /**
-     * Actualizar displays - MEJORADO CON SOPORTE INLINE
-     */
-    updateDisplays() {
-        const gastosExtras = this.storage.getGastosExtras();
-        const gastoRealizado = this.calculateGastoRealizado(gastosExtras.items);
-        const disponible = this.presupuestoActual - gastoRealizado;
-        
-        // Solo actualizar si no estamos editando ese campo
-        const percentageDisplay = document.getElementById('extras-percentage-display');
-        const percentageSlider = document.getElementById('extras-percentage-slider');
-        const budgetAmount = document.getElementById('extras-budget-amount');
-        const configAmount = document.getElementById('extras-config-amount');
-        const gastoRealizadoAmount = document.getElementById('extras-gasto-realizado');
-        const disponibleAmount = document.getElementById('extras-disponible');
-        
-        if (percentageDisplay && !this.isEditing.percentage) {
-            percentageDisplay.textContent = `${this.porcentajeActual}%`;
-        }
-        if (percentageSlider && !this.isEditing.percentage) {
-            percentageSlider.value = this.porcentajeActual;
-        }
-        if (budgetAmount) {
-            budgetAmount.textContent = `$${this.formatNumber(this.presupuestoActual)}`;
-        }
-        if (configAmount && !this.isEditing.amount) {
-            configAmount.textContent = `$${this.formatNumber(this.presupuestoActual)}`;
-        }
-        if (gastoRealizadoAmount) {
-            gastoRealizadoAmount.textContent = `$${this.formatNumber(gastoRealizado)}`;
-        }
-        if (disponibleAmount) {
-            disponibleAmount.textContent = `$${this.formatNumber(disponible)}`;
-        }
     }
 
     /**
@@ -1039,5 +802,3 @@ if (document.readyState === 'loading') {
 } else {
     initializeGastosExtrasMejorados();
 }
-
-console.log('📦 gastos-extras-mejorados.js v2.2.1 cargado - Layout + Menú contextual + EDICIÓN INLINE + SIN ERRORES');

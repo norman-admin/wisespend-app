@@ -281,11 +281,7 @@ if (remindersOptionsMenu) {
         console.log('✅ Evento click asignado para recordatorios');
     }
 }
-    
-    // 🎨 INICIALIZAR EDICIÓN INLINE
-    this.initInlineEditing();
-    
-    console.log('✅ Edición inline activada');
+
 }
 
     /**
@@ -333,7 +329,7 @@ if (remindersOptionsMenu) {
                            onchange="window.notasManager.toggleTask('${task.id}')">
                 </div>
                 <div class="task-content-original">
-                    <div class="task-title-original inline-editable" data-original-text="${task.title}">${task.title}</div>
+                    <div class="task-title-original" data-original-text="${task.title}">${task.title}</div>
                     <div class="task-meta-original">
                         <span class="category-tag ${task.category}">${this.getCategoryName(task.category)}</span>
                         <span class="date-tag">${this.formatOriginalDate(task.dueDate)}</span>
@@ -405,10 +401,10 @@ if (remindersOptionsMenu) {
             </div>
             <div class="reminder-content-original">
                 <div class="reminder-header-original">
-                    <div class="reminder-title-original inline-editable" data-original-text="${reminder.title}">
+                    <div class="reminder-title-original" data-original-text="${reminder.title}">
                         ${reminder.title}
                     </div>
-                    <div class="reminder-amount-original inline-editable" data-original-text="${this.formatCurrency(reminder.amount)}">
+                    <div class="reminder-amount-original" data-original-text="${this.formatCurrency(reminder.amount)}">
                         ${this.formatCurrency(reminder.amount)}
                     </div>
                 </div>
@@ -1957,126 +1953,6 @@ showConfirmModal(title, message, confirmText = 'Confirmar', cancelText = 'Cancel
 
         modal.addEventListener('click', handleClick);
     });
-}
-
-    /**
- * 🎨 INICIALIZAR EDICIÓN INLINE
- */
-initInlineEditing() {
-    // Configurar eventos de doble clic para elementos editables
-    document.addEventListener('dblclick', (e) => {
-        if (e.target.classList.contains('inline-editable')) {
-            this.startInlineEdit(e.target);
-        }
-    });
-    
-    // Manejar clicks fuera para guardar
-    document.addEventListener('click', (e) => {
-        const editingElement = document.querySelector('.inline-editable.editing input');
-        if (editingElement && !editingElement.contains(e.target) && e.target !== editingElement) {
-            this.saveInlineEdit(editingElement);
-        }
-    });
-}
-
-/**
- * ✏️ INICIAR EDICIÓN INLINE
- */
-startInlineEdit(element) {
-    // Evitar múltiples ediciones
-    if (element.classList.contains('editing')) return;
-    
-    const originalText = element.textContent.trim();
-    const elementType = this.getElementType(element);
-    
-    // Crear input
-    const input = document.createElement('input');
-    input.type = elementType === 'amount' ? 'number' : 'text';
-    input.value = elementType === 'amount' ? this.extractNumber(originalText) : originalText;
-    input.className = 'inline-edit-input';
-    
-    // Configurar input
-    if (elementType === 'amount') {
-        input.step = '0.01';
-        input.min = '0';
-    }
-    
-    // Eventos del input
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            this.saveInlineEdit(input);
-        } else if (e.key === 'Escape') {
-            this.cancelInlineEdit(input, originalText);
-        }
-    });
-    
-    input.addEventListener('blur', () => {
-        this.saveInlineEdit(input);
-    });
-    
-    // Aplicar cambios visuales
-    element.classList.add('editing');
-    element.innerHTML = '';
-    element.appendChild(input);
-    
-    // Enfocar y seleccionar
-    setTimeout(() => {
-        input.focus();
-        input.select();
-    }, 10);
-}
-
-/**
- * 💾 GUARDAR EDICIÓN INLINE
- */
-saveInlineEdit(input) {
-    const element = input.parentElement;
-    const newValue = input.value.trim();
-    const elementType = this.getElementType(element);
-    
-    if (!newValue && elementType !== 'amount') {
-        this.cancelInlineEdit(input, element.dataset.originalText || '');
-        return;
-    }
-    
-    // Obtener IDs del elemento
-    const { itemId, itemType } = this.getElementIds(element);
-    
-    if (!itemId || !itemType) {
-        this.cancelInlineEdit(input, element.dataset.originalText || '');
-        return;
-    }
-    
-    // Actualizar datos
-    const success = this.updateItemData(itemId, itemType, elementType, newValue);
-    
-    if (success) {
-        // Restaurar elemento con nuevo valor
-        const displayValue = elementType === 'amount' ? this.formatCurrency(parseFloat(newValue) || 0) : newValue;
-        element.classList.remove('editing');
-        element.innerHTML = displayValue;
-        
-        // Guardar y refrescar
-        this.saveData();
-        if (itemType === 'task') {
-            this.refreshTasksList();
-        } else {
-            this.refreshRemindersList();
-        }
-        
-        this.showNotification('✏️ Actualizado', 'Cambios guardados correctamente', 'success');
-    } else {
-        this.cancelInlineEdit(input, element.dataset.originalText || '');
-    }
-}
-
-/**
- * ❌ CANCELAR EDICIÓN INLINE
- */
-cancelInlineEdit(input, originalText) {
-    const element = input.parentElement;
-    element.classList.remove('editing');
-    element.innerHTML = originalText;
 }
 
 /**

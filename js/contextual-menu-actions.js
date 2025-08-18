@@ -20,6 +20,87 @@ class ContextualMenuActions {
         console.log('🎬 ContextualMenuActions v2.0.0 inicializado - FINAL CORREGIDO DEFINITIVO');
     }
 
+    /**
+     * 🆕 ACTUALIZAR TOTALES VISUALES DE CUALQUIER SECCIÓN
+     */
+    updateSectionTotalsVisual(type) {
+        const tipoGasto = type.replace('gastos-', '');
+        
+        if (tipoGasto === 'fijos' || tipoGasto === 'variables') {
+            // Obtener datos actualizados del storage
+            let datosActualizados;
+            if (tipoGasto === 'fijos') {
+                datosActualizados = this.storage.getGastosFijos();
+            } else if (tipoGasto === 'variables') {
+                datosActualizados = this.storage.getGastosVariables();
+            }
+            
+            // Recalcular total por si acaso
+            const totalReal = datosActualizados.items
+                .filter(item => item.activo !== false)
+                .reduce((sum, item) => sum + (item.monto || 0), 0);
+            
+            console.log(`📊 Total ${tipoGasto} calculado:`, totalReal);
+            
+            // Buscar el elemento del total según el tipo
+            let totalElement = null;
+            
+            // Primero buscar en vista combinada (dos columnas)
+            if (tipoGasto === 'fijos') {
+                totalElement = document.querySelector('.expenses-column:first-child .expenses-total .total-amount');
+            } else if (tipoGasto === 'variables') {
+                // IMPORTANTE: Para variables es la SEGUNDA columna
+                const columnas = document.querySelectorAll('.expenses-column');
+                if (columnas.length >= 2) {
+                    totalElement = columnas[1].querySelector('.expenses-total .total-amount');
+                }
+            }
+            
+            // Si no está en vista combinada, buscar en vista individual
+            if (!totalElement) {
+                // Buscar el elemento específico de Total Variables
+                const allTotals = document.querySelectorAll('.gastos-total-section strong, .expenses-total');
+                allTotals.forEach(el => {
+                    const text = el.textContent || '';
+                    if (tipoGasto === 'variables' && text.includes('Total Variables')) {
+                        totalElement = el;
+                    } else if (tipoGasto === 'fijos' && text.includes('Total Fijos')) {
+                        totalElement = el;
+                    }
+                });
+            }
+            
+            // Actualizar el total visual
+            if (totalElement) {
+                if (totalElement.tagName === 'STRONG') {
+                    totalElement.textContent = `Total ${tipoGasto === 'fijos' ? 'Fijos' : 'Variables'}: ${this.contextualManager.formatCurrency(totalReal)}`;
+                } else {
+                    totalElement.textContent = this.contextualManager.formatCurrency(totalReal);
+                }
+                
+                // Efecto visual
+                totalElement.style.transition = 'all 0.3s ease';
+                totalElement.style.color = '#10b981';
+                setTimeout(() => {
+                    totalElement.style.color = '';
+                }, 1000);
+                
+                console.log(`✅ Total ${tipoGasto} actualizado visualmente a:`, totalReal);
+            } else {
+                console.warn(`⚠️ No se encontró elemento de total para ${tipoGasto}`);
+            }
+            
+            // Actualizar total general si existe
+            const totalGeneralElement = document.querySelector('.gastos-total span');
+            if (totalGeneralElement) {
+                const gastosFijos = this.storage.getGastosFijos();
+                const gastosVariables = this.storage.getGastosVariables();
+                const totalGeneral = gastosFijos.total + gastosVariables.total;
+                totalGeneralElement.textContent = `Total: ${this.contextualManager.formatCurrency(totalGeneral)}`;
+            }
+        }
+    }
+
 /**
  * 🎯 MODAL DE EDICIÓN - CON NAVEGACIÓN ENTER Y SIN PESTAÑEO
  */
@@ -27,14 +108,22 @@ showEditModal(type, itemId, itemData) {
     const fieldLabel = itemData.categoria !== undefined ? 'Categoría' : 'Fuente';
     const fieldValue = itemData.categoria || itemData.fuente || '';
     
-    // 🎯 CREAR MODAL HTML TRADICIONAL con soporte Enter
+    // 🔒 BLOQUEAR INTERACCIONES EXTERNAS
+    const userButton = document.querySelector('.user-menu-button, .user-button, [class*="user"]');
+    if (userButton) {
+        userButton.style.pointerEvents = 'none';
+        userButton.setAttribute('tabindex', '-1');
+    }
+    
+    // 🎯 CREAR MODAL HTML con z-index alto
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
+    modal.style.zIndex = '99999'; // Z-index muy alto
     modal.innerHTML = `
-        <div class="modal-content">
+        <div class="modal-content" style="position: relative; z-index: 100000;">
             <div class="modal-header">
                 <h3>Editar elemento</h3>
-                <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+                <button class="modal-close" type="button">×</button>
             </div>
             <div class="modal-body">
                 <form id="editForm" onsubmit="return false;">
@@ -49,7 +138,7 @@ showEditModal(type, itemId, itemData) {
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+                <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
                 <button type="button" class="btn btn-primary" id="saveBtn">Actualizar</button>
             </div>
         </div>
@@ -65,6 +154,12 @@ const saveBtn = modal.querySelector('#saveBtn');
 
 // Función para cerrar modal
 const closeModal = () => {
+    // 🔓 RESTAURAR INTERACCIONES
+    const userButton = document.querySelector('.user-menu-button, .user-button, [class*="user"]');
+    if (userButton) {
+        userButton.style.pointerEvents = '';
+        userButton.removeAttribute('tabindex');
+    }
     modal.remove();
 };
 
@@ -98,12 +193,35 @@ modal.addEventListener('keydown', (e) => {
     }
 });
 
-// Click fuera del modal para cerrar
+// Click fuera del modal para cerrar - MEJORADO
 modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
+    // Solo cerrar si el click es exactamente en el overlay, no en el contenido
+    if (e.target === modal && e.target.className === 'modal-overlay') {
         closeModal();
     }
 });
+
+// Prevenir propagación de clicks dentro del modal
+const modalContent = modal.querySelector('.modal-content');
+modalContent.addEventListener('click', (e) => {
+    e.stopPropagation();
+});
+
+// Botón cerrar (X)
+const closeBtn = modal.querySelector('.modal-close');
+closeBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeModal();
+});
+
+// Botón cancelar
+const cancelBtn = modal.querySelector('#cancelBtn');
+if (cancelBtn) {
+    cancelBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeModal();
+    });
+}
 
 // Enfocar primer campo y seleccionar texto
 nameInput.focus();
@@ -132,9 +250,65 @@ nameInput.select();
         if (this.updateGastoItem(itemId, updatedData, type)) {
 
 
-            // ✅ ACTUALIZACIÓN VISUAL AUTOMÁTICA SIN PESTAÑEO
+        // ✅ ACTUALIZACIÓN VISUAL AUTOMÁTICA SIN PESTAÑEO
 if (window.gastosManager) {
-    window.gastosManager.updateHeaderTotals();  // Actualizar totales
+    window.gastosManager.updateHeaderTotals();  // Actualizar totales del header
+}
+
+// 🆕 ACTUALIZAR TOTALES DE LA SECCIÓN ESPECÍFICA
+const tipoGasto = type.replace('gastos-', '');
+
+// Actualizar el total en la vista combinada o individual
+if (tipoGasto === 'fijos' || tipoGasto === 'variables') {
+    // Obtener los datos actualizados del storage
+    let datosActualizados;
+    if (tipoGasto === 'fijos') {
+        datosActualizados = this.storage.getGastosFijos();
+    } else {
+        datosActualizados = this.storage.getGastosVariables();
+    }
+    
+    // Buscar elementos de totales en vista combinada
+    let totalElement = null;
+    if (tipoGasto === 'fijos') {
+        totalElement = document.querySelector('.expenses-column:first-child .expenses-total .total-amount');
+    } else {
+        totalElement = document.querySelector('.expenses-column:last-child .expenses-total .total-amount');
+    }
+    
+    // Si no está en vista combinada, buscar en vista individual
+    if (!totalElement) {
+        const totalSection = document.querySelector('.gastos-total-section strong');
+        if (totalSection && totalSection.textContent.includes(tipoGasto === 'fijos' ? 'Total Fijos' : 'Total Variables')) {
+            totalElement = totalSection;
+        }
+    }
+    
+    // Actualizar el total visual
+    if (totalElement) {
+        const nuevoTotal = datosActualizados.total || 0;
+        if (totalElement.tagName === 'STRONG') {
+            totalElement.textContent = `Total ${tipoGasto === 'fijos' ? 'Fijos' : 'Variables'}: ${this.contextualManager.formatCurrency(nuevoTotal)}`;
+        } else {
+            totalElement.textContent = this.contextualManager.formatCurrency(nuevoTotal);
+        }
+        
+        // Efecto visual verde
+        totalElement.style.transition = 'all 0.3s ease';
+        totalElement.style.color = '#10b981';
+        setTimeout(() => {
+            totalElement.style.color = '';
+        }, 1000);
+    }
+    
+    // Actualizar el total general en el título si existe
+    const totalGeneralElement = document.querySelector('.gastos-total span');
+    if (totalGeneralElement) {
+        const gastosFijos = this.storage.getGastosFijos();
+        const gastosVariables = this.storage.getGastosVariables();
+        const totalGeneral = gastosFijos.total + gastosVariables.total;
+        totalGeneralElement.textContent = `Total: ${this.contextualManager.formatCurrency(totalGeneral)}`;
+    }
 }
 
 // 🎯 ACTUALIZAR ELEMENTO VISUAL EN LA TABLA
@@ -162,9 +336,12 @@ if (itemElement) {
 
 // Cerrar modal
 modal.remove();
+
+// 🆕 ACTUALIZAR TOTALES CORRECTAMENTE
+this.updateSectionTotalsVisual(type);
             
-            // Mostrar mensaje de éxito
-            this.contextualManager.showMessage('Elemento actualizado correctamente', 'success');
+// Mostrar mensaje de éxito
+this.contextualManager.showMessage('Elemento actualizado correctamente', 'success');
             
             console.log('✅ Elemento editado sin pestañeo');
         } else {
@@ -291,10 +468,14 @@ modal.remove();
             }
             
             // Encontrar y actualizar el elemento
-            const itemIndex = gastos.items.findIndex(item => item.id === itemId);
-            if (itemIndex !== -1) {
-                Object.assign(gastos.items[itemIndex], updatedData);
-                gastos.total = window.gastosManager.calculateTotal(gastos.items);
+const itemIndex = gastos.items.findIndex(item => item.id === itemId);
+if (itemIndex !== -1) {
+    Object.assign(gastos.items[itemIndex], updatedData);
+    
+    // 🔴 CRÍTICO: Recalcular el total CORRECTAMENTE
+    gastos.total = gastos.items
+        .filter(item => item.activo !== false)
+        .reduce((sum, item) => sum + (item.monto || 0), 0);
                 
                 // Guardar en storage
                 switch (tipoGasto) {
@@ -392,6 +573,8 @@ modal.remove();
     }
     
     this.contextualManager.showMessage('Elemento duplicado correctamente', 'success');
+    // Actualizar totales
+this.updateSectionTotalsVisual(type);
 } else {
     this.contextualManager.showMessage('Error al duplicar elemento', 'error');
 }
@@ -511,8 +694,8 @@ modal.remove();
                     window.gastosManager.updateHeaderTotals();
                 }
                 
-                // 🆕 ACTUALIZAR TOTALES ESPECÍFICOS POR SECCIÓN
-                this.updateSectionTotals(type, data);
+              // 🆕 ACTUALIZAR TOTALES ESPECÍFICOS POR SECCIÓN
+this.updateSectionTotalsVisual(type);
                 
                 // Forzar eliminación visual del elemento
                 const elementToRemove = document.querySelector(`[data-id="${itemId}"]`);
@@ -566,14 +749,48 @@ modal.remove();
             }
             
         } else if (type === 'gastos-fijos' || type === 'gastos-variables') {
-            // Actualizar totales de gastos fijos/variables - SIMPLE Y FUNCIONAL
-            setTimeout(() => {
-                // Recargar la vista para actualizar totales
-                if (window.gastosManager && window.gastosManager.showFijosVariablesView) {
-                    window.gastosManager.showFijosVariablesView();
-                }
-            }, 100);
+    // Actualizar totales de gastos fijos/variables SIN RECARGAR
+    const tipoGasto = type.replace('gastos-', '');
+    
+    // Buscar el elemento del total según la vista actual
+    let totalElement = null;
+    
+    // Primero buscar en vista combinada (dos columnas)
+    if (tipoGasto === 'fijos') {
+        totalElement = document.querySelector('.expenses-column:first-child .expenses-total .total-amount');
+    } else if (tipoGasto === 'variables') {
+        totalElement = document.querySelector('.expenses-column:last-child .expenses-total .total-amount');
+    }
+    
+    // Si no está en vista combinada, buscar en vista individual
+    if (!totalElement) {
+        const totalSection = document.querySelector('.gastos-total-section strong');
+        if (totalSection && totalSection.textContent.includes(tipoGasto === 'fijos' ? 'Total Fijos' : 'Total Variables')) {
+            totalElement = totalSection;
         }
+    }
+    
+    // Actualizar el total si encontramos el elemento
+    if (totalElement) {
+        const newTotal = data.total || 0;
+        if (totalElement.tagName === 'STRONG') {
+            // Vista individual - actualizar todo el texto
+            totalElement.textContent = `Total ${tipoGasto === 'fijos' ? 'Fijos' : 'Variables'}: ${this.formatNumber(newTotal)}`;
+        } else {
+            // Vista combinada - solo actualizar el monto
+            totalElement.textContent = `${this.formatNumber(newTotal)}`;
+        }
+        
+        // Efecto visual de actualización
+        totalElement.style.transition = 'all 0.3s ease';
+        totalElement.style.color = '#10b981';
+        setTimeout(() => {
+            totalElement.style.color = '';
+        }, 1000);
+    }
+    
+    console.log('✅ Total actualizado sin recargar:', type, data.total);
+}
         
         console.log('✅ Totales de sección actualizados:', type);
     }

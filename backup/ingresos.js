@@ -4,7 +4,6 @@
  * 
  * ✅ FUNCIONALIDADES COMPLETAS MANTENIDAS:
  * 🖱️ Menú contextual (click derecho / long press móvil)
- * ✏️ Edición inline (doble clic en nombre/monto)
  * 🗑️ Eliminación con confirmación
  * 📱 Compatible móvil
  * 💰 Formato automático de moneda
@@ -249,31 +248,6 @@ class IngresosManager {
     }
 
     /**
-     * MENÚ CONTEXTUAL USANDO CONTEXTUAL-MANAGER (CORREGIDO)
-     */
-    setupIncomeItemEvents(container) {
-        // Solo configurar doble clic para edición inline
-        container.addEventListener('dblclick', (e) => this.handleDoubleClick(e));
-        
-        // El menú contextual lo maneja contextual-manager.js automáticamente
-        console.log('🎯 Eventos de ingresos configurados - Menú contextual delegado a contextual-manager');
-    }
-
-    handleDoubleClick(e) {
-        const item = e.target.closest('[data-id]');
-        if (!item) return;
-        
-        const field = e.target.closest('.breakdown-name, .breakdown-amount');
-        if (!field) return;
-        
-        this.startInlineEdit(
-            item.dataset.id, 
-            field.classList.contains('breakdown-amount') ? 'monto' : 'fuente', 
-            field
-        );
-    }
-
-    /**
      * ACCIONES PARA CONTEXTUAL-MANAGER (NUEVAS)
      */
     
@@ -364,68 +338,6 @@ class IngresosManager {
             `Ingreso movido ${direction === 'up' ? 'arriba' : 'abajo'} correctamente`,
             'success'
         );
-    }
-
-    startInlineEdit(incomeId, field, element) {
-        const income = this.findIncomeById(incomeId);
-        if (!income) return;
-        
-        const originalValue = field === 'monto' ? 
-            this.utils.currency.formatForInput(income[field]) : 
-            income[field];
-            
-        const input = this.utils.dom.create('input', {
-            type: 'text',
-            value: originalValue,
-            className: `inline-edit ${field === 'monto' ? 'currency-field' : ''}`
-        });
-        
-        // Controles
-        const controls = this.utils.dom.create('div', {
-            className: 'inline-controls'
-        }, `
-            <button class="inline-btn save">✓</button>
-            <button class="inline-btn cancel">✗</button>
-        `);
-        
-        // Reemplazar elemento
-        element.style.display = 'none';
-        element.parentNode.insertBefore(input, element.nextSibling);
-        element.parentNode.insertBefore(controls, input.nextSibling);
-        
-        // Funciones de control
-        const cleanup = () => {
-            input.remove();
-            controls.remove();
-            element.style.display = '';
-        };
-        
-        const save = () => {
-            const newValue = field === 'monto' ? 
-                this.utils.currency.parseInput(input.value) : 
-                input.value.trim();
-                
-            if (this.validateInlineValue(field, newValue, incomeId)) {
-                this.updateIncomeField(incomeId, field, newValue);
-                cleanup();
-            }
-        };
-        
-        // Event listeners
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') save();
-            else if (e.key === 'Escape') cleanup();
-        });
-        
-        controls.querySelector('.save').addEventListener('click', save);
-        controls.querySelector('.cancel').addEventListener('click', cleanup);
-        
-        if (field === 'monto') {
-            input.addEventListener('input', (e) => this.utils.currency.formatAsYouType(e.target));
-        }
-        
-        input.focus();
-        input.select();
     }
 
     /**

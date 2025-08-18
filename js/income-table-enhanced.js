@@ -691,30 +691,13 @@ console.log('🔍 incomeData:', incomeData);
                 window.contextualManager.showContextMenu(e, 'income', itemId, row);
             }
 
-            // 🆕 EDICIÓN INLINE CON DOBLE CLIC
-tableBody.addEventListener('dblclick', (e) => {
-    const row = e.target.closest('.income-row');
-    if (!row) return;
-    
-    const itemId = row.dataset.id;
-    if (!itemId) return;
-    
-    // Determinar qué campo se está editando
-    const isSourceField = e.target.closest('.breakdown-name, .source-name');
-    const isAmountField = e.target.closest('.breakdown-amount, .amount-value');
-    
-    if (isSourceField && window.ingresosManager) {
-        console.log('🖱️ Doble clic en fuente - iniciando edición inline');
-        window.ingresosManager.startInlineEdit(itemId, 'fuente', isSourceField);
-    } else if (isAmountField && window.ingresosManager) {
-        console.log('🖱️ Doble clic en monto - iniciando edición inline');
-        window.ingresosManager.startInlineEdit(itemId, 'monto', isAmountField);
-    }
-});
+// ✅ Edición inline deshabilitada intencionalmente
+        // Los usuarios deben usar los botones de edición (✏️) para modificar ingresos
+        console.log('✅ Edición inline deshabilitada - usar botones de edición');
 
-        });
+       });
 
-        console.log('✅ Eventos de tabla configurados - Menú contextual y edición inline activos');
+        console.log('✅ Eventos de tabla configurados - Menú contextual activo');
     }
 
     /**

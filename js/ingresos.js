@@ -280,12 +280,10 @@ if (window.gastosManager && window.gastosManager.incomeTableEnhanced) {
      * MENÚ CONTEXTUAL USANDO CONTEXTUAL-MANAGER (CORREGIDO)
      */
     setupIncomeItemEvents(container) {
-        // Solo configurar doble clic para edición inline
-        container.addEventListener('dblclick', (e) => this.handleDoubleClick(e));
-        
-        // El menú contextual lo maneja contextual-manager.js automáticamente
-        console.log('🎯 Eventos de ingresos configurados - Menú contextual delegado a contextual-manager');
-    }
+    // ✅ Edición inline deshabilitada - usar botones de edición
+    // El menú contextual lo maneja contextual-manager.js automáticamente
+    console.log('✅ Eventos de ingresos configurados - Edición inline deshabilitada');
+}
 
     handleDoubleClick(e) {
         const item = e.target.closest('[data-id]');

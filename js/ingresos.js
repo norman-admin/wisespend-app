@@ -276,7 +276,6 @@ if (window.gastosManager && window.gastosManager.incomeTableEnhanced) {
     }
 
     /**
-<<<<<<< HEAD
      * MENÚ CONTEXTUAL USANDO CONTEXTUAL-MANAGER (CORREGIDO)
      */
     setupIncomeItemEvents(container) {
@@ -300,8 +299,6 @@ if (window.gastosManager && window.gastosManager.incomeTableEnhanced) {
     }
 
     /**
-=======
->>>>>>> 131b469937414917e463e1d75ed839fa923043c8
      * ACCIONES PARA CONTEXTUAL-MANAGER (NUEVAS)
      */
 

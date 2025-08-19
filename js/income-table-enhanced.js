@@ -677,34 +677,65 @@ console.log('🔍 incomeData:', incomeData);
      * 🆕 CONFIGURAR EVENTOS DE TABLA (MENÚ CONTEXTUAL + EDICIÓN INLINE)
      */
    setupTableEvents() {
-        const tableBody = document.getElementById('income-table-body');
-        if (!tableBody) return;
+    const tableBody = document.getElementById('income-table-body');
+    if (!tableBody) return;
 
-        // Menú contextual (click derecho)
-        tableBody.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            const row = e.target.closest('.income-row');
-            if (!row) return;
-            
-            const itemId = row.dataset.id;
-            if (itemId && window.contextualManager) {
-                window.contextualManager.showContextMenu(e, 'income', itemId, row);
+    // 🚨 PREVENIR TODOS LOS EVENTOS PROBLEMÁTICOS
+    const preventiveEvents = ['click', 'dblclick', 'mousedown', 'mouseup', 'touchstart', 'touchend', 'focus', 'focusin'];
+    
+    preventiveEvents.forEach(eventType => {
+        tableBody.addEventListener(eventType, (e) => {
+            // Solo permitir eventos en botones de acción
+            if (!e.target.closest('.action-btn, .action-buttons, .actions-cell')) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
             }
-<<<<<<< HEAD
+        }, true); // true = capture phase
+    });
 
-// ✅ Edición inline deshabilitada intencionalmente
-        // Los usuarios deben usar los botones de edición (✏️) para modificar ingresos
-        console.log('✅ Edición inline deshabilitada - usar botones de edición');
+    // Menú contextual (click derecho) - SOLO para botones
+    tableBody.addEventListener('contextmenu', (e) => {
+        if (e.target.closest('.action-btn, .action-buttons')) {
+            return; // Permitir menú contextual en botones
+        }
+        e.preventDefault();
+        const row = e.target.closest('.income-row');
+        if (!row) return;
+        
+        const itemId = row.dataset.id;
+        if (itemId && window.contextualManager) {
+            window.contextualManager.showContextMenu(e, 'income', itemId, row);
+        }
+    });
 
-       });
+    this.debugFocusEvents();
 
-        console.log('✅ Eventos de tabla configurados - Menú contextual activo');
-=======
-        });
+    console.log('🚨 Eventos preventivos AGRESIVOS configurados - Solo botones habilitados');
+}
 
-        console.log('✅ Eventos de tabla configurados - Solo menú contextual activo');
->>>>>>> 131b469937414917e463e1d75ed839fa923043c8
-    }
+/**
+ * 🔧 DEBUGGING TEMPORAL: Rastrear eventos de foco
+ */
+debugFocusEvents() {
+    // Solo para debugging - remover después
+    document.addEventListener('focusin', (e) => {
+        if (e.target.closest('.income-table-enhanced')) {
+            console.log('🔍 FOCUS detectado en tabla:', e.target);
+            console.log('🔍 Elemento que recibe foco:', e.target.tagName, e.target.className);
+        }
+    });
+    
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.income-table-enhanced')) {
+            console.log('🖱️ CLICK detectado en tabla:', e.target);
+            setTimeout(() => {
+                console.log('🎯 Elemento activo después del click:', document.activeElement);
+            }, 10);
+        }
+    });
+}
 
     /**
      * 🎯 FORMATEAR NÚMERO (HELPER)

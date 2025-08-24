@@ -18,6 +18,7 @@ class ContextualManager {
     this.isProcessing = false;
     this.currentViewContext = null;
     this.registeredHandlers = new Map();
+    this.handlers = {}; 
     
     if (!this.storage) {
         console.error('❌ StorageManager no disponible');

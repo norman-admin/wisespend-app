@@ -671,46 +671,6 @@ renderGastosExtrasOriginal(container) {
 }
 
     /**
- * Renderizar gastos extras - VERSIÓN ORIGINAL (RESPALDO)
- */
-renderGastosExtrasOriginal(container) {
-    const gastosExtras = this.storage.getGastosExtras();
-    const presupuesto = gastosExtras.presupuesto || 0;
-    const porcentaje = gastosExtras.porcentaje || 10;
-    
-    const html = `
-        <section class="content-section active">
-            <div class="section-header">
-                <h2>Gastos Extras</h2>
-            </div>
-            
-            <div class="presupuesto-section">
-                <h3>Presupuesto Gasto Extra</h3>
-                <div class="presupuesto-input">
-                    <label>${porcentaje}%</label>
-                    <input type="number" value="${presupuesto}" id="presupuesto-extra" />
-                </div>
-            </div>
-            
-            <div class="gastos-content">
-                <div class="gastos-list">
-                    <h4>Gastos Extras</h4>
-                    <div class="gastos-items">
-                        ${gastosExtras.items.map(item => this.renderGastoItem(item, 'extras')).join('')}
-                    </div>
-                    <div class="gastos-total-section">
-                        <strong>Total Extras: ${this.formatNumber(gastosExtras.total)}</strong>
-                    </div>
-                </div>
-            </div>
-        </section>
-    `;
-
-    container.innerHTML = html;
-    this.bindPresupuestoEvents();
-}
-
-    /**
      * Vista combinada fijos y variables
      */
     showFijosVariablesView() {

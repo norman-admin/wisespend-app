@@ -1,7 +1,7 @@
 /**
  * GASTOS-EXTRAS-MEJORADOS.JS - VERSIÓN COMPLETA CORREGIDA
  * Control de Gastos Familiares - Sección Gastos Extras Rediseñada
- * Versión: 2.3.0 - LAYOUT + MENÚ CONTEXTUAL FUNCIONANDO
+ * Versión: 2.3.0 - LAYOUT + MENÚ CONTEXTUAL + EDICIÓN INLINE + ACTUALIZACIÓN FIJA
  * 
  * 🎯 FUNCIONALIDADES:
  * - Gestión de presupuesto de gastos extras
@@ -10,12 +10,8 @@
  * - Scroll vertical en lista
  * - Integración con tarjetas dinámicas
  * - Auto-sincronización con sistema existente
- * 
- * 🔧 CORRECCIONES v2.3.0:
- * - ✅ TODAS las funciones faltantes agregadas correctamente
- * - ✅ Actualización automática en acciones del menú contextual
- * - ✅ Sin duplicación de código
- * - ✅ Estructura limpia y profesional
+ * 🆕 EDICIÓN INLINE: Doble click en monto y porcentaje
+ * 🔧 ACTUALIZACIÓN CORREGIDA: Actualiza valores sin recargar página
  */
 
 class GastosExtrasMejorados {
@@ -25,19 +21,77 @@ class GastosExtrasMejorados {
         this.presupuestoActual = 0;
         this.porcentajeActual = 10;
         
+        // 🆕 CONTROL DE EDICIÓN INLINE
+        this.isEditing = {
+            amount: false,
+            percentage: false
+        };
+        this.editingElement = null;
+        this.originalValue = null;
+        
         if (!this.storage) {
             console.error('❌ StorageManager no está disponible para gastos extras');
             return;
         }
         
         this.initializeGastosExtras();
-        
-        // 🆕 AGREGAR LISTENER PARA RESIZE
-        window.addEventListener('resize', () => this.handleResize());
-        
-        console.log('✅ Gastos Extras Mejorados v2.3.0 inicializado');
+        console.log('✅ Gastos Extras Mejorados v2.3.0 inicializado con actualización corregida');
     }
 
+    /**
+     * 🔄 ACTUALIZAR VISTA COMPLETA - VERSIÓN CORREGIDA
+     * Actualiza solo los valores sin recargar toda la sección
+     */
+    actualizarVistaCompleta() {
+        console.log('🔄 Actualizando valores de gastos extras...');
+        
+        // 1. Recargar datos frescos del storage
+        const gastosExtras = this.storage.getGastosExtras();
+        const gastoRealizado = this.calculateGastoRealizado(gastosExtras.items);
+        const disponible = this.presupuestoActual - gastoRealizado;
+        
+        // 2. Actualizar el total en la lista
+        const totalElement = document.getElementById('extras-total-amount');
+        if (totalElement) {
+            totalElement.textContent = `$${this.formatNumber(gastoRealizado)}`;
+        }
+        
+        // 3. Actualizar gastos realizados
+        const realizadoElement = document.getElementById('extras-gasto-realizado');
+        if (realizadoElement) {
+            realizadoElement.textContent = `$${this.formatNumber(gastoRealizado)}`;
+        }
+        
+        // 4. Actualizar disponible
+        const disponibleElement = document.getElementById('extras-disponible');
+        if (disponibleElement) {
+            disponibleElement.textContent = `$${this.formatNumber(disponible)}`;
+        }
+        
+        // 5. Actualizar la lista de gastos
+        const listElement = document.getElementById('extras-expenses-list');
+        if (listElement) {
+            listElement.innerHTML = this.renderGastosExtrasList(gastosExtras.items);
+            
+            // Re-vincular eventos del menú contextual a los nuevos elementos
+            this.setupContainerEvents(listElement);
+        }
+        
+        // 6. Notificar a las tarjetas dinámicas del dashboard
+        this.notifyDynamicCards();
+        
+        // 7. Actualizar totales del dashboard si existe
+        if (window.dashboardOrchestrator) {
+            window.dashboardOrchestrator.refreshData();
+        }
+        
+        console.log('✅ Valores actualizados:', {
+            total: gastoRealizado,
+            disponible: disponible,
+            items: gastosExtras.items.length
+        });
+    }
+    
     /**
      * Inicializar sistema de gastos extras
      */
@@ -81,6 +135,17 @@ class GastosExtrasMejorados {
     }
 
     /**
+     * Calcular total de gastos (suma de todos los montos)
+     */
+    calculateTotalGastos(items) {
+        if (!items || items.length === 0) return 0;
+        
+        return items
+            .filter(item => item.activo !== false)
+            .reduce((total, item) => total + (item.monto || 0), 0);
+    }
+
+    /**
      * Renderizar la sección de gastos extras mejorada - NUEVO LAYOUT
      */
     renderGastosExtrasMejorados(container) {
@@ -88,9 +153,8 @@ class GastosExtrasMejorados {
         this.loadGastosExtrasData();
         
         const gastosExtras = this.storage.getGastosExtras();
-        const totalGastos = this.calculateTotalGastos(gastosExtras.items);  // Total de TODOS los gastos
-        const gastoRealizado = this.calculateGastoRealizado(gastosExtras.items);  // Solo gastos PAGADOS
-        const disponible = this.presupuestoActual - gastoRealizado;  // Disponible basado en gastos PAGADOS
+        const gastoRealizado = this.calculateGastoRealizado(gastosExtras.items);
+        const disponible = this.presupuestoActual - gastoRealizado;
         
         const html = `
             <section class="content-section active">
@@ -116,7 +180,7 @@ class GastosExtrasMejorados {
                         <!-- Total -->
                         <div class="extras-total-box">
                             <div class="extras-total-label">Total gastos extras:</div>
-                            <div class="extras-total-amount" id="extras-total-amount">$${this.formatNumber(totalGastos)}</div>
+                            <div class="extras-total-amount" id="extras-total-amount">$${this.formatNumber(gastoRealizado)}</div>
                         </div>
                     </div>
 
@@ -149,17 +213,19 @@ class GastosExtrasMejorados {
                         
                         <!-- Configuración principal -->
                         <div class="extras-config-main">
-                            <!-- 💰 MONTO DEL PRESUPUESTO -->
-                            <div class="extras-config-amount"
-                            id="extras-config-amount"
-                            title="Monto del presupuesto">${this.formatNumber(this.presupuestoActual)}</div>
+                            <!-- 🆕 MONTO EDITABLE CON DOBLE CLICK -->
+                            <div class="extras-config-amount editable-field" 
+                                 id="extras-config-amount" 
+                                 data-field="amount"
+                                 title="Doble click para editar">$${this.formatNumber(this.presupuestoActual)}</div>
                             
                             <!-- Control de porcentaje -->
                             <div class="extras-percentage-control">
-                                <!-- 📊 PORCENTAJE DEL PRESUPUESTO -->
-                                <div class="extras-percentage-display"
-                                id="extras-percentage-display"
-                                title="Porcentaje del presupuesto">${this.porcentajeActual}%</div>
+                                <!-- 🆕 PORCENTAJE EDITABLE CON DOBLE CLICK -->
+                                <div class="extras-percentage-display editable-field" 
+                                     id="extras-percentage-display" 
+                                     data-field="percentage"
+                                     title="Doble click para editar">${this.porcentajeActual}%</div>
                                 <input type="range" 
                                        id="extras-percentage-slider" 
                                        class="extras-percentage-slider"
@@ -179,10 +245,176 @@ class GastosExtrasMejorados {
         // Bind events después de renderizar
         setTimeout(() => {
             this.bindEvents();
+            this.setupInlineEditing(); // 🆕 CONFIGURAR EDICIÓN INLINE
             this.setupContextMenu(); // Agregar menú contextual
             // Notificar actualización a tarjetas dinámicas
             this.notifyDynamicCards();
-        }, 100);
+           }, 100);
+    }
+
+    /**
+     * 🆕 CONFIGURAR EDICIÓN INLINE
+     */
+    setupInlineEditing() {
+        const editableFields = document.querySelectorAll('.editable-field');
+        
+        editableFields.forEach(field => {
+            // Doble click para editar
+            field.addEventListener('dblclick', (e) => {
+                this.startInlineEdit(e.target);
+            });
+            
+            // Agregar cursor pointer
+            field.style.cursor = 'pointer';
+        });
+        
+        console.log('✅ Edición inline configurada para', editableFields.length, 'campos');
+    }
+
+    /**
+     * 🆕 INICIAR EDICIÓN INLINE
+     */
+    startInlineEdit(element) {
+        const fieldType = element.dataset.field;
+        
+        // Evitar edición múltiple
+        if (this.isEditing.amount || this.isEditing.percentage) {
+            return;
+        }
+        
+        this.isEditing[fieldType === 'amount' ? 'amount' : 'percentage'] = true;
+        this.editingElement = element;
+        
+        // Obtener valor actual sin formato
+        let currentValue;
+        if (fieldType === 'amount') {
+            currentValue = this.presupuestoActual;
+        } else {
+            currentValue = this.porcentajeActual;
+        }
+        
+        this.originalValue = currentValue;
+        
+        // Crear input
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.className = 'inline-edit-input';
+        input.value = currentValue;
+        
+        // Configurar input según tipo
+        if (fieldType === 'amount') {
+            input.min = Math.round((this.ingresosTotales * 1) / 100); // 1%
+            input.max = Math.round((this.ingresosTotales * 50) / 100); // 50%
+            input.step = 1000;
+            input.placeholder = 'Monto en pesos';
+        } else {
+            input.min = 1;
+            input.max = 50;
+            input.step = 0.1;
+            input.placeholder = 'Porcentaje';
+        }
+        
+        // Estilos del input
+        input.style.cssText = `
+            width: 100%;
+            padding: 4px 8px;
+            border: 2px solid #3b82f6;
+            border-radius: 4px;
+            font-size: inherit;
+            font-weight: inherit;
+            text-align: center;
+            background: #fff;
+            color: #374151;
+        `;
+        
+        // Eventos del input
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                this.finishInlineEdit(true);
+            } else if (e.key === 'Escape') {
+                this.finishInlineEdit(false);
+            }
+        });
+        
+        input.addEventListener('blur', () => {
+            setTimeout(() => this.finishInlineEdit(true), 100);
+        });
+        
+        // Reemplazar elemento con input
+        element.style.display = 'none';
+        element.parentNode.insertBefore(input, element.nextSibling);
+        
+        // Focus y seleccionar
+        input.focus();
+        input.select();
+        
+        console.log(`📝 Iniciando edición inline para ${fieldType}:`, currentValue);
+    }
+
+    /**
+     * 🆕 FINALIZAR EDICIÓN INLINE
+     */
+    finishInlineEdit(save) {
+        if (!this.editingElement) return;
+        
+        const fieldType = this.editingElement.dataset.field;
+        const input = this.editingElement.nextSibling;
+        
+        if (save && input && input.classList.contains('inline-edit-input')) {
+            const newValue = parseFloat(input.value) || 0;
+            
+            // Validar rango
+            if (fieldType === 'amount') {
+                const minAmount = Math.round((this.ingresosTotales * 1) / 100);
+                const maxAmount = Math.round((this.ingresosTotales * 50) / 100);
+                
+                if (newValue < minAmount || newValue > maxAmount) {
+                    alert(`El monto debe estar entre $${this.formatNumber(minAmount)} (1%) y $${this.formatNumber(maxAmount)} (50%)`);
+                    this.resetInlineEdit();
+                    return;
+                }
+                
+                // Actualizar desde monto
+                this.updateBudgetFromAmount(newValue);
+                
+            } else if (fieldType === 'percentage') {
+                if (newValue < 1 || newValue > 50) {
+                    alert('El porcentaje debe estar entre 1% y 50%');
+                    this.resetInlineEdit();
+                    return;
+                }
+                
+                // Actualizar desde porcentaje
+                this.updateBudgetFromPercentage(newValue);
+            }
+            
+            console.log(`💾 Guardando edición inline ${fieldType}:`, newValue);
+        }
+        
+        // Limpiar edición
+        this.resetInlineEdit();
+    }
+
+    /**
+     * 🆕 RESETEAR EDICIÓN INLINE
+     */
+    resetInlineEdit() {
+        if (this.editingElement) {
+            const input = this.editingElement.nextSibling;
+            if (input && input.classList.contains('inline-edit-input')) {
+                input.remove();
+            }
+            
+            this.editingElement.style.display = '';
+            this.editingElement = null;
+        }
+        
+        this.isEditing.amount = false;
+        this.isEditing.percentage = false;
+        this.originalValue = null;
+        
+        // Actualizar displays para reflejar valores actuales
+        this.updateDisplays();
     }
 
     /**
@@ -214,393 +446,6 @@ class GastosExtrasMejorados {
                 </div>
             `;
         }).join('');
-    }
-
-    /**
-     * 🎧 BIND EVENTS - Configurar todos los event listeners
-     */
-    bindEvents() {
-        console.log('🎧 Configurando eventos para gastos extras...');
-        
-        // Event listener para slider de porcentaje
-        const percentageSlider = document.getElementById('extras-percentage-slider');
-        if (percentageSlider) {
-            percentageSlider.addEventListener('input', (e) => {
-                const percentage = parseFloat(e.target.value);
-                this.updateBudgetFromPercentage(percentage);
-            });
-            
-            percentageSlider.addEventListener('change', (e) => {
-                const percentage = parseFloat(e.target.value);
-                this.updateBudgetFromPercentage(percentage);
-            });
-        }
-        
-        // Event listener para configuración de monto
-        const configAmount = document.getElementById('extras-config-amount');
-        if (configAmount) {
-            configAmount.addEventListener('dblclick', () => {
-                this.editBudgetAmount();
-            });
-        }
-
-        // Event listener para configuración de PORCENTAJE
-        const percentageDisplay = document.getElementById('extras-percentage-display');
-        if (percentageDisplay) {
-            percentageDisplay.addEventListener('dblclick', () => {
-                this.editBudgetPercentage();
-            });
-        }
-        
-        // Event listeners para elementos dinámicos (checkboxes)
-        this.bindDynamicEvents();
-        
-        console.log('✅ Eventos configurados para gastos extras');
-    }
-
-    /**
-     * 🔄 BIND DYNAMIC EVENTS - Para elementos que se crean dinámicamente
-     */
-    bindDynamicEvents() {
-        const expensesList = document.getElementById('extras-expenses-list');
-        if (!expensesList) return;
-        
-        // Event delegation para checkboxes
-        expensesList.addEventListener('change', (e) => {
-            if (e.target.type === 'checkbox' && e.target.id.startsWith('extras-checkbox-')) {
-                const itemId = e.target.id.replace('extras-checkbox-', '');
-                this.toggleGastoPagado(itemId);
-            }
-        });
-        
-        // Event delegation para hover effects
-        expensesList.addEventListener('mouseover', (e) => {
-            const expenseItem = e.target.closest('.extras-expense-item');
-            if (expenseItem) {
-                expenseItem.classList.add('hovered');
-            }
-        });
-        
-        expensesList.addEventListener('mouseout', (e) => {
-            const expenseItem = e.target.closest('.extras-expense-item');
-            if (expenseItem) {
-                expenseItem.classList.remove('hovered');
-            }
-        });
-    }
-
-    /**
-     * 📊 UPDATE DISPLAYS - Actualizar todas las visualizaciones - VERSIÓN AGRESIVA
-     */
-    updateDisplays() {
-        console.log('📊 Actualizando displays de gastos extras - VERSIÓN AGRESIVA...');
-        
-        try {
-            // Obtener datos actuales
-            const gastosExtras = this.storage.getGastosExtras();
-            const totalGastos = this.calculateTotalGastos(gastosExtras.items);  // Para "Total gastos extras"
-            const gastoRealizado = this.calculateGastoRealizado(gastosExtras.items);  // Para "Gastos realizados" (solo pagados)
-            const disponible = this.presupuestoActual - gastoRealizado;
-            
-            console.log('💰 Datos calculados:', {
-                presupuesto: this.presupuestoActual,
-                gastoRealizado: gastoRealizado,
-                disponible: disponible,
-                porcentaje: this.porcentajeActual
-            });
-            
-            // ✅ ACTUALIZAR TODOS LOS ELEMENTOS POSIBLES
-            
-            // 1. Monto del presupuesto (múltiples selectores)
-            const budgetSelectors = [
-                '#extras-budget-amount',
-                '.extras-budget-amount',
-                '#extras-config-amount',
-                '.extras-config-amount'
-            ];
-            
-            budgetSelectors.forEach(selector => {
-                const element = document.querySelector(selector);
-                if (element) {
-                    element.textContent = `$${this.formatNumber(this.presupuestoActual)}`;
-                    console.log(`✅ Actualizado ${selector}`);
-                }
-            });
-            
-            // 2. Porcentaje (múltiples selectores)
-            const percentageSelectors = [
-                '#extras-percentage-display',
-                '.extras-percentage-display'
-            ];
-            
-            percentageSelectors.forEach(selector => {
-                const element = document.querySelector(selector);
-                if (element) {
-                    element.textContent = `${this.porcentajeActual}%`;
-                    console.log(`✅ Actualizado ${selector}`);
-                }
-            });
-            
-            // 3. Slider de porcentaje
-            const percentageSlider = document.getElementById('extras-percentage-slider');
-            if (percentageSlider) {
-                percentageSlider.value = this.porcentajeActual;
-                console.log('✅ Slider actualizado');
-            }
-            
-            // 4. Total de gastos extras (múltiples selectores)
-const totalSelectors = [
-    '#extras-total-amount',
-    '.extras-total-amount'
-];
-
-totalSelectors.forEach(selector => {
-    const element = document.querySelector(selector);
-    if (element) {
-        element.textContent = `$${this.formatNumber(totalGastos)}`;  // Usar totalGastos aquí
-        console.log(`✅ Total actualizado ${selector}`);
-    }
-});
-            
-            // 5. Gasto realizado en resumen (múltiples selectores)
-            const gastoRealizadoSelectors = [
-                '#extras-gasto-realizado',
-                '.extras-summary-card.gastos .extras-summary-amount',
-                '.extras-summary-card[class*="gastos"] .extras-summary-amount'
-            ];
-            
-            gastoRealizadoSelectors.forEach(selector => {
-                const element = document.querySelector(selector);
-                if (element) {
-                    element.textContent = `$${this.formatNumber(gastoRealizado)}`;
-                    console.log(`✅ Gasto realizado actualizado ${selector}`);
-                }
-            });
-            
-            // 6. Disponible en resumen (múltiples selectores)
-            const disponibleSelectors = [
-                '#extras-disponible',
-                '.extras-summary-card.disponible .extras-summary-amount',
-                '.extras-summary-card[class*="disponible"] .extras-summary-amount'
-            ];
-            
-            disponibleSelectors.forEach(selector => {
-                const element = document.querySelector(selector);
-                if (element) {
-                    element.textContent = `$${this.formatNumber(disponible)}`;
-                    
-                    // Cambiar color según disponibilidad
-                    const card = element.closest('.extras-summary-card');
-                    if (card) {
-                        card.classList.toggle('warning', disponible < 0);
-                        card.classList.toggle('success', disponible >= 0);
-                    }
-                    console.log(`✅ Disponible actualizado ${selector}`);
-                }
-            });
-            
-            // 7. Actualizar estados visuales de elementos pagados
-            this.updatePaidStates();
-            
-            // 8. FORZAR ACTUALIZACIÓN DEL STORAGE CON TOTALES
-            gastosExtras.totalGastos = totalGastos;  // Total de TODOS los gastos
-            gastosExtras.gastosRealizados = gastoRealizado;  // Solo gastos PAGADOS
-            gastosExtras.presupuesto = this.presupuestoActual;
-            gastosExtras.porcentaje = this.porcentajeActual;
-            gastosExtras.disponible = disponible;
-            this.storage.setGastosExtras(gastosExtras);
-            
-            console.log('✅ Displays actualizados correctamente - AGRESIVO', {
-                presupuesto: this.presupuestoActual,
-                gastoRealizado: gastoRealizado,
-                disponible: disponible,
-                porcentaje: this.porcentajeActual
-            });
-            
-        } catch (error) {
-            console.error('❌ Error actualizando displays:', error);
-        }
-    }
-
-    /**
-     * ✅ UPDATE PAID STATES - Actualizar estados visuales de elementos pagados
-     */
-    updatePaidStates() {
-        const gastosExtras = this.storage.getGastosExtras();
-        if (!gastosExtras.items) return;
-        
-        gastosExtras.items.forEach(item => {
-            const element = document.querySelector(`[data-id="${item.id}"]`);
-            const checkbox = document.getElementById(`extras-checkbox-${item.id}`);
-            
-            if (element && checkbox) {
-                // Actualizar checkbox
-                checkbox.checked = item.pagado || false;
-                
-                // Actualizar clase visual
-                element.classList.toggle('paid', item.pagado || false);
-            }
-        });
-    }
-
-    /**
-     * 💰 EDIT BUDGET AMOUNT - Editar monto del presupuesto directamente
-     */
-    editBudgetAmount() {
-        // Usar el sistema de modales profesional
-        if (!window.modalSystem) {
-            console.error('❌ ModalSystem no disponible');
-            return;
-        }
-
-        const minAmount = Math.round((this.ingresosTotales * 1) / 100);
-        const maxAmount = Math.round((this.ingresosTotales * 50) / 100);
-
-        window.modalSystem.form({
-            title: 'Configurar Presupuesto de Gastos Extras',
-            subtitle: `El presupuesto debe estar entre el 1% y 50% de los ingresos totales ($${this.formatNumber(minAmount)} - $${this.formatNumber(maxAmount)})`,
-            submitText: 'Actualizar Presupuesto',
-            fields: [
-                {
-                    type: 'number',
-                    name: 'presupuesto',
-                    label: 'Monto del Presupuesto',
-                    required: true,
-                    value: this.presupuestoActual,
-                    placeholder: '0',
-                    min: minAmount,
-                    max: maxAmount
-                }
-            ]
-        }).then(data => {
-            if (data && data.presupuesto) {
-                const amount = parseInt(data.presupuesto) || 0;
-                if (amount >= minAmount && amount <= maxAmount) {
-                    this.updateBudgetFromAmount(amount);
-                    
-                    if (window.modalSystem) {
-                        window.modalSystem.showMessage('Presupuesto actualizado correctamente', 'success');
-                    }
-                } else {
-                    if (window.modalSystem) {
-                        window.modalSystem.showMessage(
-                            `El monto debe estar entre $${this.formatNumber(minAmount)} y $${this.formatNumber(maxAmount)}`, 
-                            'error'
-                        );
-                    }
-                }
-            }
-        }).catch(error => {
-            console.error('❌ Error en modal de presupuesto:', error);
-        });
-    }
-
-    /**
-     * 📊 EDIT BUDGET PERCENTAGE - Editar porcentaje del presupuesto directamente
-     */
-    editBudgetPercentage() {
-        // Usar el sistema de modales profesional
-        if (!window.modalSystem) {
-            console.error('❌ ModalSystem no disponible');
-            return;
-        }
-
-        window.modalSystem.form({
-            title: 'Configurar Porcentaje de Gastos Extras',
-            subtitle: `El porcentaje debe estar entre 1% y 50% de los ingresos totales`,
-            submitText: 'Actualizar Porcentaje',
-            fields: [
-                {
-                    type: 'number',
-                    name: 'porcentaje',
-                    label: 'Porcentaje del Presupuesto',
-                    required: true,
-                    value: this.porcentajeActual,
-                    placeholder: '0',
-                    min: 1,
-                    max: 50,
-                    step: 0.1
-                }
-            ]
-        }).then(data => {
-            if (data && data.porcentaje) {
-                const percentage = parseFloat(data.porcentaje) || 0;
-                if (percentage >= 1 && percentage <= 50) {
-                    this.updateBudgetFromPercentage(percentage);
-                    
-                    if (window.modalSystem) {
-                        window.modalSystem.showMessage('Porcentaje actualizado correctamente', 'success');
-                    }
-                } else {
-                    if (window.modalSystem) {
-                        window.modalSystem.showMessage(
-                            'El porcentaje debe estar entre 1% y 50%', 
-                            'error'
-                        );
-                    }
-                }
-            }
-        }).catch(error => {
-            console.error('❌ Error en modal de porcentaje:', error);
-        });
-    }
-
-    /**
-     * 🔄 REFRESH VISUAL LIST - Refrescar solo la lista visual sin recargar toda la sección
-     */
-    refreshVisualList() {
-        const expensesList = document.getElementById('extras-expenses-list');
-        if (!expensesList) return;
-        
-        const gastosExtras = this.storage.getGastosExtras();
-        expensesList.innerHTML = this.renderGastosExtrasList(gastosExtras.items);
-        
-        // Re-bind eventos para nuevos elementos
-        this.bindDynamicEvents();
-        
-        console.log('🔄 Lista visual refrescada');
-    }
-
-    /**
-     * 🎨 UPDATE THEME COLORS - Actualizar colores según tema
-     */
-    updateThemeColors() {
-        // Esta función puede ser expandida para soporte de temas
-        const isDarkTheme = document.body.classList.contains('dark-theme');
-        const elements = document.querySelectorAll('.extras-column-card');
-        
-        elements.forEach(element => {
-            if (isDarkTheme) {
-                element.classList.add('dark');
-            } else {
-                element.classList.remove('dark');
-            }
-        });
-    }
-
-    /**
-     * 📱 HANDLE RESIZE - Manejar cambios de tamaño de ventana
-     */
-    handleResize() {
-        // Ajustar layout para móviles si es necesario
-        const isMobile = window.innerWidth < 768;
-        const layout = document.querySelector('.gastos-extras-layout');
-        
-        if (layout) {
-            layout.classList.toggle('mobile-layout', isMobile);
-        }
-    }
-
-    /**
-     * 🔄 SYNC WITH STORAGE - Sincronizar con cambios externos del storage
-     */
-    syncWithStorage() {
-        this.updateIngresosTotales();
-        this.loadGastosExtrasData();
-        this.updateDisplays();
-        this.refreshVisualList();
-        
-        console.log('🔄 Sincronizado con storage externo');
     }
 
     /**
@@ -720,16 +565,14 @@ totalSelectors.forEach(selector => {
         // Guardar cambios
         this.storage.setGastosExtras(gastosExtras);
         
-        // ✅ ACTUALIZAR INMEDIATAMENTE
-        this.updateDisplays();
-        this.notifyDynamicCards();
-        this.refreshVisualList();
+        // ACTUALIZACIÓN COMPLETA
+        this.actualizarVistaCompleta();
         
         console.log('✅ Gasto extra movido correctamente');
     }
 
     /**
-     * Acciones del menú contextual - VERSIÓN CORREGIDA CON ACTUALIZACIÓN
+     * Acciones del menú contextual
      */
     editGastoExtra(itemId) {
         const gastosExtras = this.storage.getGastosExtras();
@@ -741,65 +584,24 @@ totalSelectors.forEach(selector => {
         }
 
         // Usar el modal del sistema existente
-        if (window.modalSystem) {
-            window.modalSystem.form({
-                title: 'Editar Gasto Extra',
-                submitText: 'Actualizar',
-                fields: [
-                    {
-                        type: 'text',
-                        name: 'categoria',
-                        label: 'Categoría',
-                        required: true,
-                        value: item.categoria,
-                        placeholder: 'Ej: Supermercado, Combustible...'
-                    },
-                    {
-                        type: 'number',
-                        name: 'monto',
-                        label: 'Monto',
-                        required: true,
-                        value: item.monto,
-                        placeholder: '0'
-                    }
-                ]
-            }).then(data => {
-                if (data) {
-                    // Actualizar el item
-                    item.categoria = data.categoria;
-                    item.monto = parseInt(data.monto) || 0;
-                    
-                    // Guardar en storage
-                    this.storage.setGastosExtras(gastosExtras);
-                    
-                    // ✅ ACTUALIZAR ELEMENTO EN DOM
-                    const elementInDOM = document.querySelector(`[data-id="${itemId}"]`);
-                    if (elementInDOM) {
-                        const nameElement = elementInDOM.querySelector('.extras-expense-name');
-                        const amountElement = elementInDOM.querySelector('.extras-expense-amount');
-                        
-                        if (nameElement) nameElement.textContent = item.categoria;
-                        if (amountElement) amountElement.textContent = `${this.formatNumber(item.monto)}`;
-                        
-                        // Efecto visual
-                        elementInDOM.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
-                        setTimeout(() => {
-                            elementInDOM.style.backgroundColor = '';
-                        }, 500);
-                    }
-                    
-                    // ✅ ACTUALIZAR TODOS LOS DISPLAYS INMEDIATAMENTE
-                    this.updateDisplays();
-                    this.notifyDynamicCards();
-                    
-                    if (window.modalSystem) {
-                        window.modalSystem.showMessage('Gasto actualizado correctamente', 'success');
-                    }
-                }
-            });
+        if (window.gastosManager && window.gastosManager.showEditGastoModal) {
+            const self = this;
+            
+            // Interceptar el guardado
+            const originalSave = window.gastosManager.saveGastoFromModal;
+            window.gastosManager.saveGastoFromModal = function(data, tipo) {
+                if (originalSave) originalSave.call(window.gastosManager, data, tipo);
+                
+                setTimeout(() => {
+                    self.actualizarVistaCompleta();
+                    window.gastosManager.saveGastoFromModal = originalSave;
+                }, 100);
+            };
+            
+            window.gastosManager.showEditGastoModal(itemId, 'extras');
         } else {
             console.log('🔧 Editar gasto extra:', item.categoria);
-            alert(`Editar: ${item.categoria} - ${this.formatNumber(item.monto)}`);
+            alert(`Editar: ${item.categoria} - $${this.formatNumber(item.monto)}`);
         }
     }
 
@@ -816,17 +618,12 @@ totalSelectors.forEach(selector => {
             pagado: false
         };
 
-        // Agregar al storage
         gastosExtras.items.push(newItem);
         this.storage.setGastosExtras(gastosExtras);
         
-        // ✅ AGREGAR AL DOM SIN PESTAÑEO
-        this.addNewItemToDOM(newItem);
+        // ACTUALIZACIÓN COMPLETA
+        this.actualizarVistaCompleta();
         
-        // ✅ ACTUALIZAR TODOS LOS DISPLAYS INMEDIATAMENTE
-        this.updateDisplays();
-        this.notifyDynamicCards();
-
         console.log('📋 Gasto extra duplicado:', newItem.categoria);
     }
 
@@ -837,51 +634,52 @@ totalSelectors.forEach(selector => {
         if (!item) return;
 
         if (confirm(`¿Eliminar "${item.categoria}"?`)) {
-            // Eliminar del storage
+            // Eliminar del array
             gastosExtras.items = gastosExtras.items.filter(item => item.id !== itemId);
+            
+            // Guardar en storage
             this.storage.setGastosExtras(gastosExtras);
             
-            // 🔥 ELIMINAR ELEMENTO VISUAL DEL DOM
-            const elementToRemove = document.querySelector(`[data-id="${itemId}"]`);
-            if (elementToRemove) {
-                elementToRemove.style.transition = 'opacity 0.3s ease';
-                elementToRemove.style.opacity = '0';
-                setTimeout(() => {
-                    elementToRemove.remove();
-                }, 300);
-            }
-            
-            // ✅ ACTUALIZAR TODOS LOS DISPLAYS INMEDIATAMENTE
-            this.updateDisplays();
-            this.notifyDynamicCards();
+            // ACTUALIZACIÓN COMPLETA
+            this.actualizarVistaCompleta();
             
             console.log('🗑️ Gasto extra eliminado:', item.categoria);
         }
     }
 
     /**
- * Calcular gasto realizado (solo gastos marcados como pagados)
- */
-calculateGastoRealizado(items) {
-    if (!items || items.length === 0) return 0;
-    
-    // Sumar SOLO gastos con pagado = true
-    return items
-        .filter(item => item.activo !== false && item.pagado === true)
-        .reduce((total, item) => total + (item.monto || 0), 0);
-}
+     * Calcular gasto realizado total
+     */
+    calculateGastoRealizado(items) {
+        if (!items || items.length === 0) return 0;
+        
+        return items
+            .filter(item => item.activo !== false)
+            .reduce((total, item) => total + (item.monto || 0), 0);
+    }
 
     /**
- * Calcular total de todos los gastos (para mostrar en "Total gastos extras")
- */
-calculateTotalGastos(items) {
-    if (!items || items.length === 0) return 0;
-    
-    // Sumar TODOS los gastos activos (pagados o no)
-    return items
-        .filter(item => item.activo !== false)
-        .reduce((total, item) => total + (item.monto || 0), 0);
-}
+     * Vincular eventos - MEJORADO CON SOPORTE INLINE
+     */
+    bindEvents() {
+        const percentageSlider = document.getElementById('extras-percentage-slider');
+        
+        if (percentageSlider) {
+            percentageSlider.addEventListener('input', (e) => {
+                // Solo actualizar si no estamos editando
+                if (!this.isEditing.percentage) {
+                    this.updateBudgetFromPercentage(parseFloat(e.target.value));
+                }
+            });
+        }
+        
+        // 🆕 EVENT LISTENER GLOBAL PARA ESCAPAR DE EDICIÓN
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && (this.isEditing.amount || this.isEditing.percentage)) {
+                this.finishInlineEdit(false);
+            }
+        });
+    }
 
     /**
      * Actualizar presupuesto desde porcentaje - MEJORADO
@@ -903,7 +701,7 @@ calculateTotalGastos(items) {
         this.storage.setGastosExtras(gastosExtras);
         this.notifyDynamicCards();
         
-        console.log(`📊 Actualizado desde porcentaje: ${percentage}% = ${this.formatNumber(this.presupuestoActual)}`);
+        console.log(`📊 Actualizado desde porcentaje: ${percentage}% = $${this.formatNumber(this.presupuestoActual)}`);
     }
 
     /**
@@ -929,7 +727,43 @@ calculateTotalGastos(items) {
         this.storage.setGastosExtras(gastosExtras);
         this.notifyDynamicCards();
         
-        console.log(`💰 Actualizado desde monto: ${this.formatNumber(monto)} = ${this.porcentajeActual}%`);
+        console.log(`💰 Actualizado desde monto: $${this.formatNumber(monto)} = ${this.porcentajeActual}%`);
+    }
+
+    /**
+     * Actualizar displays - MEJORADO CON SOPORTE INLINE
+     */
+    updateDisplays() {
+        const gastosExtras = this.storage.getGastosExtras();
+        const gastoRealizado = this.calculateGastoRealizado(gastosExtras.items);
+        const disponible = this.presupuestoActual - gastoRealizado;
+        
+        // Solo actualizar si no estamos editando ese campo
+        const percentageDisplay = document.getElementById('extras-percentage-display');
+        const percentageSlider = document.getElementById('extras-percentage-slider');
+        const budgetAmount = document.getElementById('extras-budget-amount');
+        const configAmount = document.getElementById('extras-config-amount');
+        const gastoRealizadoAmount = document.getElementById('extras-gasto-realizado');
+        const disponibleAmount = document.getElementById('extras-disponible');
+        
+        if (percentageDisplay && !this.isEditing.percentage) {
+            percentageDisplay.textContent = `${this.porcentajeActual}%`;
+        }
+        if (percentageSlider && !this.isEditing.percentage) {
+            percentageSlider.value = this.porcentajeActual;
+        }
+        if (budgetAmount) {
+            budgetAmount.textContent = `$${this.formatNumber(this.presupuestoActual)}`;
+        }
+        if (configAmount && !this.isEditing.amount) {
+            configAmount.textContent = `$${this.formatNumber(this.presupuestoActual)}`;
+        }
+        if (gastoRealizadoAmount) {
+            gastoRealizadoAmount.textContent = `$${this.formatNumber(gastoRealizado)}`;
+        }
+        if (disponibleAmount) {
+            disponibleAmount.textContent = `$${this.formatNumber(disponible)}`;
+        }
     }
 
     /**
@@ -952,7 +786,7 @@ calculateTotalGastos(items) {
     }
 
     /**
-     * Toggle estado pagado de un gasto - VERSIÓN CORREGIDA
+     * Toggle estado pagado de un gasto
      */
     toggleGastoPagado(itemId) {
         const gastosExtras = this.storage.getGastosExtras();
@@ -962,9 +796,8 @@ calculateTotalGastos(items) {
             item.pagado = !item.pagado;
             this.storage.setGastosExtras(gastosExtras);
             
-            // ✅ ACTUALIZAR TODOS LOS DISPLAYS INMEDIATAMENTE
-            this.updateDisplays();
-            this.notifyDynamicCards();
+            // ACTUALIZACIÓN COMPLETA
+            this.actualizarVistaCompleta();
             
             console.log('✅ Estado pagado actualizado:', {
                 item: item.categoria,
@@ -974,155 +807,44 @@ calculateTotalGastos(items) {
     }
 
     /**
-     * Mostrar modal para agregar gasto - CORREGIDO SIN ERRORES
+     * Mostrar modal para agregar gasto
      */
     showAddGastoModal() {
         // Conectar con el sistema de modales existente
         if (window.gastosManager && window.gastosManager.showAddGastoModal) {
-            // Guardar referencia al método original
-            const originalMethod = window.gastosManager.saveGastoFromModal;
+            const self = this;
             
-            // Interceptar el guardado SOLO UNA VEZ
-            window.gastosManager.saveGastoFromModal = (data, tipo) => {
+            // Interceptar el método de guardado ANTES de abrir el modal
+            const originalSave = window.gastosManager.saveGastoFromModal;
+            
+            // Reemplazar temporalmente el método de guardado
+            window.gastosManager.saveGastoFromModal = function(data, tipo) {
                 // Llamar al método original
-                originalMethod.call(window.gastosManager, data, tipo);
-                
-                // ✅ ACTUALIZACIÓN SIN PESTAÑEO CON PROTECCIÓN
-                if (tipo === 'extras') {
-                    const self = this;  
-                    setTimeout(() => {
-                        // Solo actualizar totales del header
-                        if (window.gastosManager) {
-                            window.gastosManager.updateHeaderTotals();
-                        }
-                        
-                        // Agregar nuevo elemento visual al DOM sin recargar
-                        const gastosExtras = self.storage.getGastosExtras();
-                        const newItem = gastosExtras.items[gastosExtras.items.length - 1]; // Último agregado
-                        
-                        if (newItem && !document.querySelector(`[data-id="${newItem.id}"]`)) {
-                            // Solo agregar si NO existe ya en el DOM
-                            self.addNewItemToDOM(newItem);
-                            self.updateDisplays(); // Solo actualizar números de resumen
-                        }
-                        
-                        console.log('✅ Gasto extra agregado sin pestañeo');
-                        
-                    }, 100);
+                if (originalSave) {
+                    originalSave.call(window.gastosManager, data, tipo);
                 }
                 
-                // Restaurar método original INMEDIATAMENTE después de usar
-                window.gastosManager.saveGastoFromModal = originalMethod;
+                // Si es un gasto extra, actualizar la vista
+                if (tipo === 'extras') {
+                    setTimeout(() => {
+                        console.log('✅ Actualizando vista de gastos extras...');
+                        
+                        // Usar la actualización simplificada
+                        self.actualizarVistaCompleta();
+                        
+                        // Restaurar el método original
+                        window.gastosManager.saveGastoFromModal = originalSave;
+                    }, 100);
+                }
             };
-
-            // Mostrar modal
+            
+            // Ahora sí abrir el modal
             window.gastosManager.showAddGastoModal('extras');
+            
         } else {
             console.log('🚀 Modal agregar gasto - Se conectará con sistema existente');
             alert('Función conectar con modal existente');
         }
-    }
-
-    /**
-     * 🆕 AGREGAR NUEVO ELEMENTO AL DOM SIN PESTAÑEO - CORREGIDO
-     */
-    addNewItemToDOM(newItem) {
-        console.log('🔍 DEBUG: addNewItemToDOM llamado con:', newItem);
-        
-        // 🛡️ GUARD ANTI-DUPLICACIÓN
-        const existingElement = document.querySelector(`[data-id="${newItem.id}"]`);
-        if (existingElement) {
-            console.log('🚫 DUPLICACIÓN EVITADA: Elemento ya existe en DOM:', newItem.id);
-            return;
-        }
-        
-        const expensesList = document.querySelector('.extras-expenses-list') || 
-                            document.querySelector('.expenses-list') ||
-                            document.querySelector('[class*="expenses"]');
-        
-        console.log('🔍 DEBUG: Contenedor encontrado:', expensesList);
-        
-        if (!expensesList) {
-            console.error('❌ No se encontró contenedor para la lista');
-            return;
-        }
-        
-        // Buscar un elemento existente para copiar su estructura EXACTA
-        const existingItem = expensesList.querySelector('.extras-expense-item');
-
-        if (existingItem) {
-            // ✅ CASO 1: HAY ELEMENTOS EXISTENTES - CLONAR
-            console.log('✅ Elemento existente encontrado, clonando estructura...');
-
-            const clonedElement = existingItem.cloneNode(true);
-            clonedElement.setAttribute('data-id', newItem.id);
-
-            // Actualizar contenido manteniendo la estructura exacta
-            const checkbox = clonedElement.querySelector('input[type="checkbox"]');
-            const nameElement = clonedElement.querySelector('.extras-expense-name');
-            const amountElement = clonedElement.querySelector('.extras-expense-amount');
-
-            if (checkbox) {
-                checkbox.checked = newItem.pagado || false;
-                checkbox.setAttribute('onchange', `gastosExtrasMejorados.toggleGastoPagado('${newItem.id}')`);
-                checkbox.id = `extras-checkbox-${newItem.id}`;
-            }
-            if (nameElement) {
-                nameElement.textContent = newItem.categoria;
-            }
-            if (amountElement) {
-                amountElement.textContent = `${this.formatNumber(newItem.monto)}`;
-            }
-
-            // Insertar el elemento clonado
-            expensesList.appendChild(clonedElement);
-            
-        } else {
-            // ✅ CASO 2: LISTA VACÍA - CREAR DESDE CERO
-            console.log('🔍 Lista vacía, creando elemento desde cero...');
-            
-            const newElementHTML = `
-                <div class="extras-expense-item" data-id="${newItem.id}">
-                    <div class="extras-expense-checkbox">
-                        <input type="checkbox" 
-                               id="extras-checkbox-${newItem.id}" 
-                               ${newItem.pagado ? 'checked' : ''}
-                               onchange="gastosExtrasMejorados.toggleGastoPagado('${newItem.id}')">
-                    </div>
-                    <div class="extras-expense-details">
-                        <span class="extras-expense-name">${newItem.categoria}</span>
-                        <span class="extras-expense-amount">${this.formatNumber(newItem.monto)}</span>
-                    </div>
-                </div>
-            `;
-            
-            expensesList.insertAdjacentHTML('beforeend', newElementHTML);
-        }
-
-        // Encontrar el nuevo elemento para efectos visuales
-        const newElement = expensesList.querySelector(`[data-id="${newItem.id}"]`);
-        if (newElement) {
-            newElement.style.transition = 'all 0.3s ease';
-            newElement.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
-            newElement.style.transform = 'scale(0.95)';
-            
-            setTimeout(() => {
-                newElement.style.backgroundColor = '';
-                newElement.style.transform = 'scale(1)';
-            }, 500);
-        }
-        
-        // Eliminar mensaje de lista vacía - BÚSQUEDA AMPLIADA
-        const emptyMessage = expensesList.querySelector('.empty-message, .no-expenses-message') ||
-                            expensesList.querySelector('p, div, span') ||
-                            document.querySelector('.extras-expenses-list p');
-        
-        if (emptyMessage && emptyMessage.textContent.includes('No hay gastos')) {
-            emptyMessage.remove();
-            console.log('🗑️ Mensaje de lista vacía eliminado');
-        }
-        
-        console.log('✅ Elemento agregado exitosamente al DOM sin errores');
     }
 
     /**
@@ -1175,7 +897,12 @@ calculateTotalGastos(items) {
         this.loadGastosExtrasData();
         this.updateDisplays();
         this.notifyDynamicCards();
-    }
+
+        // 🆕 AGREGAR AQUÍ:
+        if (window.dynamicCardsManager) {
+            window.dynamicCardsManager.notifyUpdate('extra-expenses');
+        }
+        }
 
     /**
      * Formatear números
@@ -1206,6 +933,4 @@ if (document.readyState === 'loading') {
     initializeGastosExtrasMejorados();
 }
 
-console.log('⚡ Gastos-extras-mejorados.js v2.3.0 COMPLETAMENTE ARREGLADO');
-console.log('✅ Todas las funciones implementadas correctamente');
-console.log('✅ Actualización automática en menú contextual funcionando');
+console.log('📦 gastos-extras-mejorados.js v2.3.0 cargado - ACTUALIZACIÓN CORREGIDA');

@@ -693,6 +693,11 @@ this.updateSectionTotalsVisual(type);
                 if (window.gastosManager) {
                     window.gastosManager.updateHeaderTotals();
                 }
+
+                // 🆕 AGREGAR: Actualizar la sección de gastos extras
+               if (window.gastosExtrasMejorados) {
+                   window.gastosExtrasMejorados.refresh();
+               }
                 
               // 🆕 ACTUALIZAR TOTALES ESPECÍFICOS POR SECCIÓN
 this.updateSectionTotalsVisual(type);

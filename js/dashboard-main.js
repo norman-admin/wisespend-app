@@ -621,6 +621,13 @@ if (!this.isUpdatingDashboard) {
      * Manejar cambios en datos
      */
     handleDataChange() {
+    // NUEVO: Si estamos en gastos extras, dejar que se maneje solo
+    const currentSection = document.querySelector('.gastos-extras-layout');
+    if (currentSection) {
+        console.log('📊 Gastos extras activo, delegando actualización...');
+        return;
+    }
+    
     if (this.isUpdatingDashboard) {
         return; // Evitar bucle si ya estamos actualizando
     }

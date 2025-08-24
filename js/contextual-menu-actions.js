@@ -342,6 +342,11 @@ this.updateSectionTotalsVisual(type);
             
 // Mostrar mensaje de éxito
 this.contextualManager.showMessage('Elemento actualizado correctamente', 'success');
+
+// 🆕 AGREGAR: Actualizar la sección de gastos extras
+if (window.gastosExtrasMejorados) {
+    window.gastosExtrasMejorados.refresh();
+}
             
             console.log('✅ Elemento editado sin pestañeo');
         } else {
@@ -578,6 +583,11 @@ this.updateSectionTotalsVisual(type);
 } else {
     this.contextualManager.showMessage('Error al duplicar elemento', 'error');
 }
+
+// 🆕 AGREGAR: Actualizar la sección de gastos extras
+if (window.gastosExtrasMejorados) {
+    window.gastosExtrasMejorados.refresh();
+}
     }
 
     /**
@@ -649,6 +659,13 @@ this.updateSectionTotalsVisual(type);
 } else {
     this.contextualManager.showMessage('Error al mover elemento', 'error');
 }
+
+// 🆕 AGREGAR: Actualizar la sección de gastos extras
+if (window.gastosExtrasMejorados) {
+    window.gastosExtrasMejorados.refresh();
+}
+
+this.contextualManager.showMessage(`Elemento movido ${direction === 'up' ? 'arriba' : 'abajo'}`, 'success');
     }
 
     /**

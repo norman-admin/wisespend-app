@@ -893,16 +893,16 @@ class GastosExtrasMejorados {
      * Refrescar datos cuando se actualicen externamente
      */
     refresh() {
-        this.updateIngresosTotales();
-        this.loadGastosExtrasData();
-        this.updateDisplays();
-        this.notifyDynamicCards();
+    this.updateIngresosTotales();
+    this.loadGastosExtrasData();
+    this.actualizarVistaCompleta(); // 🆕 AGREGAR ESTA LÍNEA
+    this.notifyDynamicCards();
 
-        // 🆕 AGREGAR AQUÍ:
-        if (window.dynamicCardsManager) {
-            window.dynamicCardsManager.notifyUpdate('extra-expenses');
-        }
-        }
+    // 🆕 AGREGAR AQUÍ:
+    if (window.dynamicCardsManager) {
+        window.dynamicCardsManager.notifyUpdate('extra-expenses');
+    }
+}
 
     /**
      * Formatear números

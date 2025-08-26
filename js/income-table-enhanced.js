@@ -457,17 +457,23 @@ setTimeout(() => {
     /**
      * 🎯 ACTUALIZAR SOLO LOS TOTALES SIN RECARGAR TABLA
      */
-    updateTableTotals(newTotal) {
-        const totalElement = document.querySelector('.income-total-value');
-        if (totalElement) {
-            totalElement.textContent = this.gastosManager.formatNumber(newTotal);
-        }
-        
-        const totalRowElement = document.querySelector('#income-total-row .amount');
-        if (totalRowElement) {
-            totalRowElement.textContent = this.gastosManager.formatNumber(newTotal);
-        }
+updateTableTotals(newTotal) {
+    const totalElement = document.querySelector('.income-total-value');
+    if (totalElement) {
+        totalElement.textContent = this.gastosManager.formatNumber(newTotal);
     }
+    
+    const totalRowElement = document.querySelector('#income-total-row .amount');
+    if (totalRowElement) {
+        totalRowElement.textContent = this.gastosManager.formatNumber(newTotal);
+    }
+
+    // 🆕 NOTIFICAR A GASTOS EXTRAS SOBRE CAMBIO EN INGRESOS
+    if (window.gastosExtrasMejorados) {
+        window.gastosExtrasMejorados.updateIngresosTotales();
+        window.gastosExtrasMejorados.updateDisplays();
+    }
+}
 
     /**
      * 🎯 RECALCULAR PORCENTAJES SIN RECARGAR

@@ -700,6 +700,10 @@ class GastosExtrasMejorados {
         gastosExtras.presupuestoParaTarjetas = this.presupuestoActual;
         this.storage.setGastosExtras(gastosExtras);
         this.notifyDynamicCards();
+        // 🆕 ACTUALIZAR TOTALES DEL DASHBOARD
+if (window.gastosManager) {
+    window.gastosManager.updateHeaderTotals();
+}
         
         console.log(`📊 Actualizado desde porcentaje: ${percentage}% = $${this.formatNumber(this.presupuestoActual)}`);
     }
@@ -726,6 +730,11 @@ class GastosExtrasMejorados {
         gastosExtras.total = this.presupuestoActual;
         this.storage.setGastosExtras(gastosExtras);
         this.notifyDynamicCards();
+        
+        // 🆕 ACTUALIZAR TOTALES DEL DASHBOARD
+if (window.gastosManager) {
+    window.gastosManager.updateHeaderTotals();
+}
         
         console.log(`💰 Actualizado desde monto: $${this.formatNumber(monto)} = ${this.porcentajeActual}%`);
     }

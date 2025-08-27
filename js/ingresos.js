@@ -620,6 +620,13 @@ this.modalSystem.showMessage(
         if (window.gastosManager) {
             window.gastosManager.updateHeaderTotals();
         }
+
+        // 🆕 ACTUALIZAR GASTOS EXTRAS CUANDO CAMBIEN LOS INGRESOS
+if (window.gastosExtrasMejorados) {
+    window.gastosExtrasMejorados.updateIngresosTotales();
+    window.gastosExtrasMejorados.updateDisplays();
+}
+
         return; // ✅ SALIR AQUÍ EVITA EL REFRESCO
     }
     
@@ -629,11 +636,19 @@ this.modalSystem.showMessage(
         const tableInstance = new window.IncomeTableEnhanced(window.gastosManager);
         tableInstance.renderIncomeSection(window.gastosManager.getMainContainer());
     }
-    
+
     // Actualizar totales
-    if (window.gastosManager?.updateHeaderTotals) {
-        setTimeout(() => window.gastosManager.updateHeaderTotals(), 100);
-    }
+if (window.gastosManager?.updateHeaderTotals) {
+    setTimeout(() => window.gastosManager.updateHeaderTotals(), 100);
+}
+// 🆕 ACTUALIZAR GASTOS EXTRAS CUANDO CAMBIEN LOS INGRESOS (FALLBACK)
+if (window.gastosExtrasMejorados) {
+    setTimeout(() => {
+        window.gastosExtrasMejorados.updateIngresosTotales();
+        window.gastosExtrasMejorados.updateDisplays();
+    }, 100);
+}
+
 }
 
     updateIncomeBreakdown(container) {

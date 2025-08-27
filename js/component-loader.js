@@ -488,25 +488,23 @@ showVariosError(container, message) {
     `;
 }
 
-    loadReportsSection(container) {
-        console.log('📊 Cargando reportes con sistema modular...');
-        
-        // Usar el nuevo sistema modular
-        if (window.reportesManager && window.reportesManager.showReportView) {
-            window.reportesManager.showReportView('dynamic-content');
-            console.log('✅ Reportes modulares cargados');
-        } else {
-            console.error('❌ ReportesManager modular no disponible');
-            container.innerHTML = `
-                <div style="padding: 40px; text-align: center;">
-                    <h3>⚠️ Sistema de reportes en mantenimiento</h3>
-                    <p>El nuevo sistema modular se está cargando...</p>
-                </div>
-            `;
-        }
-        
-        this.notifySectionReady('reports');
+    loadReportsSection() {
+    console.log('📊 Cargando reportes con sistema modular...');
+    
+    if (window.reportesHTML) {
+        const container = document.getElementById('dynamic-content');
+        window.reportesHTML.renderFullReport(container);
+        console.log('✅ Reportes modulares cargados');
+    } else {
+        console.log('❌ ReportesHTML no disponible');
+        document.getElementById('dynamic-content').innerHTML = `
+            <div class="error-state">
+                <h2>Sistema de reportes en carga...</h2>
+                <p>El sistema modular se está inicializando...</p>
+            </div>
+        `;
     }
+}
   
     loadPersonalSection(container) {
         console.log('👤 Cargando espacio personal...');

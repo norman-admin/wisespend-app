@@ -37,7 +37,7 @@ class ReportesCharts {
 
             // Cargar Chart.js desde CDN
             const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js';
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
             script.async = true;
             
             script.onload = () => {

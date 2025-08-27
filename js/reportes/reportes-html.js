@@ -557,24 +557,32 @@ generateTrendsAnalysis() {
         <div class="trends-analysis">
             <h2>📈 Análisis de Tendencias</h2>
             <div class="charts-section">
-                <div class="charts-grid">
+                <div class="charts-grid" style="grid-template-columns: 1fr; gap: 30px;">
+                    <div class="chart-card">
+                        <div class="chart-title">📈 Tendencia de Ingresos vs Gastos</div>
+                        <div class="chart-container" style="height: 350px;">
+                            <canvas id="trend-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="charts-grid" style="margin-top: 30px;">
                     <div class="chart-card">
                         <div class="chart-title">📊 Distribución de Gastos</div>
                         <div class="chart-container">
-                            <canvas id="expenses-chart" width="400" height="300"></canvas>
+                            <canvas id="expenses-chart"></canvas>
                         </div>
                     </div>
                     <div class="chart-card">
                         <div class="chart-title">💰 Fuentes de Ingresos</div>
                         <div class="chart-container">
-                            <canvas id="income-chart" width="400" height="300"></canvas>
+                            <canvas id="income-chart"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="trends-insights">
                 <h3>🔍 Análisis de Tendencias</h3>
-                <p>Los gráficos muestran la distribución actual de tus gastos por categoría y las fuentes de ingresos. Esta visualización te ayuda a identificar patrones y oportunidades de optimización.</p>
+                <p>Los gráficos muestran la evolución de tus finanzas a lo largo del tiempo, así como la distribución actual de tus gastos e ingresos. Esta visualización te ayuda a identificar patrones y oportunidades de optimización.</p>
             </div>
         </div>
     `;

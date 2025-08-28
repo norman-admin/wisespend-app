@@ -207,23 +207,13 @@ generateSummarySection() {
                     <div class="summary-metric-subtitle">Disponible</div>
                 </div>
 
-                <!-- % Ahorro -->
-                <div class="summary-metric-card ahorro">
-                    <div class="summary-metric-header">
-                        <div class="summary-metric-label">% Ahorro</div>
-                        <div class="summary-metric-icon">🎯</div>
-                    </div>
-                    <div class="summary-metric-value purple">${data.porcentajeAhorro || '93.6'}%</div>
-                    <div class="summary-metric-subtitle">Muy eficiente</div>
-                </div>
-
                 <!-- Presupuesto Extra -->
                 <div class="summary-metric-card presupuesto">
                     <div class="summary-metric-header">
                         <div class="summary-metric-label">Presupuesto Extra</div>
                         <div class="summary-metric-icon">💳</div>
                     </div>
-                    <div class="summary-metric-value warning">${this.formatCurrency(data.presupuestoExtra || 10000)}</div>
+                    <div class="summary-metric-value warning">${this.formatCurrency(this.getPresupuestoExtrasReal())}</div>
                     <div class="summary-metric-subtitle">Disponible</div>
                 </div>
 
@@ -301,78 +291,19 @@ generateSummarySection() {
         `;
     }
 
-    /**
-     * 📋 GENERAR SECCIÓN DE DESGLOSE
-     */
-    generateBreakdownSection() {
-        if (!this.currentData?.monthly) return '';
+  /**
+ * 💸 GENERAR SECCIÓN DE DESGLOSE
+ */
+generateBreakdownSection() {
+    return ''; // Retorna vacío para eliminar la sección
+}
 
-        const data = this.currentData.monthly;
-        
-        const breakdownData = [
-            { concepto: 'Gastos Fijos', monto: data.totalGastosFijos, tipo: 'normal' },
-            { concepto: 'Gastos Variables', monto: data.totalGastosVariables, tipo: 'normal' },
-            { concepto: 'Gastos Extras', monto: data.totalGastosExtras, tipo: 'presupuesto-extra' },
-            { concepto: 'TOTAL GASTOS', monto: data.totalGastos, tipo: 'total' }
-        ];
-
-        const tableRows = breakdownData.map(item => {
-            const rowClass = item.tipo === 'total' ? 'row-total' : 
-                           item.tipo === 'presupuesto-extra' ? 'row-presupuesto-extra' : '';
-            
-            return `
-                <tr class="${rowClass}">
-                    <td class="breakdown-concepto">${item.concepto}</td>
-                    <td class="breakdown-monto">${this.formatCurrency(item.monto)}</td>
-                </tr>
-            `;
-        }).join('');
-
-        return `
-            <div class="summary-breakdown">
-                <h3>💸 Desglose de Gastos</h3>
-                <div class="breakdown-grid">
-                    <table class="breakdown-table">
-                        <thead>
-                            <tr>
-                                <th>Concepto</th>
-                                <th style="text-align: right;">Monto</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${tableRows}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        `;
-    }
-
-    /**
-     * 💡 GENERAR SECCIÓN DE INSIGHTS
-     */
-    generateInsightsSection() {
-        if (!this.currentData?.monthly) return '';
-
-        const data = this.currentData.monthly;
-        const insights = this.generateInsights(data);
-
-        const insightsHTML = insights.map(insight => `
-            <div class="insight-item ${insight.type}">
-                <strong>${insight.title}</strong>
-                <span>${insight.value}</span>
-            </div>
-        `).join('');
-
-        return `
-            <div class="quick-insights">
-                <h3>💡 Insights Rápidos</h3>
-                <div class="insights-grid">
-                    ${insightsHTML}
-                </div>
-            </div>
-        `;
-    }
+   /**
+ * 💡 GENERAR SECCIÓN DE INSIGHTS
+ */
+generateInsightsSection() {
+    return ''; // Retorna vacío para eliminar la sección
+}
 
     /**
      * 🔍 GENERAR INSIGHTS AUTOMÁTICOS
@@ -428,7 +359,7 @@ generateSummarySection() {
         
         switch (reportType) {
             case 'resumen':
-                html = this.generateSummarySection() + this.generateBreakdownSection() + this.generateInsightsSection();
+                html = this.generateSummarySection();
                 break;
             case 'ingresos':
                 html = this.generateIncomeAnalysis();
@@ -871,7 +802,7 @@ generateEfficiencyInsights(data) {
     return `
         <div class="summary-insight-item efficiency">
             <div class="summary-insight-name">Tasa de Ahorro</div>
-            <div class="summary-insight-value positive">${tasaAhorro}%</div>
+            <div class="summary-insight-value positive">${parseFloat(tasaAhorro).toFixed(1)}%</div>
         </div>
         <div class="summary-insight-item efficiency">
             <div class="summary-insight-name">Gastos vs Ingresos</div>
@@ -882,6 +813,14 @@ generateEfficiencyInsights(data) {
             <div class="summary-insight-value positive">+${this.formatCurrency(Math.abs(data.balance))}</div>
         </div>
     `;
+}
+
+// 💳 OBTENER PRESUPUESTO EXTRAS REAL
+getPresupuestoExtrasReal() {
+    if (!window.storageManager) return 10000;
+    
+    const gastosExtras = window.storageManager.getGastosExtras();
+    return gastosExtras.presupuesto || gastosExtras.total || 10000;
 }
 
     // Métodos de plantillas (sin implementación completa para mantener el archivo manejable)

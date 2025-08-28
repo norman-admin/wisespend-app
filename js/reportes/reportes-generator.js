@@ -52,9 +52,10 @@ class ReportesGenerator {
             const totalIngresos = ingresos.total || 0;
             const totalGastosFijos = gastosFijos.total || 0;
             const totalGastosVariables = gastosVariables.total || 0;
-            const totalGastosExtras = this.calculateGastosExtrasRealizados(gastosExtras);
-            
-            const totalGastos = totalGastosFijos + totalGastosVariables + totalGastosExtras;
+            // CAMBIO: Usar presupuesto asignado, no gastos realizados
+            const totalGastosExtras = gastosExtras.presupuesto || 0;
+
+const totalGastos = totalGastosFijos + totalGastosVariables + totalGastosExtras;
             const balance = totalIngresos - totalGastos;
 
             // Encontrar mayor ingreso

@@ -259,8 +259,9 @@ class DashboardOrchestrator {
                 `${amount.toLocaleString('es-CL')}`;
         };
 
-        // Calcular valores
-        const totalGastos = data.gastosFijos.total + data.gastosVariables.total + data.gastosExtras.total;
+        // Calcular valores - CAMBIO: usar presupuesto en lugar de total
+        const totalGastosExtras = data.gastosExtras.presupuesto || 0;
+        const totalGastos = data.gastosFijos.total + data.gastosVariables.total + totalGastosExtras;
         const balance = data.ingresos.total - totalGastos;
         
         // Calcular pagados y pendientes

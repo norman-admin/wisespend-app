@@ -365,7 +365,7 @@ generateInsightsSection() {
                 html = this.generateIncomeAnalysis();
                 break;
             case 'gastos':
-                html = this.generateExpenseAnalysis();
+            html = this.generateExpenseAnalysisSimple(); // Cambiar a la versión simple
                 break;
             case 'balance':
                 html = this.generateBalanceAnalysis();
@@ -496,6 +496,103 @@ generateIncomeAnalysis() {
             </div>
         `;
     }
+
+/**
+ * 💸 GENERAR ANÁLISIS DE GASTOS CON BARRAS HORIZONTALES
+ */
+generateExpenseAnalysisSimple() {
+    if (!this.currentData?.categories) return '<div class="error-state">Datos no disponibles</div>';
+
+    const categories = this.currentData.categories;
+    const resumenPorTipo = categories.resumenPorTipo || {};
+    
+    // Calcular totales y porcentajes
+    const totalGastos = Object.values(resumenPorTipo).reduce((acc, tipo) => acc + tipo.total, 0);
+    
+    // Crear array ordenado por monto
+    const tiposOrdenados = Object.entries(resumenPorTipo)
+        .map(([tipo, data]) => ({
+            tipo,
+            total: data.total,
+            count: data.count,
+            porcentaje: ((data.total / totalGastos) * 100).toFixed(1),
+            color: tipo === 'Fijos' ? '#6366f1' : tipo === 'Variables' ? '#10b981' : '#ec4899'
+        }))
+        .sort((a, b) => b.total - a.total);
+
+    return `
+        <div class="expense-analysis-simple">
+            <div class="analysis-header">
+                <h1>💸 Análisis de Gastos</h1>
+            </div>
+
+            <div class="analysis-content-grid">
+                <!-- Gráfico de Barras -->
+                <div class="analysis-chart-card">
+                    <h2 class="analysis-chart-title">Distribución de Gastos</h2>
+                    
+                    <div class="chart-summary">
+                        <div class="total-display">
+                            <span class="total-label">Total Gastos</span>
+                            <span class="total-amount">${this.formatCurrency(totalGastos)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bars-chart">
+                        ${tiposOrdenados.map((item, index) => `
+                            <div class="bar-item" style="animation-delay: ${index * 0.1}s">
+                                <div class="bar-header">
+                                    <div class="bar-info">
+                                        <span class="bar-label">${item.tipo}</span>
+                                        <span class="bar-count">${item.count} items</span>
+                                    </div>
+                                    <span class="bar-value">${this.formatCurrency(item.total)}</span>
+                                </div>
+                                <div class="bar-container">
+                                    <div class="bar-fill" 
+                                         style="width: ${item.porcentaje}%; background: ${item.color};"
+                                         data-percentage="${item.porcentaje}">
+                                        <span class="bar-percentage">${item.porcentaje}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="chart-footer">
+                        <div class="footer-stats">
+                            ${tiposOrdenados.map(item => `
+                                <div class="stat-item">
+                                    <div class="stat-color" style="background: ${item.color}"></div>
+                                    <div class="stat-info">
+                                        <span class="stat-type">${item.tipo}</span>
+                                        <span class="stat-percentage">${item.porcentaje}%</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla Top 5 -->
+                <div class="analysis-table-card">
+                    <h2 class="analysis-table-title">Top 5 Gastos por Monto</h2>
+                    
+                    <div class="expense-table-simple">
+                        ${categories.categoriasMasCostosas.slice(0, 5).map((cat, index) => `
+                            <div class="expense-row-simple" style="animation-delay: ${index * 0.1}s">
+                                <span class="row-number">${index + 1}</span>
+                                <span class="expense-name">${cat.nombre}</span>
+                                <span class="expense-badge-simple badge-${cat.tipo.toLowerCase()}">${cat.tipo}</span>
+                                <span class="expense-amount">${this.formatCurrency(cat.monto)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
 
     /**
      * ⚖️ GENERAR ANÁLISIS DE BALANCE

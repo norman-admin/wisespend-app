@@ -365,7 +365,7 @@ generateInsightsSection() {
                 html = this.generateIncomeAnalysis();
                 break;
             case 'gastos':
-                html = this.generateExpenseAnalysis();
+            html = this.generateExpenseAnalysisSimple(); // Cambiar a la versión simple
                 break;
             case 'balance':
                 html = this.generateBalanceAnalysis();
@@ -496,6 +496,219 @@ generateIncomeAnalysis() {
             </div>
         `;
     }
+
+/**
+ * 💸 GENERAR ANÁLISIS DE GASTOS SIMPLIFICADO CON INTERACTIVIDAD
+ */
+generateExpenseAnalysisSimple() {
+    if (!this.currentData?.categories) return '<div class="error-state">Datos no disponibles</div>';
+
+    const categories = this.currentData.categories;
+    const resumenPorTipo = categories.resumenPorTipo || {};
+    
+    // Calcular totales y porcentajes
+    const totalGastos = Object.values(resumenPorTipo).reduce((acc, tipo) => acc + tipo.total, 0);
+    const porcentajes = {
+        Fijos: resumenPorTipo.Fijos ? ((resumenPorTipo.Fijos.total / totalGastos) * 100).toFixed(1) : 0,
+        Variables: resumenPorTipo.Variables ? ((resumenPorTipo.Variables.total / totalGastos) * 100).toFixed(1) : 0,
+        Extras: resumenPorTipo.Extras ? ((resumenPorTipo.Extras.total / totalGastos) * 100).toFixed(1) : 0
+    };
+
+    // Calcular posiciones para los segmentos
+    const dashArrayFijos = (porcentajes.Fijos * 5.654).toFixed(2);
+    const dashArrayVariables = (porcentajes.Variables * 5.654).toFixed(2);
+    const dashArrayExtras = (porcentajes.Extras * 5.654).toFixed(2);
+    const offsetVariables = -dashArrayFijos;
+    const offsetExtras = -(parseFloat(dashArrayFijos) + parseFloat(dashArrayVariables));
+
+    return `
+        <div class="expense-analysis-simple">
+            <div class="analysis-header">
+                <h1>💸 Análisis de Gastos</h1>
+            </div>
+
+            <div class="analysis-content-grid">
+                <!-- Gráfico Donut -->
+                <div class="analysis-chart-card">
+                    <h2 class="analysis-chart-title">Distribución de Gastos</h2>
+                    
+                    <div class="analysis-chart-container">
+                        <div class="donut-wrapper">
+                            <svg width="280" height="280" class="donut-svg">
+                                <!-- Círculo base -->
+                                <circle cx="140" cy="140" r="90" fill="none" stroke="#f3f4f6" stroke-width="36"/>
+                                
+                                <!-- Gastos Fijos -->
+                                <circle class="segment-fijos" 
+                                        cx="140" cy="140" r="90" fill="none" 
+                                        stroke="#6366f1" 
+                                        stroke-width="36"
+                                        stroke-dasharray="${dashArrayFijos} 565.4"
+                                        stroke-dashoffset="0"
+                                        transform="rotate(-90 140 140)"
+                                        data-tipo="Fijos"
+                                        data-monto="${resumenPorTipo.Fijos?.total || 0}"
+                                        data-porcentaje="${porcentajes.Fijos}"/>
+                                
+                                <!-- Gastos Variables -->
+                                <circle class="segment-variables" 
+                                        cx="140" cy="140" r="90" fill="none" 
+                                        stroke="#10b981" 
+                                        stroke-width="36"
+                                        stroke-dasharray="${dashArrayVariables} 565.4"
+                                        stroke-dashoffset="${offsetVariables}"
+                                        transform="rotate(-90 140 140)"
+                                        data-tipo="Variables"
+                                        data-monto="${resumenPorTipo.Variables?.total || 0}"
+                                        data-porcentaje="${porcentajes.Variables}"/>
+                                
+                                <!-- Gastos Extras -->
+                                <circle class="segment-extras" 
+                                        cx="140" cy="140" r="90" fill="none" 
+                                        stroke="#ec4899" 
+                                        stroke-width="36"
+                                        stroke-dasharray="${dashArrayExtras} 565.4"
+                                        stroke-dashoffset="${offsetExtras}"
+                                        transform="rotate(-90 140 140)"
+                                        data-tipo="Extras"
+                                        data-monto="${resumenPorTipo.Extras?.total || 0}"
+                                        data-porcentaje="${porcentajes.Extras}"/>
+                            </svg>
+                            
+                            <div class="chart-center">
+                                <div class="chart-total" id="chart-total-value">${this.formatCurrency(totalGastos)}</div>
+                                <div class="chart-label" id="chart-label">TOTAL</div>
+                            </div>
+                        </div>
+
+                        <div class="chart-legend">
+                            <div class="legend-item" data-tipo="Fijos">
+                                <div class="legend-color" style="background: #6366f1;"></div>
+                                <div>
+                                    <div class="legend-label">Fijos (${porcentajes.Fijos}%)</div>
+                                    <div class="legend-value">${this.formatCurrency(resumenPorTipo.Fijos?.total || 0)}</div>
+                                </div>
+                            </div>
+                            <div class="legend-item" data-tipo="Variables">
+                                <div class="legend-color" style="background: #10b981;"></div>
+                                <div>
+                                    <div class="legend-label">Variables (${porcentajes.Variables}%)</div>
+                                    <div class="legend-value">${this.formatCurrency(resumenPorTipo.Variables?.total || 0)}</div>
+                                </div>
+                            </div>
+                            <div class="legend-item" data-tipo="Extras">
+                                <div class="legend-color" style="background: #ec4899;"></div>
+                                <div>
+                                    <div class="legend-label">Extras (${porcentajes.Extras}%)</div>
+                                    <div class="legend-value">${this.formatCurrency(resumenPorTipo.Extras?.total || 0)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla Top 5 -->
+                <div class="analysis-table-card">
+                    <h2 class="analysis-table-title">Top 5 Gastos por Monto</h2>
+                    
+                    <div class="expense-table-simple">
+                        ${categories.categoriasMasCostosas.slice(0, 5).map((cat, index) => `
+                            <div class="expense-row-simple">
+                                <span class="row-number">${index + 1}</span>
+                                <span class="expense-name">${cat.nombre}</span>
+                                <span class="expense-badge-simple badge-${cat.tipo.toLowerCase()}">${cat.tipo}</span>
+                                <span class="expense-amount">${this.formatCurrency(cat.monto)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Agregar interactividad al gráfico
+            setTimeout(() => {
+                const segments = document.querySelectorAll('.donut-svg circle[class^="segment-"]');
+                const totalElement = document.getElementById('chart-total-value');
+                const labelElement = document.getElementById('chart-label');
+                const originalTotal = totalElement.textContent;
+                const legendItems = document.querySelectorAll('.legend-item');
+                
+                segments.forEach(segment => {
+                    segment.addEventListener('mouseenter', function() {
+                        const tipo = this.dataset.tipo;
+                        const monto = parseInt(this.dataset.monto);
+                        const porcentaje = this.dataset.porcentaje;
+                        
+                        // Actualizar centro del gráfico
+                        totalElement.textContent = new Intl.NumberFormat('es-CL', {
+                            style: 'currency',
+                            currency: 'CLP',
+                            minimumFractionDigits: 0
+                        }).format(monto);
+                        labelElement.textContent = tipo + ' (' + porcentaje + '%)';
+                        
+                        // Resaltar segmento
+                        segments.forEach(s => {
+                            if (s !== this) {
+                                s.style.opacity = '0.3';
+                                s.style.transition = 'opacity 0.3s';
+                            }
+                        });
+                        this.style.strokeWidth = '42';
+                        this.style.transition = 'stroke-width 0.3s';
+                        
+                        // Resaltar leyenda
+                        legendItems.forEach(item => {
+                            if (item.dataset.tipo === tipo) {
+                                item.style.transform = 'scale(1.05)';
+                                item.style.background = '#f0f9ff';
+                            }
+                        });
+                    });
+                    
+                    segment.addEventListener('mouseleave', function() {
+                        // Restaurar centro
+                        totalElement.textContent = originalTotal;
+                        labelElement.textContent = 'TOTAL';
+                        
+                        // Restaurar segmentos
+                        segments.forEach(s => {
+                            s.style.opacity = '1';
+                            s.style.strokeWidth = '36';
+                        });
+                        
+                        // Restaurar leyenda
+                        legendItems.forEach(item => {
+                            item.style.transform = 'scale(1)';
+                            item.style.background = 'transparent';
+                        });
+                    });
+                });
+                
+                // Interactividad en leyenda
+                legendItems.forEach(item => {
+                    item.style.cursor = 'pointer';
+                    item.addEventListener('mouseenter', function() {
+                        const tipo = this.dataset.tipo;
+                        const segment = document.querySelector('.segment-' + tipo.toLowerCase());
+                        if (segment) {
+                            segment.dispatchEvent(new Event('mouseenter'));
+                        }
+                    });
+                    
+                    item.addEventListener('mouseleave', function() {
+                        const tipo = this.dataset.tipo;
+                        const segment = document.querySelector('.segment-' + tipo.toLowerCase());
+                        if (segment) {
+                            segment.dispatchEvent(new Event('mouseleave'));
+                        }
+                    });
+                });
+            }, 100);
+        </script>
+    `;
+}
 
     /**
      * ⚖️ GENERAR ANÁLISIS DE BALANCE

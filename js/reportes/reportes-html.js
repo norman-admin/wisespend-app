@@ -380,8 +380,25 @@ generateInsightsSection() {
                 html = '<div class="empty-state">Reporte no disponible</div>';
         }
 
-        container.innerHTML = html;
+// PATRÓN EXITOSO: Actualizar DOM sin refrescos
+const currentScrollPosition = window.pageYOffset;
+container.innerHTML = html;
+// NO hacer scroll automático
+if (currentScrollPosition > 0) {
+    window.scrollTo(0, currentScrollPosition);
+}
+
+// Restaurar posición de scroll
+window.scrollTo(0, currentScrollPosition);
         console.log(`📊 Reporte ${reportType} renderizado`);
+        // Ejecutar inicialización de tabla sin auto-foco después del renderizado
+if (reportType === 'categorias') {
+    setTimeout(() => {
+        if (typeof initCategoriesTable === 'function') {
+            initCategoriesTable();
+        }
+    }, 100);
+}
     }
 
 /**
@@ -597,62 +614,99 @@ generateExpenseAnalysisSimple() {
     /**
      * ⚖️ GENERAR ANÁLISIS DE BALANCE
      */
-    generateBalanceAnalysis() {
-        if (!this.currentData?.balance) return '<div class="error-state">Datos no disponibles</div>';
+generateBalanceAnalysis() {
+    if (!this.currentData?.balance) return '<div class="error-state">Datos no disponibles</div>';
 
-        const balance = this.currentData.balance;
-        
-        return `
-            <div class="balance-analysis">
-                <h2>⚖️ Análisis de Balance Financiero</h2>
-                <div class="analysis-summary">
-                    <div class="summary-card ${balance.balance >= 0 ? 'positive' : 'negative'}">
-                        <div class="summary-label">Balance Actual</div>
-                        <div class="summary-value ${balance.balance >= 0 ? 'positive' : 'negative'}">${this.formatCurrency(balance.balance)}</div>
-                    </div>
-                    <div class="summary-card neutral">
-                        <div class="summary-label">% de Ahorro</div>
-                        <div class="summary-value neutral">${balance.porcentajeAhorro.toFixed(1)}%</div>
-                    </div>
-                </div>
-                
-                <div class="balance-recommendations">
-                    <h3>💡 Recomendaciones</h3>
-                    <div class="recommendations-grid">
-                        ${balance.recomendaciones?.map(rec => `
-                            <div class="recommendation-item">
-                                <span>• ${rec}</span>
-                            </div>
-                        `).join('') || '<div class="recommendation-item">No hay recomendaciones disponibles</div>'}
-                    </div>
+    const balance = this.currentData.balance;
+    
+    return `
+        <div class="balance-dashboard">
+            <!-- Header -->
+            <div class="dashboard-header">
+                <span class="header-icon">⚖️</span>
+                <h2>Análisis de Balance Financiero</h2>
+            </div>
+
+            <!-- Grid Principal de Métricas -->
+            <div class="metrics-grid">
+                <!-- Balance Actual (Tarjeta Principal) -->
+                <div class="balance-main-card">
+                    <div class="balance-label">Balance Actual</div>
+                    <div class="balance-amount">${this.formatCurrency(this.getCurrentBalance())}</div>
+                    <div class="balance-trend">↗️ +5.2% vs mes anterior</div>
                 </div>
 
-                <div class="projections-section">
-                    <h3>🔮 Proyecciones</h3>
-                    ${balance.proyecciones ? `
-                        <div class="projections-grid">
-                            <div class="projection-card">
-                                <h4>Próximo Mes</h4>
-                                <p>Ingresos: ${this.formatCurrency(balance.proyecciones.proximoMes.ingresos)}</p>
-                                <p>Gastos: ${this.formatCurrency(balance.proyecciones.proximoMes.gastos)}</p>
-                                <p>Balance: ${this.formatCurrency(balance.proyecciones.proximoMes.balance)}</p>
-                            </div>
-                            <div class="projection-card">
-                                <h4>Proyección Anual</h4>
-                                <p>Ingresos: ${this.formatCurrency(balance.proyecciones.anual.ingresos)}</p>
-                                <p>Gastos: ${this.formatCurrency(balance.proyecciones.anual.gastos)}</p>
-                                <p>Ahorro: ${this.formatCurrency(balance.proyecciones.anual.ahorro)}</p>
-                            </div>
-                        </div>
-                    ` : '<p>Proyecciones no disponibles</p>'}
+                <!-- Porcentaje de Ahorro -->
+                <div class="savings-card">
+                    <svg class="progress-ring" viewBox="0 0 100 100">
+                        <circle class="progress-ring-circle" cx="50" cy="50" r="40"/>
+                        <circle class="progress-ring-bar" cx="50" cy="50" r="40"/>
+                    </svg>
+                    <div class="savings-percentage">${this.getCurrentSavingsRate()}%</div>
+                    <div class="savings-label">De Ahorro</div>
+                </div>
+
+                <!-- Recomendaciones y Info -->
+                <div class="info-cards">
+                    <div class="section-title">
+                        💡 Recomendaciones
+                    </div>
+                    <div class="recommendations">
+                        <p>${balance.balance >= 0 ? 'Tu balance es excelente. Considera invertir el 20% del excedente en instrumentos de bajo riesgo.' : 'Es necesario revisar tus gastos para equilibrar el balance.'}</p>
+                    </div>
+
+                    <div class="section-title">
+                        🔮 Proyecciones
+                    </div>
                 </div>
             </div>
-        `;
-    }
 
-    /**
-     * 📈 GENERAR ANÁLISIS DE TENDENCIAS
-     */
+            <!-- Grid de Proyecciones -->
+            <div class="projections-grid">
+                <div class="projection-card monthly">
+                    <div class="projection-title">Próximo Mes</div>
+                    <div class="projection-items">
+                        ${balance.proyecciones ? `
+                            <div class="projection-item">
+                                <span class="projection-label">Ingresos:</span>
+                                <span class="projection-value">${this.formatCurrency(balance.proyecciones.proximoMes.ingresos)}</span>
+                            </div>
+                            <div class="projection-item">
+                                <span class="projection-label">Gastos:</span>
+                                <span class="projection-value">${this.formatCurrency(balance.proyecciones.proximoMes.gastos)}</span>
+                            </div>
+                            <div class="projection-item">
+                                <span class="projection-label">Balance:</span>
+                                <span class="projection-value">${this.formatCurrency(balance.proyecciones.proximoMes.balance)}</span>
+                            </div>
+                        ` : '<div class="projection-item">Datos no disponibles</div>'}
+                    </div>
+                </div>
+
+                <div class="projection-card yearly">
+                    <div class="projection-title">Proyección Anual</div>
+                    <div class="projection-items">
+                        ${balance.proyecciones ? `
+                            <div class="projection-item">
+                                <span class="projection-label">Ingresos:</span>
+                                <span class="projection-value">${this.formatCurrency(balance.proyecciones.anual.ingresos)}</span>
+                            </div>
+                            <div class="projection-item">
+                                <span class="projection-label">Gastos:</span>
+                                <span class="projection-value">${this.formatCurrency(balance.proyecciones.anual.gastos)}</span>
+                            </div>
+                            <div class="projection-item">
+                                <span class="projection-label">Ahorro:</span>
+                                <span class="projection-value">${this.formatCurrency(balance.proyecciones.anual.ahorro)}</span>
+                            </div>
+                        ` : '<div class="projection-item">Datos no disponibles</div>'}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 /**
  * 📈 GENERAR ANÁLISIS DE TENDENCIAS
  */
@@ -694,51 +748,127 @@ generateTrendsAnalysis() {
     /**
      * 🏷️ GENERAR ANÁLISIS POR CATEGORÍAS
      */
-    generateCategoriesAnalysis() {
-        if (!this.currentData?.categories) return '<div class="error-state">Datos no disponibles</div>';
+generateCategoriesAnalysis() {
+    if (!this.currentData?.categories) return '<div class="error-state">Datos no disponibles</div>';
 
-        const categories = this.currentData.categories;
-        const resumenPorTipo = categories.resumenPorTipo;
+    const categories = this.currentData.categories;
+    
+    // Calcular totales por tipo
+    const totales = {
+        fijos: { monto: 0, count: 0 },
+        variables: { monto: 0, count: 0 },
+        extras: { monto: 0, count: 0 }
+    };
+    
+    let totalGeneral = 0;
+    
+    categories.categorias.forEach(cat => {
+        const tipo = cat.tipo.toLowerCase();
+        if (totales[tipo]) {
+            totales[tipo].monto += cat.monto;
+            totales[tipo].count++;
+        }
+        totalGeneral += cat.monto;
+    });
 
-        const tipoCards = Object.keys(resumenPorTipo).map(tipo => `
-            <div class="summary-card neutral">
-                <div class="summary-label">${tipo}</div>
-                <div class="summary-value neutral">
-                    ${resumenPorTipo[tipo].count} items<br>
-                    <small>${this.formatCurrency(resumenPorTipo[tipo].total)}</small>
-                </div>
-            </div>
-        `).join('');
-
+    // Generar filas de la tabla
+    const tableRows = categories.categoriasMasCostosas.slice(0, 10).map((cat, index) => {
+        const porcentaje = totalGeneral > 0 ? ((cat.monto / totalGeneral) * 100).toFixed(1) : 0;
+        const icono = this.getCategoryIcon(cat.nombre);
+        
         return `
-            <div class="categories-analysis">
-                <h2>🏷️ Análisis por Categorías</h2>
-                <div class="analysis-summary">
-                    ${tipoCards}
+            <tr data-type="${cat.tipo.toLowerCase()}">
+                <td class="category-rank">#${index + 1}</td>
+                <td class="category-name">
+                    <span class="category-icon">${icono}</span>
+                    <span>${cat.nombre}</span>
+                </td>
+                <td><span class="category-type ${cat.tipo.toLowerCase()}">${cat.tipo}</span></td>
+                <td class="category-amount">${this.formatCurrency(cat.monto)}</td>
+                <td class="category-percentage">${porcentaje}%</td>
+            </tr>
+        `;
+    }).join('');
+
+    return `
+        <div class="categories-table-container">
+            <!-- Header -->
+            <div class="table-header">
+                <div class="header-title">
+                    <span class="header-icon"></span>
+                    <h2>Análisis por Categorías</h2>
                 </div>
                 
-                <div class="top-categories">
-                    <h3>🔝 Top 5 Categorías Más Costosas</h3>
-                    <div class="top-categories-grid">
-                        ${categories.categoriasMasCostosas.slice(0, 5).map((cat, index) => `
-                            <div class="category-rank-item">
-                                <div class="rank-number">#${index + 1}</div>
-                                <div class="category-info">
-                                    <strong>${cat.nombre}</strong>
-                                    <span class="tipo-badge ${cat.tipo.toLowerCase()}">${cat.tipo}</span>
-                                    <div class="category-amount">${this.formatCurrency(cat.monto)}</div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
+                <div class="filter-controls">
+                    <input type="text" class="search-input" placeholder="Buscar categoría..." id="searchInput">
+                    <select class="filter-select" id="typeFilter">
+                        <option value="">Todos los tipos</option>
+                        <option value="fijos">Fijos</option>
+                        <option value="variables">Variables</option>
+                        <option value="extras">Extras</option>
+                    </select>
+                    <button class="clear-filters" onclick="clearAllFilters()">Limpiar filtros</button>
                 </div>
             </div>
-        `;
-    }
 
-    // ===============================
-    // EVENTOS Y INTERACCIONES
-    // ===============================
+            <!-- Resumen Rápido -->
+            <div class="quick-stats">
+                <div class="stat-item total">
+                    <div class="stat-label">Total</div>
+                    <div class="stat-value">${this.formatCurrency(totalGeneral)}</div>
+                    <div class="stat-count">${categories.categorias.length} categorías</div>
+                </div>
+                <div class="stat-item fijos">
+                    <div class="stat-label">Fijos</div>
+                    <div class="stat-value">${this.formatCurrency(totales.fijos.monto)}</div>
+                    <div class="stat-count">${totales.fijos.count} categoría${totales.fijos.count !== 1 ? 's' : ''}</div>
+                </div>
+                <div class="stat-item variables">
+                    <div class="stat-label">Variables</div>
+                    <div class="stat-value">${this.formatCurrency(totales.variables.monto)}</div>
+                    <div class="stat-count">${totales.variables.count} categoría${totales.variables.count !== 1 ? 's' : ''}</div>
+                </div>
+                <div class="stat-item extras">
+                    <div class="stat-label">Extras</div>
+                    <div class="stat-value">${this.formatCurrency(totales.extras.monto)}</div>
+                    <div class="stat-count">${totales.extras.count} categoría${totales.extras.count !== 1 ? 's' : ''}</div>
+                </div>
+            </div>
+
+            <!-- Tabla -->
+            <table class="categories-table" id="categoriesTable">
+                <thead>
+                    <tr>
+                        <th class="sortable" onclick="sortCategoriesTable(0)">#</th>
+                        <th class="sortable" onclick="sortCategoriesTable(1)">Categoría</th>
+                        <th class="sortable" onclick="sortCategoriesTable(2)">Tipo</th>
+                        <th class="sortable" onclick="sortCategoriesTable(3)">Monto</th>
+                        <th class="sortable" onclick="sortCategoriesTable(4)">% del Total</th>
+                    </tr>
+                </thead>
+                <tbody id="categoriesTableBody">
+                    ${tableRows || '<tr><td colspan="5" class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">No hay categorías disponibles</div></td></tr>'}
+                </tbody>
+            </table>
+        </div>
+        
+        <script>
+            // Inicializar tabla de categorías
+            setTimeout(() => {
+                if (typeof initCategoriesTable === 'function') {
+                    initCategoriesTable();
+                }
+            }, 100);
+        </script>
+    `;
+}
+
+/**
+ * OBTENER ICONO POR CATEGORÍA
+ */
+getCategoryIcon(nombre) {
+    return ''; 
+}
 
     /**
      * 🎧 VINCULAR EVENTOS
@@ -761,34 +891,39 @@ generateTrendsAnalysis() {
      * 🔄 CAMBIAR A REPORTE ESPECÍFICO
      */
     switchToReport(reportType, clickedButton) {
-        // Actualizar navegación activa
-        document.querySelectorAll('.nav-report-item').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        clickedButton.classList.add('active');
+    // Actualizar navegación activa
+    document.querySelectorAll('.nav-report-item').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    clickedButton.classList.add('active');
 
-        // Renderizar reporte específico
-        const container = document.getElementById('report-content');
-        if (container) {
-            this.renderSpecificReport(reportType, container);
-            
-            // Si es el reporte de tendencias, generar gráficos
-            if (reportType === 'tendencias' && window.reportesCharts) {
-                setTimeout(() => {
-        console.log('📊 Intentando generar gráficos...');
-        console.log('🔄 Generando gráficos para tendencias...');
-        window.reportesCharts.generateCharts();
-                }, 500);
-            }
+    // APLICAR PATRÓN EXITOSO: SIN REFRESCOS AUTOMÁTICOS
+    const container = document.getElementById('report-content');
+    if (container) {
+        // Preservar posición de scroll
+        const currentScrollPosition = window.pageYOffset;
+        
+        // Renderizar contenido SIN refrescos automáticos
+        this.renderSpecificReport(reportType, container);
+        
+        // Restaurar posición de scroll inmediatamente
+        window.scrollTo(0, currentScrollPosition);
+        
+// SOLO para categorías: inicializar tabla Y restaurar foco SIEMPRE
+if (reportType === 'categorias') {
+    setTimeout(() => {
+        if (typeof initCategoriesTable === 'function') {
+            initCategoriesTable();
         }
-
-        console.log(`🔄 Cambiado a reporte: ${reportType}`);
+        // Foco garantizado al volver a categorías
+        this.ensureCategoriesFocus();
+    }, 100);
+}
     }
 
-    // ===============================
-    // TEMPLATES Y UTILIDADES
-    // ===============================
+    console.log(`Cambiado a reporte: ${reportType}`);
 
+}
     /**
      * 📋 GENERAR DATOS SIMULADOS
      */
@@ -920,12 +1055,72 @@ getPresupuestoExtrasReal() {
     return gastosExtras.presupuesto || gastosExtras.total || 10000;
 }
 
-    // Métodos de plantillas (sin implementación completa para mantener el archivo manejable)
+// Métodos de plantillas (sin implementación completa para mantener el archivo manejable)
     getSummaryCardTemplate() { return ''; }
     getBreakdownTableTemplate() { return ''; }
     getNavigationPanelTemplate() { return ''; }
     getInsightsSectionTemplate() { return ''; }
     getCategoryCardTemplate() { return ''; }
+
+    /**
+     * OBTENER BALANCE ACTUAL REAL
+     */
+    getCurrentBalance() {
+        if (!window.storageManager) return 0;
+        
+        const ingresos = window.storageManager.getIngresos();
+        const gastosFijos = window.storageManager.getGastosFijos();
+        const gastosVariables = window.storageManager.getGastosVariables();
+        
+        const totalIngresos = ingresos.total || 0;
+        const totalGastosFijos = gastosFijos.total || 0;
+        const totalGastosVariables = gastosVariables.total || 0;
+        
+        return totalIngresos - (totalGastosFijos + totalGastosVariables);
+    }
+
+    /**
+     * OBTENER TASA DE AHORRO REAL
+     */
+    getCurrentSavingsRate() {
+        if (!window.storageManager) return 0;
+        
+        const ingresos = window.storageManager.getIngresos();
+        const balance = this.getCurrentBalance();
+        
+        if (ingresos.total <= 0) return 0;
+        
+        const tasaAhorro = (balance / ingresos.total) * 100;
+        return Math.max(0, tasaAhorro).toFixed(1);
+    }
+
+    /**
+ * Asegurar foco en campo de búsqueda de categorías
+ */
+ensureCategoriesFocus() {
+    let attempts = 0;
+    const maxAttempts = 5;
+    
+    const tryFocus = () => {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput && document.getElementById('report-content').innerHTML.includes('searchInput')) {
+            requestAnimationFrame(() => {
+                try {
+                    searchInput.focus({ preventScroll: true });
+                    console.log('Foco restaurado en búsqueda de categorías');
+                } catch (e) {
+                    searchInput.focus();
+                }
+            });
+        } else if (attempts < maxAttempts) {
+            attempts++;
+            setTimeout(tryFocus, 100);
+        }
+    };
+    
+    setTimeout(tryFocus, 150);
+}
+
 }
 
 // Inicialización global

@@ -261,7 +261,7 @@ class DashboardOrchestrator {
 
         // Calcular valores - CAMBIO: usar presupuesto en lugar de total
         const totalGastosExtras = data.gastosExtras.presupuesto || 0;
-        const totalGastos = data.gastosFijos.total + data.gastosVariables.total + totalGastosExtras;
+        const totalGastos = data.gastosFijos.total + data.gastosVariables.total;
         const balance = data.ingresos.total - totalGastos;
         
         // Calcular pagados y pendientes

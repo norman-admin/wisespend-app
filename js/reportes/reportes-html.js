@@ -808,7 +808,7 @@ class ReportesHTML {
      * 🎯 OBTENER ICONO POR CATEGORÍA
      */
     getCategoryIcon(nombre) {
-        return '📋'; // Icono por defecto
+        return ''; // Sin icono
     }
 
     /**

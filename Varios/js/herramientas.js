@@ -33,16 +33,17 @@ class CalculadoraCreditos {
     }
 
     formatCurrency(amount) {
-        return new Intl.NumberFormat('es-CL', {
-            style: 'currency',
-            currency: 'CLP',
-            minimumFractionDigits: 0
-        }).format(amount);
-    }
+    return new Intl.NumberFormat('es-CL', {
+        style: 'currency',
+        currency: 'CLP',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(amount);
+}
 
     calcularCredito() {
         // Obtener valores del formulario
-        const monto = parseFloat(document.getElementById('montoCredito')?.value) || 0;
+        const monto = getMontoNumerico();
         const tasaAnual = parseFloat(document.getElementById('tasaInteres')?.value) || 0;
         const plazo = parseInt(document.getElementById('plazoMeses')?.value) || 0;
         const sistema = document.getElementById('sistemaAmortizacion')?.value || 'frances';
@@ -213,6 +214,55 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initCalculadoraCreditos);
 } else {
     initCalculadoraCreditos();
+}
+
+// Función para manejar navegación del formulario
+function handleFormNavigation(event, nextFieldId) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        
+        // Si es el último campo, calcular
+        if (nextFieldId === 'btnCalcular') {
+            document.getElementById('btnCalcular').click();
+        } else {
+            // Navegar al siguiente campo
+            const nextField = document.getElementById(nextFieldId);
+            if (nextField) {
+                nextField.focus();
+            }
+        }
+    }
+}
+
+// Función para formatear input de moneda
+function formatCurrencyInput(input) {
+    // Obtener solo números
+    let value = input.value.replace(/[^\d]/g, '');
+    
+    if (value === '') {
+        input.value = '';
+        return;
+    }
+    
+    // Convertir a número y formatear
+    const number = parseInt(value);
+    const formatted = new Intl.NumberFormat('es-CL', {
+        style: 'currency',
+        currency: 'CLP',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(number);
+    
+    input.value = formatted;
+}
+
+// Función para obtener valor numérico del monto
+function getMontoNumerico() {
+    const montoInput = document.getElementById('montoCredito');
+    if (montoInput) {
+        return parseInt(montoInput.value.replace(/[^\d]/g, '')) || 0;
+    }
+    return 0;
 }
 
 console.log('📊 herramientas.js v1.0.0 cargado');

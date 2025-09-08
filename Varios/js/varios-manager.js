@@ -311,19 +311,31 @@ async loadNotasScript() {
      * 🧮 Cargar módulo de Herramientas
      */
     async loadHerramientasModule(container) {
-        container.innerHTML = `
-            <div class="varios-tab-content" data-tab="herramientas">
-                <div class="tab-content-header">
-                    <h3>🧮 Herramientas Financieras</h3>
-                    <button class="btn-primary">🔧 Nueva Herramienta</button>
-                </div>
-                <div class="herramientas-content">
-                    <p>Calculadoras y herramientas serán implementadas aquí...</p>
-                </div>
+    container.innerHTML = `
+        <div class="varios-tab-content" data-tab="herramientas">
+            <div class="tab-content-header">
+                <h3>🧮 Herramientas Financieras</h3>
+                <button class="btn-primary">🔧 Nueva Herramienta</button>
             </div>
-        `;
-        console.log('🧮 Módulo Herramientas cargado (básico)');
-    }
+            <div class="herramientas-content">
+    <div style="text-align: center; padding: 40px;">
+        <h3>Herramientas Financieras Disponibles</h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-top: 20px;">
+            <a href="Varios/herramientas.html" 
+               style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; min-width: 200px; text-align: center;">
+                🧮 Calculadora de Créditos
+            </a>
+            <a href="Varios/simulador-ahorro.html" 
+               style="display: inline-block; background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; min-width: 200px; text-align: center;">
+                💰 Simulador de Ahorro
+            </a>
+        </div>
+    </div>
+</div>
+</div>
+    `;
+    console.log('🧮 Módulo Herramientas cargado (básico)');
+}
 
     /**
      * ❌ Mostrar error

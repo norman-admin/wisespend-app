@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Ahorro - Control de Gastos</title>
+    
+    <!-- CSS de la aplicación principal -->
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/themes.css">
+    
+    <!-- CSS específico del simulador -->
+    <link rel="stylesheet" href="css/simulador-ahorro.css">
+    
+    <!-- Fuentes -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header con navegación de regreso -->
+    <header style="background: white; padding: 16px 24px; border-bottom: 1px solid #e5e7eb; margin-bottom: 24px;">
+        <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 16px;">
+            <button onclick="window.history.back()" style="background: #f3f4f6; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                ← Volver
+            </button>
+            <h1 style="margin: 0; font-size: 20px; font-weight: 600; color: #1e293b;">Simulador de Ahorro</h1>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main style="max-width: 1200px; margin: 0 auto; padding: 0 24px;">
+        <!-- Simulador de Ahorro -->
+        <div class="simulator-container">
+            <div class="simulator-header">
+                <h1 class="simulator-title">💰 Simulador de Ahorro</h1>
+                <p class="simulator-subtitle">Planifica y visualiza el crecimiento de tus ahorros</p>
+            </div>
+
+            <div class="simulator-content">
+                <!-- Sección de Inputs -->
+                <div class="input-section">
+                    <h2 class="section-title">
+                        📋 Datos del Plan de Ahorro
+                    </h2>
+
+                    <div class="form-group">
+                        <label class="form-label">Meta de Ahorro (CLP)</label>
+                        <input type="text" 
+                               id="metaAhorro" 
+                               class="form-input" 
+                               placeholder="Ej: $10.000.000" 
+                               value="$10.000.000"
+                               onkeydown="handleFormNavigation(event, 'ahorroMensual')"
+                               oninput="formatCurrencyInput(this)">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Ahorro Mensual (CLP)</label>
+                        <input type="text" 
+                               id="ahorroMensual" 
+                               class="form-input" 
+                               placeholder="Ej: $200.000" 
+                               value="$200.000"
+                               onkeydown="handleFormNavigation(event, 'tasaInteres')"
+                               oninput="formatCurrencyInput(this)">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tasa de Interés Anual (%)</label>
+                        <input type="number" 
+                               id="tasaInteres" 
+                               class="form-input" 
+                               placeholder="Ej: 5.0" 
+                               step="0.1" 
+                               value="5.0"
+                               onkeydown="handleFormNavigation(event, 'ahorroInicial')">
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">
+                            Tasa anual de tu cuenta de ahorro o inversión
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Ahorro Inicial (CLP) - Opcional</label>
+                        <input type="text" 
+                               id="ahorroInicial" 
+                               class="form-input" 
+                               placeholder="Ej: $500.000" 
+                               value="$0"
+                               onkeydown="handleFormNavigation(event, 'btnSimular')"
+                               oninput="formatCurrencyInput(this)">
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">
+                            Dinero que ya tienes ahorrado
+                        </div>
+                    </div>
+
+                    <button class="simulate-btn" 
+                            id="btnSimular"
+                            onkeydown="if(event.key==='Enter') this.click()">
+                        Simular Ahorro
+                    </button>
+                </div>
+
+                <!-- Sección de Resultados -->
+                <div class="results-section">
+                    <h2 class="section-title">
+                        📈 Resultados de la Simulación
+                    </h2>
+
+                    <div id="resultados" style="display: none;">
+                        <div class="result-card">
+                            <div class="result-label">Tiempo para alcanzar tu meta</div>
+                            <div class="result-value" id="tiempoMeta">0 meses</div>
+                        </div>
+
+                        <div class="result-grid">
+                            <div class="result-item">
+                                <div class="result-item-label">Total Ahorrado</div>
+                                <div class="result-item-value" id="totalAhorrado">$0</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-item-label">Total Intereses</div>
+                                <div class="result-item-value" id="totalIntereses">$0</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-item-label">Capital Propio</div>
+                                <div class="result-item-value" id="capitalPropio">$0</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-item-label">Rendimiento</div>
+                                <div class="result-item-value" id="porcentajeRendimiento">0%</div>
+                            </div>
+                        </div>
+
+                        <div class="savings-table">
+                            <div class="table-title">📊 Proyección de Ahorro (Primeros 12 meses)</div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Mes</th>
+                                            <th>Ahorro Mensual</th>
+                                            <th>Intereses</th>
+                                            <th>Total Acumulado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tablaProyeccion">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="placeholder" style="text-align: center; padding: 60px 20px; color: #6b7280;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">💰</div>
+                        <div style="font-size: 16px;">Ingresa los datos y presiona "Simular Ahorro"</div>
+                        <div style="font-size: 14px; margin-top: 8px;">para ver tu proyección de ahorro</div>
+                    </div>
+
+                    <div style="background: #f0f9ff; border: 1px solid #3b82f6; border-radius: 8px; padding: 16px; margin-top: 20px;">
+                        <div style="font-size: 14px; color: #1e40af; line-height: 1.5;">
+                            💡 <strong>Consejo:</strong> La constancia es clave en el ahorro. Incluso pequeñas cantidades mensuales pueden generar resultados significativos a largo plazo gracias al interés compuesto.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- JavaScript -->
+    <script src="js/simulador-ahorro.js"></script>
+    
+    <script>
+        // Inicialización específica para esta página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-simular con valores por defecto
+            setTimeout(() => {
+                if (window.simuladorAhorro) {
+                    window.simuladorAhorro.simularAhorro();
+                }
+            }, 200);
+        });
+    </script>
+</body>
+</html>

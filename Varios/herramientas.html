@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Herramientas Financieras - Control de Gastos</title>
+    
+    <!-- CSS de la aplicación principal -->
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/themes.css">
+    
+    <!-- CSS específico de herramientas -->
+    <link rel="stylesheet" href="css/herramientas.css">
+    
+    <!-- Fuentes -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header con navegación de regreso -->
+    <header style="background: white; padding: 16px 24px; border-bottom: 1px solid #e5e7eb; margin-bottom: 24px;">
+        <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 16px;">
+            <button onclick="window.history.back()" style="background: #f3f4f6; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                ← Volver
+            </button>
+            <h1 style="margin: 0; font-size: 20px; font-weight: 600; color: #1e293b;">Herramientas Financieras</h1>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main style="max-width: 1200px; margin: 0 auto; padding: 0 24px;">
+        <!-- Calculadora de Créditos de Consumo -->
+        <div class="calculator-container">
+            <div class="calculator-header">
+                <h1 class="calculator-title">🧮 Calculadora de Créditos de Consumo</h1>
+                <p class="calculator-subtitle">Calcula tu cuota mensual y tabla de amortización</p>
+            </div>
+
+            <div class="calculator-content">
+                <!-- Sección de Inputs -->
+                <div class="input-section">
+                    <h2 class="section-title">
+                        📊 Datos del Crédito
+                    </h2>
+
+                    <div class="form-group">
+                        <label class="form-label">Monto del Crédito (CLP)</label>
+                        <input type="number" id="montoCredito" class="form-input" placeholder="Ej: 5000000" value="5000000">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tasa de Interés Anual (%)</label>
+                        <input type="number" id="tasaInteres" class="form-input" placeholder="Ej: 12.5" step="0.1" value="12.5">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Plazo (meses)</label>
+                        <select id="plazoMeses" class="form-select">
+                            <option value="12">12 meses (1 año)</option>
+                            <option value="24" selected>24 meses (2 años)</option>
+                            <option value="36">36 meses (3 años)</option>
+                            <option value="48">48 meses (4 años)</option>
+                            <option value="60">60 meses (5 años)</option>
+                            <option value="72">72 meses (6 años)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Sistema de Amortización</label>
+                        <select id="sistemaAmortizacion" class="form-select">
+                            <option value="frances" selected>Sistema Francés (cuotas fijas)</option>
+                            <option value="aleman">Sistema Alemán (capital fijo)</option>
+                        </select>
+                    </div>
+
+                    <button class="calculate-btn" id="btnCalcular">
+                        Calcular Crédito
+                    </button>
+                </div>
+
+                <!-- Sección de Resultados -->
+                <div class="results-section">
+                    <h2 class="section-title">
+                        📈 Resultados del Cálculo
+                    </h2>
+
+                    <div id="resultados" style="display: none;">
+                        <div class="result-card">
+                            <div class="result-label">Cuota Mensual</div>
+                            <div class="result-value" id="cuotaMensual">$0</div>
+                        </div>
+
+                        <div class="result-grid">
+                            <div class="result-item">
+                                <div class="result-item-label">Total a Pagar</div>
+                                <div class="result-item-value" id="totalPagar">$0</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-item-label">Total Intereses</div>
+                                <div class="result-item-value" id="totalIntereses">$0</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-item-label">% Intereses</div>
+                                <div class="result-item-value" id="porcentajeIntereses">0%</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-item-label">CAE Aproximado</div>
+                                <div class="result-item-value" id="caeAproximado">0%</div>
+                            </div>
+                        </div>
+
+                        <div class="amortization-table">
+                            <div class="table-title">📋 Tabla de Amortización (Primeras 6 cuotas)</div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Cuota</th>
+                                            <th>Capital</th>
+                                            <th>Interés</th>
+                                            <th>Cuota Total</th>
+                                            <th>Saldo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tablaAmortizacion">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="placeholder" style="text-align: center; padding: 60px 20px; color: #6b7280;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">🧮</div>
+                        <div style="font-size: 16px;">Ingresa los datos y presiona "Calcular Crédito"</div>
+                        <div style="font-size: 14px; margin-top: 8px;">para ver los resultados</div>
+                    </div>
+
+                    <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 16px; margin-top: 20px;">
+                        <div style="font-size: 14px; color: #92400e; line-height: 1.5;">
+                            ⚠️ <strong>Importante:</strong> Esta calculadora es referencial. Las tasas y condiciones reales pueden variar según la institución financiera. Consulta directamente con tu banco para obtener información oficial.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- JavaScript -->
+    <script src="js/herramientas.js"></script>
+    
+    <script>
+        // Inicialización específica para esta página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-calcular con valores por defecto
+            setTimeout(() => {
+                if (window.calculadoraCreditos) {
+                    window.calculadoraCreditos.calcularCredito();
+                }
+            }, 200);
+        });
+    </script>
+</body>
+</html>

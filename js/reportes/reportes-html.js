@@ -537,10 +537,9 @@ class ReportesHTML {
                         
                         <div class="expense-table-simple">
                             ${categories.categoriasMasCostosas.slice(0, 5).map((cat, index) => `
-                                <div class="expense-row-simple" style="animation-delay: ${index * 0.1}s">
+                                <div class="expense-row-simple">
                                     <span class="row-number">${index + 1}</span>
                                     <span class="expense-name">${cat.nombre}</span>
-                                    <span class="expense-badge-simple badge-${cat.tipo.toLowerCase()}">${cat.tipo}</span>
                                     <span class="expense-amount">${this.formatCurrency(cat.monto)}</span>
                                 </div>
                             `).join('')}
@@ -685,124 +684,128 @@ class ReportesHTML {
             </div>
         `;
     }
+    
+/**
+ * 🏷️ GENERAR ANÁLISIS POR CATEGORÍAS - VERSIÓN SIMPLIFICADA
+ */
+generateCategoriesAnalysis() {
+    if (!this.currentData?.categories) return '<div class="error-state">Datos no disponibles</div>';
 
-    /**
-     * 🏷️ GENERAR ANÁLISIS POR CATEGORÍAS
-     */
-    generateCategoriesAnalysis() {
-        if (!this.currentData?.categories) return '<div class="error-state">Datos no disponibles</div>';
+    const categories = this.currentData.categories;
+    
+    // Calcular totales por tipo
+    const totales = {
+        fijos: { monto: 0, count: 0 },
+        variables: { monto: 0, count: 0 },
+        extras: { monto: 0, count: 0 }
+    };
+    
+    let totalGeneral = 0;
+    
+    categories.categorias.forEach(cat => {
+        const tipo = cat.tipo.toLowerCase();
+        if (totales[tipo]) {
+            totales[tipo].monto += cat.monto;
+            totales[tipo].count++;
+        }
+        totalGeneral += cat.monto;
+    });
 
-        const categories = this.currentData.categories;
+    // Generar filas de la tabla
+    const tableRows = categories.categoriasMasCostosas.slice(0, 10).map((cat, index) => {
+        const porcentaje = totalGeneral > 0 ? ((cat.monto / totalGeneral) * 100).toFixed(1) : 0;
+        const icono = this.getCategoryIcon(cat.nombre);
         
-        // Calcular totales por tipo
-        const totales = {
-            fijos: { monto: 0, count: 0 },
-            variables: { monto: 0, count: 0 },
-            extras: { monto: 0, count: 0 }
-        };
-        
-        let totalGeneral = 0;
-        
-        categories.categorias.forEach(cat => {
-            const tipo = cat.tipo.toLowerCase();
-            if (totales[tipo]) {
-                totales[tipo].monto += cat.monto;
-                totales[tipo].count++;
-            }
-            totalGeneral += cat.monto;
-        });
-
-        // Generar filas de la tabla
-        const tableRows = categories.categoriasMasCostosas.slice(0, 10).map((cat, index) => {
-            const porcentaje = totalGeneral > 0 ? ((cat.monto / totalGeneral) * 100).toFixed(1) : 0;
-            const icono = this.getCategoryIcon(cat.nombre);
-            
-            return `
-                <tr data-type="${cat.tipo.toLowerCase()}">
-                    <td class="category-rank">#${index + 1}</td>
-                    <td class="category-name">
-                        <span class="category-icon">${icono}</span>
-                        <span>${cat.nombre}</span>
-                    </td>
-                    <td><span class="category-type ${cat.tipo.toLowerCase()}">${cat.tipo}</span></td>
-                    <td class="category-amount">${this.formatCurrency(cat.monto)}</td>
-                    <td class="category-percentage">${porcentaje}%</td>
-                </tr>
-            `;
-        }).join('');
-
         return `
-            <div class="categories-table-container">
-                <!-- Header -->
-                <div class="table-header">
-                    <div class="header-title">
-                        <span class="header-icon">🏷️</span>
-                        <h2>Análisis por Categorías</h2>
-                    </div>
-                    
-                    <div class="filter-controls">
+            <tr data-type="${cat.tipo.toLowerCase()}">
+                <td class="rank-cell">#${index + 1}</td>
+                <td class="category-cell">
+                    <span class="category-icon">${icono}</span>
+                    <span>${cat.nombre}</span>
+                </td>
+                <td class="type-cell"><span class="category-type ${cat.tipo.toLowerCase()}">${cat.tipo}</span></td>
+                <td class="amount-cell">${this.formatCurrency(cat.monto)}</td>
+                <td class="percentage-cell">${porcentaje}%</td>
+            </tr>
+        `;
+    }).join('');
+
+    return `
+        <div class="categories-analysis">
+            <!-- Header con título -->
+            <div class="categories-header">
+                <span class="categories-header-icon">🏷️</span>
+                <h2>Análisis por Categorías</h2>
+            </div>
+
+            <!-- Tarjetas de estadísticas superiores -->
+            <div class="categories-stats-grid">
+                <div class="stat-card total">
+                    <div class="stat-main-value">${this.formatCurrency(totalGeneral)}</div>
+                    <div class="stat-sub-value">${categories.categorias.length} categorías</div>
+                    <div class="stat-label">Total</div>
+                    <div class="stat-details">TODOS LOS GASTOS</div>
+                </div>
+                <div class="stat-card fijos">
+                    <div class="stat-main-value">${this.formatCurrency(totales.fijos.monto)}</div>
+                    <div class="stat-sub-value">${totales.fijos.count} categorías</div>
+                    <div class="stat-label">Fijos</div>
+                    <div class="stat-details">GASTOS FIJOS</div>
+                </div>
+                <div class="stat-card variables">
+                    <div class="stat-main-value">${this.formatCurrency(totales.variables.monto)}</div>
+                    <div class="stat-sub-value">${totales.variables.count} categorías</div>
+                    <div class="stat-label">Variables</div>
+                    <div class="stat-details">GASTOS VARIABLES</div>
+                </div>
+                <div class="stat-card extras">
+                    <div class="stat-main-value">${this.formatCurrency(totales.extras.monto)}</div>
+                    <div class="stat-sub-value">${totales.extras.count} categorías</div>
+                    <div class="stat-label">Extras</div>
+                    <div class="stat-details">GASTOS EXTRAS</div>
+                </div>
+            </div>
+
+            <!-- Controles de filtros -->
+            <div class="table-controls">
+                <div class="controls-row">
+                    <div class="search-container">
                         <input type="text" class="search-input" placeholder="Buscar categoría..." id="searchInput">
+                    </div>
+                    <div class="filter-group">
                         <select class="filter-select" id="typeFilter">
                             <option value="">Todos los tipos</option>
                             <option value="fijos">Fijos</option>
                             <option value="variables">Variables</option>
                             <option value="extras">Extras</option>
                         </select>
-                        <button class="clear-filters" onclick="clearAllFilters()">Limpiar filtros</button>
+                        <button class="clear-filters-btn" onclick="clearAllFilters()">Limpiar filtros</button>
                     </div>
                 </div>
-
-                <!-- Resumen Rápido -->
-                <div class="quick-stats">
-                    <div class="stat-item total">
-                        <div class="stat-label">Total</div>
-                        <div class="stat-value">${this.formatCurrency(totalGeneral)}</div>
-                        <div class="stat-count">${categories.categorias.length} categorías</div>
-                    </div>
-                    <div class="stat-item fijos">
-                        <div class="stat-label">Fijos</div>
-                        <div class="stat-value">${this.formatCurrency(totales.fijos.monto)}</div>
-                        <div class="stat-count">${totales.fijos.count} categoría${totales.fijos.count !== 1 ? 's' : ''}</div>
-                    </div>
-                    <div class="stat-item variables">
-                        <div class="stat-label">Variables</div>
-                        <div class="stat-value">${this.formatCurrency(totales.variables.monto)}</div>
-                        <div class="stat-count">${totales.variables.count} categoría${totales.variables.count !== 1 ? 's' : ''}</div>
-                    </div>
-                    <div class="stat-item extras">
-                        <div class="stat-label">Extras</div>
-                        <div class="stat-value">${this.formatCurrency(totales.extras.monto)}</div>
-                        <div class="stat-count">${totales.extras.count} categoría${totales.extras.count !== 1 ? 's' : ''}</div>
-                    </div>
-                </div>
-
-                <!-- Tabla -->
-                <table class="categories-table" id="categoriesTable">
-                    <thead>
-                        <tr>
-                            <th class="sortable" onclick="sortCategoriesTable(0)">#</th>
-                            <th class="sortable" onclick="sortCategoriesTable(1)">Categoría</th>
-                            <th class="sortable" onclick="sortCategoriesTable(2)">Tipo</th>
-                            <th class="sortable" onclick="sortCategoriesTable(3)">Monto</th>
-                            <th class="sortable" onclick="sortCategoriesTable(4)">% del Total</th>
-                        </tr>
-                    </thead>
-                    <tbody id="categoriesTableBody">
-                        ${tableRows || '<tr><td colspan="5" class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">No hay categorías disponibles</div></td></tr>'}
-                    </tbody>
-                </table>
             </div>
-            
-            <script>
-                // Inicializar tabla de categorías
-                setTimeout(() => {
-                    if (typeof initCategoriesTable === 'function') {
-                        initCategoriesTable();
-                    }
-                }, 100);
-            </script>
-        `;
-    }
+
+            <!-- Tabla de categorías -->
+            <div class="categories-table-container">
+                <div class="table-wrapper">
+                    <table class="categories-table" id="categoriesTable">
+                        <thead>
+                            <tr>
+                                <th class="sortable" onclick="sortCategoriesTable(0)">#</th>
+                                <th class="sortable" onclick="sortCategoriesTable(1)">CATEGORÍA</th>
+                                <th class="sortable" onclick="sortCategoriesTable(2)">TIPO</th>
+                                <th class="sortable" onclick="sortCategoriesTable(3)">MONTO</th>
+                                <th class="sortable" onclick="sortCategoriesTable(4)">% DEL TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoriesTableBody">
+                            ${tableRows || '<tr><td colspan="5" class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">No hay categorías disponibles</div></td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+}
 
     /**
      * 🎯 OBTENER ICONO POR CATEGORÍA

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de Monedas - Control de Gastos</title>
+    
+    <!-- CSS de la aplicación principal -->
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/themes.css">
+    
+    <!-- CSS específico del conversor -->
+    <link rel="stylesheet" href="css/conversor-monedas.css">
+    
+    <!-- Fuentes -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header con navegación de regreso -->
+    <header style="background: white; padding: 16px 24px; border-bottom: 1px solid #e5e7eb; margin-bottom: 24px;">
+        <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 16px;">
+            <button onclick="window.history.back()" style="background: #f3f4f6; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                ← Volver
+            </button>
+            <h1 style="margin: 0; font-size: 20px; font-weight: 600; color: #1e293b;">Conversor de Monedas</h1>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main style="max-width: 1200px; margin: 0 auto; padding: 0 24px;">
+        <!-- Conversor de Monedas -->
+        <div class="converter-container">
+            <div class="converter-header">
+                <h1 class="converter-title">💱 Conversor de Monedas Chile</h1>
+                <p class="converter-subtitle">Convierte entre Peso Chileno, Dólar, UF y UTM</p>
+            </div>
+
+            <div class="converter-content">
+                <!-- Sección de Conversión -->
+                <div class="conversion-section">
+                    <h2 class="section-title">
+                        🔄 Convertir Monedas
+                    </h2>
+
+                    <!-- Moneda Origen -->
+                    <div class="currency-group">
+                        <label class="form-label">Desde</label>
+                        <div class="currency-input-wrapper">
+                            <select id="monedaOrigen" 
+                                    class="currency-select"
+                                    onchange="window.conversorMonedas?.convertir()">
+                                <option value="CLP" selected>Peso Chileno (CLP)</option>
+                                <option value="USD">Dólar Estadounidense (USD)</option>
+                                <option value="UF">Unidad de Fomento (UF)</option>
+                                <option value="UTM">Unidad Tributaria Mensual (UTM)</option>
+                            </select>
+                            <input type="text" 
+                                   id="montoOrigen" 
+                                   class="currency-input" 
+                                   placeholder="Ingresa el monto" 
+                                   value="1.000.000"
+                                   onkeydown="handleFormNavigation(event, 'monedaDestino')"
+                                   oninput="formatNumberInput(this); window.conversorMonedas?.convertir()">
+                        </div>
+                    </div>
+
+                    <!-- Icono de intercambio -->
+                    <div class="swap-container">
+                        <button class="swap-btn" onclick="window.conversorMonedas?.intercambiarMonedas()">
+                            ⇅
+                        </button>
+                    </div>
+
+                    <!-- Moneda Destino -->
+                    <div class="currency-group">
+                        <label class="form-label">Hacia</label>
+                        <div class="currency-input-wrapper">
+                            <select id="monedaDestino" 
+                                    class="currency-select"
+                                    onchange="window.conversorMonedas?.convertir()"
+                                    onkeydown="handleFormNavigation(event, 'btnConvertir')">
+                                <option value="CLP">Peso Chileno (CLP)</option>
+                                <option value="USD" selected>Dólar Estadounidense (USD)</option>
+                                <option value="UF">Unidad de Fomento (UF)</option>
+                                <option value="UTM">Unidad Tributaria Mensual (UTM)</option>
+                            </select>
+                            <input type="text" 
+                                   id="montoDestino" 
+                                   class="currency-input result-input" 
+                                   placeholder="Resultado" 
+                                   readonly>
+                        </div>
+                    </div>
+
+                    <button class="convert-btn" 
+                            id="btnConvertir"
+                            onclick="window.conversorMonedas?.convertir()"
+                            onkeydown="if(event.key==='Enter') this.click()">
+                        Convertir
+                    </button>
+                </div>
+
+                <!-- Sección de Tipos de Cambio -->
+                <div class="rates-section">
+                    <h2 class="section-title">
+                        📊 Tipos de Cambio Actuales
+                    </h2>
+
+                    <div id="tiposCambio">
+                        <div class="rates-grid">
+                            <div class="rate-card">
+                                <div class="rate-header">
+                                    <span class="rate-currency">USD</span>
+                                    <span class="rate-flag">🇺🇸</span>
+                                </div>
+                                <div class="rate-value" id="rate-USD">$850</div>
+                                <div class="rate-label">por 1 USD</div>
+                            </div>
+
+                            <div class="rate-card">
+                                <div class="rate-header">
+                                    <span class="rate-currency">UF</span>
+                                    <span class="rate-flag">🏛️</span>
+                                </div>
+                                <div class="rate-value" id="rate-UF">$37.500</div>
+                                <div class="rate-label">por 1 UF</div>
+                            </div>
+
+                            <div class="rate-card">
+                                <div class="rate-header">
+                                    <span class="rate-currency">UTM</span>
+                                    <span class="rate-flag">📋</span>
+                                </div>
+                                <div class="rate-value" id="rate-UTM">$65.000</div>
+                                <div class="rate-label">por 1 UTM</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Histórico rápido -->
+                    <div class="quick-conversions">
+                        <h3 style="font-size: 16px; color: #374151; margin-bottom: 16px;">Conversiones Rápidas</h3>
+                        <div class="quick-grid" id="conversionesRapidas">
+                            <div class="quick-item">
+                                <span class="quick-amount">$100.000 CLP</span>
+                                <span class="quick-result" id="quick-100k-usd">≈ $118 USD</span>
+                            </div>
+                            <div class="quick-item">
+                                <span class="quick-amount">$1.000.000 CLP</span>
+                                <span class="quick-result" id="quick-1m-usd">≈ $1.176 USD</span>
+                            </div>
+                            <div class="quick-item">
+                                <span class="quick-amount">1 UF</span>
+                                <span class="quick-result" id="quick-1uf-clp">≈ $37.500 CLP</span>
+                            </div>
+                            <div class="quick-item">
+                                <span class="quick-amount">1 UTM</span>
+                                <span class="quick-result" id="quick-1utm-clp">≈ $65.000 CLP</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 16px; margin-top: 20px;">
+                        <div style="font-size: 14px; color: #92400e; line-height: 1.5;">
+                            ⚠️ <strong>Importante:</strong> Los tipos de cambio son referenciales y pueden variar. Para transacciones oficiales, consulta fuentes bancarias o gubernamentales.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- JavaScript -->
+    <script src="js/conversor-monedas.js"></script>
+    
+    <script>
+        // Inicialización específica para esta página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-convertir con valores por defecto
+            setTimeout(() => {
+                if (window.conversorMonedas) {
+                    window.conversorMonedas.convertir();
+                }
+            }, 200);
+        });
+    </script>
+</body>
+</html>

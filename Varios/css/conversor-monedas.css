@@ -126,9 +126,11 @@
 }
 
 .result-input {
-    background: #f9fafb;
-    border-color: var(--conv-success);
-    color: var(--conv-gray-800);
+    background: #ffffff !important;
+    border: 2px solid #10b981 !important;
+    color: #1e293b !important;
+    font-weight: 700 !important;
+    font-size: 16px !important;
 }
 
 /* ===== BOTÓN DE INTERCAMBIO ===== */

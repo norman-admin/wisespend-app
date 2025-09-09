@@ -1,14 +1,15 @@
 /**
  * CONFIG-UI.JS - Módulo de Interfaz de Configuración
- * Control de Gastos Familiares - v2.0.0
- * 
- * 🔧 FUNCIONALIDADES:
+ * Control de Gastos Familiares - v2.1.3 - SOLUCIÓN DEFINITIVA
+ * * 🔧 FUNCIONALIDADES:
  * ✅ Menú lateral con 5 secciones
  * ✅ Configuración de monedas
  * ✅ Selector de temas
  * ✅ Configuración general
  * ✅ Importar/exportar
  * ✅ Información de la aplicación
+ * ✅ 🎯 FIX v3: Solucionado problema de pérdida de foco (Forzado con setTimeout)
+ * ✅ 🐛 FIX: Corregido crash con el sistema de modales
  */
 
 class ConfigUI {
@@ -26,7 +27,7 @@ class ConfigUI {
      * Inicializar sistema de configuración
      */
     init() {
-        console.log('⚙️ ConfigUI: Inicializando...');
+        console.log('⚙️ ConfigUI v2.1.3: Inicializando...');
         
         if (!this.storage) {
             console.error('❌ StorageManager no está disponible');
@@ -43,23 +44,21 @@ class ConfigUI {
      * Intentar inyectar la interfaz de configuración
      */
     tryInjectUI() {
-    const contentArea = document.getElementById('dynamic-content');
-    if (!contentArea || this.isInjected) {
-        return;
-    }
+        const contentArea = document.getElementById('dynamic-content');
+        if (!contentArea || this.isInjected) {
+            return;
+        }
 
-    // Verificar si el contenido actual es "Configuración de la app"
-    const currentContent = contentArea.textContent || '';
-    if (currentContent.includes('Configuración de la app')) {
-        this.injectConfigurationUI(contentArea);
-        return;
-    }
+        const currentContent = contentArea.textContent || '';
+        if (currentContent.includes('Configuración de la app')) {
+            this.injectConfigurationUI(contentArea);
+            return;
+        }
 
-    // También funcionar si se llama directamente
-    if (contentArea.querySelector('.section-header h2')?.textContent?.includes('Configuración')) {
-        this.injectConfigurationUI(contentArea);
+        if (contentArea.querySelector('.section-header h2')?.textContent?.includes('Configuración')) {
+            this.injectConfigurationUI(contentArea);
+        }
     }
-}
 
     /**
      * Inyectar interfaz completa de configuración
@@ -69,7 +68,6 @@ class ConfigUI {
         container.innerHTML = configHTML;
         this.isInjected = true;
 
-        // Configurar eventos después de inyectar
         setTimeout(() => {
             this.setupConfigEvents();
             this.loadSection(this.currentSection);
@@ -164,15 +162,13 @@ class ConfigUI {
      * Configurar eventos de la interfaz
      */
     setupConfigEvents() {
-        // Eventos del menú lateral
         const menuItems = document.querySelectorAll('.config-menu-item');
         menuItems.forEach(item => {
-            item.addEventListener('click', (e) => {
+            item.addEventListener('click', () => {
                 const section = item.dataset.section;
                 this.switchSection(section);
             });
         });
-
         console.log('🎧 ConfigUI: Eventos configurados');
     }
 
@@ -180,77 +176,224 @@ class ConfigUI {
      * Cambiar de sección
      */
     switchSection(section) {
-        // Actualizar menú activo
         document.querySelectorAll('.config-menu-item').forEach(item => {
             item.classList.remove('active');
         });
         document.querySelector(`[data-section="${section}"]`).classList.add('active');
-
-        // Cargar contenido de la sección
         this.currentSection = section;
         this.loadSection(section);
     }
 
     /**
-     * Cargar contenido de una sección
+     * Cargar contenido de una sección (Refactorizado)
      */
     loadSection(section) {
         const titleElement = document.getElementById('section-title');
         const descriptionElement = document.getElementById('section-description');
         const contentElement = document.getElementById('config-content-body');
+        let htmlContent = '';
 
         switch (section) {
             case 'general':
                 titleElement.textContent = '🔧 Configuración General';
                 descriptionElement.textContent = 'Ajusta las preferencias básicas de la aplicación';
-                contentElement.innerHTML = this.generateGeneralSection();
+                htmlContent = this.generateGeneralSection();
                 break;
-                
             case 'currency':
                 titleElement.textContent = '💱 Configuración de Monedas';
                 descriptionElement.textContent = 'Gestiona la moneda principal y formato de números';
-                contentElement.innerHTML = this.generateCurrencySection();
-                this.setupCurrencyEvents();
+                htmlContent = this.generateCurrencySection();
                 break;
-                
             case 'theme':
                 titleElement.textContent = '🎨 Temas y Apariencia';
                 descriptionElement.textContent = 'Personaliza la apariencia visual de la aplicación';
-                contentElement.innerHTML = this.generateThemeSection();
-                this.setupThemeEvents();
+                htmlContent = this.generateThemeSection();
                 break;
-                
             case 'data':
                 titleElement.textContent = '📁 Gestión de Datos';
                 descriptionElement.textContent = 'Importa y exporta tu información';
-                contentElement.innerHTML = this.generateDataSection();
-                this.setupDataEvents();
+                htmlContent = this.generateDataSection();
                 break;
-                
             case 'about':
                 titleElement.textContent = 'ℹ️ Acerca de la Aplicación';
                 descriptionElement.textContent = 'Información del sistema y versión';
-                contentElement.innerHTML = this.generateAboutSection();
+                htmlContent = this.generateAboutSection();
                 break;
         }
+
+        contentElement.innerHTML = htmlContent;
+        this.setupFormFocusFix();
+
+        if (section === 'currency') this.setupCurrencyEvents();
+        if (section === 'theme') this.setupThemeEvents();
+        if (section === 'data') this.setupDataEvents();
     }
+
+/**
+ * 🎯 FIX AGRESIVO v4: Configuración para GANAR la batalla contra notas.js
+ * Este método es MÁS agresivo que el sistema de notas.js
+ */
+setupFormFocusFix() {
+    console.log('🚨 ACTIVANDO FIX AGRESIVO v4 - Modo Competencia contra notas.js');
+    
+    const formElements = document.querySelectorAll('#config-content-body .form-input, #config-content-body .form-select, #config-content-body .form-checkbox');
+    
+    if (formElements.length === 0) {
+        console.log('⚠️ No se encontraron elementos de formulario en config-content-body');
+        return;
+    }
+
+    formElements.forEach((element, index) => {
+        // ESTRATEGIA 1: Interceptar ANTES que notas.js con capture: true
+        element.addEventListener('mousedown', (e) => {
+            console.log(`🎯 ConfigUI interceptando mousedown en elemento ${index}`);
+            
+            // DETENER INMEDIATAMENTE cualquier propagación
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+            e.preventDefault();
+            
+            // FORZAR FOCO MÚLTIPLE - más agresivo que notas.js
+            setTimeout(() => {
+                element.focus();
+                console.log(`✅ Foco forzado en elemento ${index}`);
+            }, 0);
+            
+            setTimeout(() => {
+                element.focus();
+                console.log(`🔄 Segundo intento de foco en elemento ${index}`);
+            }, 10);
+            
+            setTimeout(() => {
+                element.focus();
+                console.log(`🔄 Tercer intento de foco en elemento ${index}`);
+            }, 50);
+            
+            return false; // Máxima prevención
+            
+        }, { capture: true, passive: false }); // capture: true = interceptar ANTES que notas.js
+
+        // ESTRATEGIA 2: También interceptar click
+        element.addEventListener('click', (e) => {
+            console.log(`🖱️ ConfigUI interceptando click en elemento ${index}`);
+            
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+            
+            // Triple foco para asegurar
+            element.focus();
+            setTimeout(() => element.focus(), 0);
+            setTimeout(() => element.focus(), 25);
+            
+        }, { capture: true, passive: false });
+
+        // ESTRATEGIA 3: Defender el foco una vez obtenido
+        element.addEventListener('focus', (e) => {
+            console.log(`🎯 Elemento ${index} recibió foco - DEFENDIENDO`);
+            
+            // Programar re-foco defensivo
+            const defendFocus = () => {
+                if (document.activeElement !== element) {
+                    console.log(`🛡️ Defendiendo foco del elemento ${index}`);
+                    element.focus();
+                }
+            };
+            
+            setTimeout(defendFocus, 10);
+            setTimeout(defendFocus, 50);
+            setTimeout(defendFocus, 100);
+            
+        }, { capture: true });
+
+        // ESTRATEGIA 4: Prevenir que pierda el foco
+        element.addEventListener('blur', (e) => {
+            console.log(`⚠️ Elemento ${index} perdiendo foco - RECUPERANDO`);
+            
+            // Recuperar foco inmediatamente si no fue intencional
+            setTimeout(() => {
+                // Solo recuperar si no hay otro elemento de configuración activo
+                const activeElement = document.activeElement;
+                const isConfigElement = activeElement && activeElement.closest('#config-content-body');
+                
+                if (!isConfigElement) {
+                    console.log(`🔄 Recuperando foco para elemento ${index}`);
+                    element.focus();
+                }
+            }, 5);
+        });
+
+        // ESTRATEGIA 5: Event listener global para proteger este elemento específico
+        const protectElement = (e) => {
+            // Si el evento target es nuestro elemento protegido
+            if (e.target === element) {
+                console.log(`🛡️ Protegiendo elemento ${index} de interferencia externa`);
+                e.stopImmediatePropagation();
+                e.stopPropagation();
+                element.focus();
+                return false;
+            }
+        };
+
+        // Agregar protección global
+        document.addEventListener('mousedown', protectElement, { capture: true });
+        document.addEventListener('click', protectElement, { capture: true });
+
+        console.log(`🔧 Elemento ${index} (${element.tagName}.${element.className}) PROTEGIDO con FIX AGRESIVO v4`);
+    });
+
+    // ESTRATEGIA 6: Observer para detectar cambios en activeElement
+    let lastActiveElement = null;
+    const focusObserver = setInterval(() => {
+        const currentActive = document.activeElement;
+        
+        if (currentActive !== lastActiveElement) {
+            lastActiveElement = currentActive;
+            
+            // Si el elemento activo NO es de configuración, verificar si deberíamos intervenir
+            const isConfigElement = currentActive && currentActive.closest('#config-content-body');
+            const configContainer = document.getElementById('config-content-body');
+            
+            if (!isConfigElement && configContainer && configContainer.offsetParent !== null) {
+                console.log('🔍 Foco perdido de área de configuración - elemento activo:', currentActive?.tagName, currentActive?.className);
+                
+                // Si hay un elemento de configuración que debería tener foco, dárselo
+                const firstInput = configContainer.querySelector('.form-input, .form-select, .form-checkbox');
+                if (firstInput && !currentActive?.closest('.modal-overlay, .modal-system')) {
+                    console.log('🔄 Redirigiendo foco a primer elemento de configuración');
+                    setTimeout(() => firstInput.focus(), 10);
+                }
+            }
+        }
+    }, 100); // Verificar cada 100ms
+
+    // Limpiar observer cuando se destruya ConfigUI
+    this.focusObserver = focusObserver;
+
+    console.log(`🚨 FIX AGRESIVO v4 aplicado a ${formElements.length} elementos`);
+    console.log('📋 Estrategias implementadas:');
+    console.log('  1. ✅ Interceptación con capture: true');
+    console.log('  2. ✅ Triple foco forzado');
+    console.log('  3. ✅ Defensa activa del foco');
+    console.log('  4. ✅ Recuperación automática');
+    console.log('  5. ✅ Protección global');
+    console.log('  6. ✅ Observer de cambios de foco');
+}
 
     /**
      * Generar sección general
      */
     generateGeneralSection() {
         const config = this.storage.getConfiguracion();
-        
         return `
             <div class="config-section-content">
                 <div class="form-group">
-                    <label class="form-label">Nombre de Usuario</label>
+                    <label class="form-label" for="userName">Nombre de Usuario</label>
                     <input type="text" class="form-input" id="userName" value="${config.usuario || ''}" placeholder="Tu nombre">
                     <span class="form-help">Aparece en el encabezado de la aplicación</span>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">Auto-guardado</label>
+                    <label class="form-label" for="autoSave">Auto-guardado</label>
                     <select class="form-select" id="autoSave">
                         <option value="5" ${config.autoSave === 5 ? 'selected' : ''}>Cada 5 minutos</option>
                         <option value="10" ${config.autoSave === 10 ? 'selected' : ''}>Cada 10 minutos</option>
@@ -286,7 +429,7 @@ class ConfigUI {
         return `
             <div class="config-section-content">
                 <div class="form-group">
-                    <label class="form-label">Moneda Principal</label>
+                    <label class="form-label" for="mainCurrency">Moneda Principal</label>
                     <select class="form-select" id="mainCurrency">
                         ${supportedCurrencies.map(currency => `
                             <option value="${currency.code}" ${currency.code === currentCurrency ? 'selected' : ''}>
@@ -325,7 +468,7 @@ class ConfigUI {
         return `
             <div class="config-section-content">
                 <div class="form-group">
-                    <label class="form-label">Tema Visual</label>
+                    <label class="form-label" for="themeSelect">Tema Visual</label>
                     <select class="form-select" id="themeSelect">
                         <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>☀️ Claro</option>
                         <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>🌙 Oscuro</option>
@@ -398,7 +541,7 @@ class ConfigUI {
                     <span class="info-icon">💰</span>
                     <div class="info-text">
                         <strong>WiseSpend</strong>
-                        <p>Sistema de Control de Gastos Familiares v2.1.0</p>
+                        <p>Sistema de Control de Gastos Familiares v2.1.3</p>
                     </div>
                 </div>
 
@@ -467,9 +610,6 @@ class ConfigUI {
         
         if (currencySelect && preview) {
             const tempCurrency = currencySelect.value;
-            const tempManager = { ...this.currencyManager };
-            tempManager.currentCurrency = tempCurrency;
-            
             preview.textContent = this.currencyManager.format(1234567, tempCurrency);
         }
     }
@@ -487,9 +627,6 @@ class ConfigUI {
      * MÉTODOS DE GUARDADO
      */
 
-    /**
-     * Guardar configuración general
-     */
     saveGeneralConfig() {
         const userName = document.getElementById('userName')?.value || '';
         const autoSave = parseInt(document.getElementById('autoSave')?.value) || 5;
@@ -504,9 +641,6 @@ class ConfigUI {
         this.showSuccessMessage('Configuración general guardada');
     }
 
-    /**
-     * Guardar configuración de monedas
-     */
     saveCurrencyConfig() {
         const newCurrency = document.getElementById('mainCurrency')?.value;
         
@@ -515,7 +649,6 @@ class ConfigUI {
             this.updateCurrencyPreview();
             this.showSuccessMessage('Moneda actualizada correctamente');
             
-            // Recargar dashboard para aplicar cambios
             setTimeout(() => {
                 if (window.dashboardMain) {
                     window.dashboardMain.updateStatCards();
@@ -524,9 +657,6 @@ class ConfigUI {
         }
     }
 
-    /**
-     * Guardar configuración de temas
-     */
     saveThemeConfig() {
         const newTheme = document.getElementById('themeSelect')?.value;
         
@@ -536,9 +666,6 @@ class ConfigUI {
         }
     }
 
-    /**
-     * Actualizar tasas de cambio
-     */
     updateExchangeRates() {
         if (this.currencyManager) {
             this.currencyManager.forceUpdateRates();
@@ -546,14 +673,9 @@ class ConfigUI {
         }
     }
 
-    /**
-     * Exportar datos
-     */
     exportData() {
         try {
             const allData = {};
-            
-            // Recopilar todos los datos
             for (let key in localStorage) {
                 if (localStorage.hasOwnProperty(key)) {
                     try {
@@ -566,7 +688,7 @@ class ConfigUI {
 
             const exportData = {
                 exportDate: new Date().toISOString(),
-                version: '2.1.0',
+                version: '2.1.3',
                 data: allData
             };
 
@@ -583,9 +705,7 @@ class ConfigUI {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
 
-            // Actualizar fecha de último respaldo
             this.storage.setItem('lastBackup', new Date().toLocaleString());
-            
             this.showSuccessMessage('Datos exportados correctamente');
         } catch (error) {
             console.error('Error exportando datos:', error);
@@ -593,9 +713,6 @@ class ConfigUI {
         }
     }
 
-    /**
-     * Importar datos
-     */
     importData(input) {
         const file = input.files[0];
         if (!file) return;
@@ -609,16 +726,12 @@ class ConfigUI {
                     throw new Error('Formato de archivo inválido');
                 }
 
-                // Confirmar importación
                 if (confirm('¿Estás seguro de que quieres importar estos datos? Esto sobrescribirá la configuración actual.')) {
-                    // Importar datos
                     for (let key in importData.data) {
                         localStorage.setItem(key, JSON.stringify(importData.data[key]));
                     }
-
                     this.showSuccessMessage('Datos importados correctamente. Recargando...');
                     
-                    // Recargar página
                     setTimeout(() => {
                         window.location.reload();
                     }, 2000);
@@ -632,9 +745,6 @@ class ConfigUI {
         reader.readAsText(file);
     }
 
-    /**
-     * Restablecer todos los datos
-     */
     resetAllData() {
         if (confirm('⚠️ ¿Estás seguro de que quieres eliminar TODOS los datos? Esta acción no se puede deshacer.')) {
             if (confirm('🚨 Confirmación final: Se eliminarán todos los gastos, ingresos y configuraciones. ¿Continuar?')) {
@@ -653,52 +763,49 @@ class ConfigUI {
      */
 
     /**
-     * Mostrar mensaje de éxito
+     * 🐛 FIX: Usar un método compatible con el sistema de modales actual.
      */
     showSuccessMessage(message) {
-        if (window.modalSystem) {
-            window.modalSystem.showSuccess(message);
+        if (window.modalSystem && typeof window.modalSystem.show === 'function') {
+            window.modalSystem.show('Éxito', message, 'success');
         } else {
             alert('✅ ' + message);
         }
     }
 
     /**
-     * Mostrar mensaje de error
+     * 🐛 FIX: Usar un método compatible con el sistema de modales actual.
      */
     showErrorMessage(message) {
-        if (window.modalSystem) {
-            window.modalSystem.showError(message);
+        if (window.modalSystem && typeof window.modalSystem.show === 'function') {
+            window.modalSystem.show('Error', message, 'error');
         } else {
             alert('❌ ' + message);
         }
     }
 
-    /**
-     * Resetear estado de inyección
-     */
     resetInjectionState() {
         this.isInjected = false;
     }
 
-    /**
-     * Destructor
-     */
     destroy() {
-        this.isInjected = false;
-        console.log('🧹 ConfigUI destruido');
+    // Limpiar focus observer
+    if (this.focusObserver) {
+        clearInterval(this.focusObserver);
+        this.focusObserver = null;
     }
-
-    /**
- * Método público para forzar inyección
- */
-forceInject() {
-    const contentArea = document.getElementById('dynamic-content');
-    if (contentArea) {
-        this.isInjected = false; // Resetear estado
-        this.injectConfigurationUI(contentArea);
-    }
+    
+    this.isInjected = false;
+    console.log('🧹 ConfigUI destruido');
 }
+
+    forceInject() {
+        const contentArea = document.getElementById('dynamic-content');
+        if (contentArea) {
+            this.isInjected = false;
+            this.injectConfigurationUI(contentArea);
+        }
+    }
 }
 
 // Crear instancia global
@@ -709,4 +816,4 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = ConfigUI;
 }
 
-console.log('⚙️ ConfigUI v2.0.0 cargado - Sistema de configuración completo activo');
+console.log('⚙️ ConfigUI v2.1.3 cargado - Sistema de configuración completo activo (Solución Definitiva)');

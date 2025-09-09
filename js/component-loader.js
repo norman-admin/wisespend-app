@@ -1,15 +1,13 @@
 /**
  * 🧩 COMPONENT LOADER - Sistema de Carga de Componentes
  * Control de Gastos Familiares - component-loader.js
- * Versión: 1.4.0 - DELEGACIÓN DE INGRESOS CORREGIDA
- * 
- * 🔧 CORRECCIONES v1.4.0:
- * ✅ Delegación completa de ingresos a gastosManager
- * ✅ Eliminado conflicto con tabla mejorada
- * ✅ Mantiene todas las funcionalidades existentes
- * ✅ Botón de ingresos configurado correctamente
+ * Versión: 1.5.0 - INTEGRACIÓN AUTOMÁTICA DE CONFIG-UI
+ * * 🔧 CAMBIOS v1.5.0:
+ * ✅ Integración automática y robusta de ConfigUI en loadConfigSection
+ * ✅ Se eliminó la necesidad de inyección manual
+ * ✅ Añadido un sistema de reintentos para esperar a que los módulos estén listos
+ * ✅ Mantiene delegación completa de ingresos a gastosManager
  * ✅ Callback system para dashboard-main.js
- * ✅ Sincronización correcta de eventos
  */
 
 class ComponentLoader {
@@ -239,44 +237,58 @@ async loadHeaderScript() {
         this.notifySectionReady('income');
     }
 
-/**
- * Cargar sección de configuración
- */
-loadConfigSection(container) {
-    console.log('⚙️ Cargando sección de configuración...');
-    
-    // Mostrar contenido temporal mientras se carga
-    container.innerHTML = `
-        <section class="content-section active">
-            <div class="section-header">
-                <h2>⚙️ Configuración de la Aplicación</h2>
-                <p>Cargando sistema de configuración...</p>
-            </div>
-        </section>
-    `;
-    
-    // Forzar inyección del ConfigUI después de un momento
-    setTimeout(() => {
-        if (window.configUI) {
-            console.log('✅ Forzando inyección de ConfigUI...');
-            window.configUI.forceInject();
-        } else {
-            console.error('❌ ConfigUI no está disponible');
-            container.innerHTML = `
-                <section class="content-section active">
-                    <div class="section-header">
-                        <h2>⚙️ Configuración</h2>
-                    </div>
-                    <div style="padding: 40px; text-align: center;">
-                        <p>❌ Sistema de configuración no disponible</p>
-                    </div>
-                </section>
-            `;
-        }
-    }, 300);
-    
-    this.notifySectionReady('config');
-}
+    /**
+     * ⚙️ CARGAR SECCIÓN DE CONFIGURACIÓN - INTEGRACIÓN AUTOMÁTICA (Opción A Recomendada)
+     */
+    loadConfigSection(container) {
+        console.log('⚙️ Cargando sección de configuración...');
+        
+        // 1. Mostrar un estado de carga inmediato para mejorar la UX
+        container.innerHTML = `
+            <section class="content-section active">
+                <div class="section-header">
+                    <h2>⚙️ Configuración de la Aplicación</h2>
+                    <p>Cargando sistema de configuración...</p>
+                </div>
+                <div style="padding: 40px; text-align: center;">
+                    <p>Inicializando interfaz...</p>
+                </div>
+            </section>
+        `;
+        
+        // 2. Intentar inyectar la UI de configuración. Reintentar si el módulo no está listo.
+        let attempts = 0;
+        const maxAttempts = 10; // Intentar por 2 segundos
+        
+        const tryInject = () => {
+            if (window.configUI && typeof window.configUI.forceInject === 'function') {
+                console.log('✅ Inyectando ConfigUI automáticamente...');
+                window.configUI.forceInject();
+                this.notifySectionReady('config');
+            } else if (attempts < maxAttempts) {
+                attempts++;
+                console.warn(`⏳ configUI no está listo. Reintentando... (${attempts}/${maxAttempts})`);
+                setTimeout(tryInject, 200);
+            } else {
+                console.error('❌ No se pudo inyectar ConfigUI después de varios intentos.');
+                container.innerHTML = `
+                    <section class="content-section active">
+                        <div class="section-header">
+                            <h2>⚙️ Error de Carga</h2>
+                        </div>
+                        <div class="error-state" style="padding: 20px; text-align: center; color: #dc2626;">
+                            <p>No se pudo cargar el módulo de configuración. Por favor, recarga la página.</p>
+                        </div>
+                    </section>
+                `;
+                this.notifySectionReady('config');
+            }
+        };
+        
+        // Iniciar el primer intento
+        tryInject();
+    }
+
 
     /**
      * 🔥 NOTIFICAR AL DASHBOARD QUE LA SECCIÓN ESTÁ LISTA - MANTENIDO
@@ -559,20 +571,6 @@ showVariosError(container, message) {
         this.notifySectionReady('personal');
     }
 
-    loadConfigSection(container) {
-        console.log('⚙️ Cargando configuración...');
-        container.innerHTML = `
-            <section class="content-section active">
-                <div class="section-header">
-                    <h2>Configuración de la app</h2>
-                </div>
-                <div class="config-content">
-                    </div>
-            </section>
-        `;
-        this.notifySectionReady('config');
-    }
-
     loadDefaultSection(container) {
         console.log('🏠 Cargando sección por defecto...');
         this.loadIncomeSection(container);
@@ -809,4 +807,4 @@ if (document.readyState === 'loading') {
     window.componentLoader.loadAllComponents();
 }
 
-console.log('🧩 component-loader.js v1.4.0 - DELEGACIÓN DE INGRESOS CORREGIDA');
+console.log('🧩 component-loader.js v1.5.0 - INTEGRACIÓN AUTOMÁTICA DE CONFIG-UI');

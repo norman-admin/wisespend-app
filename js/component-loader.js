@@ -239,6 +239,45 @@ async loadHeaderScript() {
         this.notifySectionReady('income');
     }
 
+/**
+ * Cargar sección de configuración
+ */
+loadConfigSection(container) {
+    console.log('⚙️ Cargando sección de configuración...');
+    
+    // Mostrar contenido temporal mientras se carga
+    container.innerHTML = `
+        <section class="content-section active">
+            <div class="section-header">
+                <h2>⚙️ Configuración de la Aplicación</h2>
+                <p>Cargando sistema de configuración...</p>
+            </div>
+        </section>
+    `;
+    
+    // Forzar inyección del ConfigUI después de un momento
+    setTimeout(() => {
+        if (window.configUI) {
+            console.log('✅ Forzando inyección de ConfigUI...');
+            window.configUI.forceInject();
+        } else {
+            console.error('❌ ConfigUI no está disponible');
+            container.innerHTML = `
+                <section class="content-section active">
+                    <div class="section-header">
+                        <h2>⚙️ Configuración</h2>
+                    </div>
+                    <div style="padding: 40px; text-align: center;">
+                        <p>❌ Sistema de configuración no disponible</p>
+                    </div>
+                </section>
+            `;
+        }
+    }, 300);
+    
+    this.notifySectionReady('config');
+}
+
     /**
      * 🔥 NOTIFICAR AL DASHBOARD QUE LA SECCIÓN ESTÁ LISTA - MANTENIDO
      */

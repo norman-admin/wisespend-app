@@ -315,7 +315,6 @@ async loadHerramientasModule(container) {
         <div class="varios-tab-content" data-tab="herramientas">
             <div class="tab-content-header">
                 <h3>🧮 Herramientas Financieras</h3>
-                <button class="btn-primary">🔧 Nueva Herramienta</button>
             </div>
             <div class="herramientas-content">
                 <div style="text-align: center; padding: 40px;">

@@ -1,13 +1,14 @@
 /**
- * 📋 VARIOS-MANAGER.JS - Controlador Principal de Pestañas
+ * 📋 VARIOS-MANAGER.JS - Controlador Principal de Pestañas (ACTUALIZADO)
  * Control de Gastos Familiares - WiseSpend
- * Versión: 1.0.0
+ * Versión: 1.1.0 - Integración Sistema de Documentos Fase 1
  * 
  * 🎯 FUNCIONALIDADES:
  * ✅ Sistema de pestañas dinámico
  * ✅ Carga modular de contenido
  * ✅ Gestión de estado de pestañas
  * ✅ Integración con dashboard principal
+ * 🆕 Sistema de documentos integrado
  */
 
 class VariosManager {
@@ -37,7 +38,7 @@ class VariosManager {
         this.container = null;
         this.initialized = false;
         
-        console.log('📋 VariosManager v1.0.0: Inicializando...');
+        console.log('📋 VariosManager v1.1.0: Inicializando...');
     }
 
     /**
@@ -87,104 +88,69 @@ class VariosManager {
                 resolve();
             };
             link.onerror = () => {
-                console.warn('⚠️ No se pudo cargar varios-main.css');
-                resolve(); // Continuar sin CSS
+                console.error('❌ Error cargando varios-main.css');
+                reject(new Error('No se pudo cargar varios-main.css'));
             };
             document.head.appendChild(link);
         });
     }
 
     /**
-     * 🖼️ Renderizar interfaz principal de pestañas
+     * 🖼️ Renderizar interfaz principal
      */
     renderMainInterface() {
-        const html = `
-            <section class="content-section active">
-                <div class="section-header">
-                    <h2>📋 Varios</h2>
+        if (!this.container) return;
+
+        this.container.innerHTML = `
+            <div class="varios-main-container" id="variosMainContainer">
+                <!-- Navegación de Pestañas -->
+                <div class="varios-tabs-nav" id="variosTabsNav">
+                    ${this.tabs.map(tab => `
+                        <button class="varios-tab-btn ${tab.id === this.currentTab ? 'active' : ''}" 
+                                data-tab="${tab.id}"
+                                onclick="variosManager.switchTab('${tab.id}')">
+                            <span class="tab-icon">${tab.icon}</span>
+                            <span class="tab-name">${tab.name}</span>
+                        </button>
+                    `).join('')}
                 </div>
-                
-                <!-- Sistema de pestañas -->
-                <div class="varios-container">
-                    <!-- Navegación de pestañas -->
-                    <div class="varios-tabs-nav">
-                        ${this.renderTabsNavigation()}
-                    </div>
-                    
-                    <!-- Contenido de pestañas -->
-                        <div class="varios-tabs-content" id="varios-content"></div>
+
+                <!-- Contenido de Pestañas -->
+                <div class="varios-tabs-content" id="variosTabsContent">
+                    <div id="varios-content">
+                        <!-- Contenido dinámico se carga aquí -->
                     </div>
                 </div>
-            </section>
+            </div>
         `;
-        
-        this.container.innerHTML = html;
-        this.bindTabEvents();
-    }
-
-    /**
-     * 🧭 Renderizar navegación de pestañas
-     */
-    renderTabsNavigation() {
-        return this.tabs.map(tab => `
-            <button class="varios-tab-btn ${tab.id === this.currentTab ? 'active' : ''}" 
-                    data-tab="${tab.id}">
-                <span class="tab-icon">${tab.icon}</span>
-                <span class="tab-name">${tab.name}</span>
-            </button>
-        `).join('');
-    }
-
-    /**
-     * 🔗 Vincular eventos de pestañas
-     */
-    bindTabEvents() {
-        const tabButtons = this.container.querySelectorAll('.varios-tab-btn');
-        
-        tabButtons.forEach(button => {
-            button.addEventListener('click', async (e) => {
-                e.preventDefault();
-                const tabId = button.dataset.tab;
-                
-                if (tabId !== this.currentTab) {
-                    await this.switchTab(tabId);
-                }
-            });
-        });
-        
-        console.log(`✅ ${tabButtons.length} pestañas configuradas`);
     }
 
     /**
      * 🔄 Cambiar de pestaña
      */
     async switchTab(tabId) {
+        if (tabId === this.currentTab) return;
+
         try {
-            // Actualizar estado visual
-            this.updateTabsVisualState(tabId);
-            
-            // Cargar contenido de la nueva pestaña
+            this.currentTab = tabId;
+            this.updateActiveTab();
             await this.loadTab(tabId);
             
-            // Actualizar pestaña actual
-            this.currentTab = tabId;
-            
-            console.log(`✅ Cambiado a pestaña: ${tabId}`);
+            console.log(`✅ Pestaña cambiada a: ${tabId}`);
             
         } catch (error) {
-            console.error(`❌ Error al cambiar a pestaña ${tabId}:`, error);
-            this.showError(`Error al cargar ${tabId}`);
+            console.error(`❌ Error cambiando a pestaña ${tabId}:`, error);
         }
     }
 
     /**
-     * 🎨 Actualizar estado visual de pestañas
+     * 🎯 Actualizar botón activo
      */
-    updateTabsVisualState(activeTabId) {
-        const tabButtons = this.container.querySelectorAll('.varios-tab-btn');
-        
-        tabButtons.forEach(button => {
-            if (button.dataset.tab === activeTabId) {
+    updateActiveTab() {
+        const buttons = document.querySelectorAll('.varios-tab-btn');
+        buttons.forEach(button => {
+            const tabId = button.getAttribute('data-tab');
+            if (tabId === this.currentTab) {
                 button.classList.add('active');
             } else {
                 button.classList.remove('active');
@@ -228,173 +194,183 @@ class VariosManager {
      * 📝 Cargar módulo de Notas
      */
     async loadNotasModule(container) {
-    try {
-        console.log('📝 Cargando módulo completo de notas...');
-        
-        // Verificar si notas.js ya está cargado
-        if (!window.notasManager) {
-            console.log('📝 Cargando notas.js...');
-            await this.loadNotasScript();
-        }
-        
-        // Verificar que notasManager esté disponible
-        if (!window.notasManager) {
-            throw new Error('NotasManager no se cargó correctamente');
-        }
-        
-        // Inicializar el sistema de notas
-        await window.notasManager.init('varios-content');
-        
-        console.log('✅ Módulo Notas cargado completamente');
-        
-    } catch (error) {
-        console.error('❌ Error cargando módulo de notas:', error);
-        container.innerHTML = `
-            <div class="varios-tab-content" data-tab="notas">
-                <div class="varios-error">
-                    <p>❌ Error al cargar el sistema de notas</p>
-                    <button onclick="variosManager.loadNotasModule(document.getElementById('varios-content'))">🔄 Reintentar</button>
-                </div>
-            </div>
-        `;
-    }
-}
-
-    /**
- * 🆕 CARGAR SCRIPT DE NOTAS.JS
- */
-async loadNotasScript() {
-    return new Promise((resolve, reject) => {
-        // Verificar si el script ya existe
-        const existingScript = document.querySelector('script[src*="notas.js"]');
-        if (existingScript) {
-            console.log('📝 Script notas.js ya existe');
-            resolve();
-            return;
-        }
-        
-        // Cargar el script dinámicamente
-        const script = document.createElement('script');
-        script.src = 'varios/js/notas.js';
-        script.onload = () => {
-            console.log('✅ notas.js cargado exitosamente');
-            setTimeout(resolve, 100);
-        };
-        script.onerror = () => {
-            console.error('❌ Error cargando notas.js');
-            reject(new Error('No se pudo cargar notas.js'));
-        };
-        
-        document.head.appendChild(script);
-    });
-}
-
-    /**
-     * 📄 Cargar módulo de Documentos
-     */
-    async loadDocumentosModule(container) {
-        container.innerHTML = `
-            <div class="varios-tab-content" data-tab="documentos">
-                <div class="tab-content-header">
-                    <h3>📄 Gestión de Documentos</h3>
-                    <button class="btn-primary">📎 Subir Documento</button>
-                </div>
-                <div class="documentos-content">
-                    <p>Gestión de documentos será implementada aquí...</p>
-                </div>
-            </div>
-        `;
-        console.log('📄 Módulo Documentos cargado (básico)');
-    }
-
-    /**
-     * 🧮 Cargar módulo de Herramientas
-     */
-async loadHerramientasModule(container) {
-    container.innerHTML = `
-        <div class="varios-tab-content" data-tab="herramientas">
-            <div class="tab-content-header">
-                <h3>🧮 Herramientas Financieras</h3>
-            </div>
-            <div class="herramientas-content">
-                <div style="text-align: center; padding: 40px;">
-                    <h3>Herramientas Financieras Disponibles</h3>
-                    <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-top: 20px;">
-                        <a href="Varios/herramientas.html" 
-                           style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; min-width: 200px; text-align: center;">
-                            🧮 Calculadora de Créditos
-                        </a>
-                        <a href="Varios/simulador-ahorro.html" 
-                           style="display: inline-block; background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; min-width: 200px; text-align: center;">
-                            💰 Simulador de Ahorro
-                        </a>
-                        <a href="Varios/conversor-monedas.html" 
-                           style="display: inline-block; background: #f59e0b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; min-width: 200px; text-align: center;">
-                            💱 Conversor de Monedas
-                        </a>
+        try {
+            console.log('📝 Cargando módulo completo de notas...');
+            
+            // Verificar si notas.js ya está cargado
+            if (!window.notasManager) {
+                console.log('📝 Cargando notas.js...');
+                await this.loadNotasScript();
+            }
+            
+            // Verificar que notasManager esté disponible
+            if (!window.notasManager) {
+                throw new Error('NotasManager no se cargó correctamente');
+            }
+            
+            // Inicializar el sistema de notas
+            await window.notasManager.init('varios-content');
+            
+            console.log('✅ Módulo Notas cargado completamente');
+            
+        } catch (error) {
+            console.error('❌ Error cargando módulo de notas:', error);
+            container.innerHTML = `
+                <div class="varios-tab-content" data-tab="notas">
+                    <div class="varios-error">
+                        <p>❌ Error al cargar el sistema de notas</p>
+                        <button onclick="variosManager.loadNotasModule(document.getElementById('varios-content'))">🔄 Reintentar</button>
                     </div>
-                </div>
-            </div>
-        </div>
-    `;
-    console.log('🧮 Módulo Herramientas cargado con 3 herramientas');
-}
-    /**
-     * ❌ Mostrar error
-     */
-    showError(message) {
-        const contentContainer = this.container?.querySelector('#varios-content');
-        if (contentContainer) {
-            contentContainer.innerHTML = `
-                <div class="varios-error">
-                    <p>❌ ${message}</p>
-                    <button onclick="variosManager.init()">🔄 Reiniciar</button>
                 </div>
             `;
         }
     }
 
     /**
-     * 🔧 Métodos públicos para integración
+     * 🆕 CARGAR SCRIPT DE NOTAS.JS
      */
-    getCurrentTab() {
-        return this.currentTab;
-    }
-
-    isInitialized() {
-        return this.initialized;
+    async loadNotasScript() {
+        return new Promise((resolve, reject) => {
+            // Verificar si el script ya existe
+            const existingScript = document.querySelector('script[src*="notas.js"]');
+            if (existingScript) {
+                console.log('📝 Script notas.js ya existe');
+                resolve();
+                return;
+            }
+            
+            // Cargar el script dinámicamente
+            const script = document.createElement('script');
+            script.src = 'varios/js/notas.js';
+            script.onload = () => {
+                console.log('✅ notas.js cargado exitosamente');
+                setTimeout(resolve, 100);
+            };
+            script.onerror = () => {
+                console.error('❌ Error cargando notas.js');
+                reject(new Error('No se pudo cargar notas.js'));
+            };
+            
+            document.head.appendChild(script);
+        });
     }
 
     /**
-     * 🧹 Destruir instancia
+     * 📄 Cargar módulo de Documentos (ACTUALIZADO)
      */
-    destroy() {
-        this.initialized = false;
-        this.container = null;
-        this.currentTab = 'notas';
-        console.log('🧹 VariosManager destruido');
+    async loadDocumentosModule(container) {
+        try {
+            console.log('📄 Cargando módulo completo de documentos...');
+            
+            // Verificar si documentos.js ya está cargado
+            if (!window.documentosManager) {
+                console.log('📄 Cargando documentos.js...');
+                await this.loadDocumentosScript();
+            }
+            
+            // Verificar que documentosManager esté disponible
+            if (!window.documentosManager) {
+                throw new Error('DocumentosManager no se cargó correctamente');
+            }
+            
+            // Inicializar el sistema de documentos
+            await window.documentosManager.init('varios-content');
+            
+            console.log('✅ Módulo Documentos cargado completamente');
+            
+        } catch (error) {
+            console.error('❌ Error cargando módulo de documentos:', error);
+            container.innerHTML = `
+                <div class="varios-tab-content" data-tab="documentos">
+                    <div class="varios-error">
+                        <p>❌ Error al cargar el sistema de documentos</p>
+                        <button onclick="variosManager.loadDocumentosModule(document.getElementById('varios-content'))">🔄 Reintentar</button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    /**
+     * 🆕 CARGAR SCRIPT DE DOCUMENTOS.JS
+     */
+    async loadDocumentosScript() {
+        return new Promise((resolve, reject) => {
+            // Verificar si el script ya existe
+            const existingScript = document.querySelector('script[src*="documentos.js"]');
+            if (existingScript) {
+                console.log('📄 Script documentos.js ya existe');
+                resolve();
+                return;
+            }
+            
+            // Cargar el script dinámicamente
+            const script = document.createElement('script');
+            script.src = 'varios/js/documentos.js';
+            script.onload = () => {
+                console.log('✅ documentos.js cargado exitosamente');
+                setTimeout(resolve, 100);
+            };
+            script.onerror = () => {
+                console.error('❌ Error cargando documentos.js');
+                reject(new Error('No se pudo cargar documentos.js'));
+            };
+            
+            document.head.appendChild(script);
+        });
+    }
+
+    /**
+     * 🧮 Cargar módulo de Herramientas
+     */
+    async loadHerramientasModule(container) {
+        container.innerHTML = `
+            <div class="varios-tab-content" data-tab="herramientas">
+                <div class="tab-content-header">
+                    <h3>🧮 Herramientas Financieras</h3>
+                </div>
+                <div class="herramientas-content">
+                    <div style="text-align: center; padding: 40px;">
+                        <h3>Herramientas Financieras Disponibles</h3>
+                        <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-top: 20px;">
+                            <a href="Varios/herramientas.html" 
+                               style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; min-width: 200px; text-align: center;">
+                                🧮 Calculadora de Créditos
+                            </a>
+                            <a href="Varios/simulador-ahorro.html" 
+                               style="display: inline-block; background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; min-width: 200px; text-align: center;">
+                                💰 Simulador de Ahorro
+                            </a>
+                            <a href="Varios/conversor-monedas.html" 
+                               style="display: inline-block; background: #f59e0b; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; min-width: 200px; text-align: center;">
+                                💱 Conversor de Monedas
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        console.log('🧮 Módulo Herramientas cargado (básico)');
+    }
+
+    /**
+     * ❌ Mostrar error
+     */
+    showError(message) {
+        if (this.container) {
+            this.container.innerHTML = `
+                <div class="varios-main-container">
+                    <div class="varios-error">
+                        <p>❌ ${message}</p>
+                        <button onclick="variosManager.init()">🔄 Reintentar</button>
+                    </div>
+                </div>
+            `;
+        }
     }
 }
 
-// Crear instancia global
+// Instancia global
 window.variosManager = new VariosManager();
 
-// Exponer para debugging
-window.variosDebug = {
-    getManager: () => window.variosManager,
-    getCurrentTab: () => window.variosManager.getCurrentTab(),
-    switchTab: (tab) => window.variosManager.switchTab(tab),
-    reload: () => window.variosManager.init(),
-    
-    // Funciones específicas de notas
-    getNotasState: () => window.variosManager.getNotasState(),
-    reloadNotas: async () => {
-        if (window.notasManager) {
-            await window.notasManager.init();
-        }
-    },
-    
-};
-
-console.log('📋 Varios-manager.js v1.0.0 cargado - Sistema de pestañas listo');
-
+console.log('📋 VariosManager v1.1.0: Módulo cargado con soporte para Documentos');

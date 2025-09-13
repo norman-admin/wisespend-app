@@ -736,3 +736,29 @@ body {
     border-color: #1d4ed8 !important;
 }
 
+.btn-config-square {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 20px;
+    width: 80px;
+    height:30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-config-square:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn-config-square:active {
+    transform: translateY(0);
+}
+

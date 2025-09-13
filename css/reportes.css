@@ -1101,7 +1101,7 @@
 }
 
 .stat-main-value {
-    font-size: 28px;
+    font-size: 20px;
     font-weight: 800;
     color: var(--color-gray-800);
     margin-bottom: var(--spacing-sm);

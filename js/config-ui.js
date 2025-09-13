@@ -158,19 +158,61 @@ class ConfigUI {
         `;
     }
 
-    /**
-     * Configurar eventos de la interfaz
-     */
-    setupConfigEvents() {
-        const menuItems = document.querySelectorAll('.config-menu-item');
-        menuItems.forEach(item => {
-            item.addEventListener('click', () => {
-                const section = item.dataset.section;
-                this.switchSection(section);
-            });
+/**
+ * Configurar eventos de la interfaz MEJORADO
+ * Incluye previsualizaciones en tiempo real
+ */
+setupConfigEvents() {
+    // Eventos del menú lateral
+    const menuItems = document.querySelectorAll('.config-menu-item');
+    menuItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const section = item.dataset.section;
+            this.switchSection(section);
         });
-        console.log('🎧 ConfigUI: Eventos configurados');
-    }
+    });
+
+    // Eventos para vista previa en tiempo real (sección general)
+    this.setupGeneralPreviewEvents();
+
+    console.log('🎧 ConfigUI: Eventos configurados con previsualizaciones');
+}
+
+/**
+ * Configurar eventos de vista previa para sección general
+ */
+setupGeneralPreviewEvents() {
+    // Esperar a que los elementos estén disponibles
+    setTimeout(() => {
+        // Vista previa de moneda
+        const currencySelect = document.getElementById('generalCurrency');
+        if (currencySelect) {
+            currencySelect.addEventListener('change', () => {
+                this.updateGeneralPreviews();
+            });
+        }
+
+        // Vista previa de formato de fecha
+        const dateSelect = document.getElementById('dateFormat');
+        if (dateSelect) {
+            dateSelect.addEventListener('change', () => {
+                this.updateGeneralPreviews();
+            });
+        }
+
+        // Vista previa de confirmaciones
+        const confirmCheck = document.getElementById('confirmDeletions');
+        if (confirmCheck) {
+            confirmCheck.addEventListener('change', () => {
+                this.updateGeneralPreviews();
+            });
+        }
+
+        // Actualizar vistas previas iniciales
+        this.updateGeneralPreviews();
+        
+    }, 200);
+}
 
     /**
      * Cambiar de sección
@@ -379,45 +421,134 @@ setupFormFocusFix() {
     console.log('  6. ✅ Observer de cambios de foco');
 }
 
-    /**
-     * Generar sección general
-     */
-    generateGeneralSection() {
-        const config = this.storage.getConfiguracion();
-        return `
-            <div class="config-section-content">
-                <div class="form-group">
-                    <label class="form-label" for="userName">Nombre de Usuario</label>
-                    <input type="text" class="form-input" id="userName" value="${config.usuario || ''}" placeholder="Tu nombre">
-                    <span class="form-help">Aparece en el encabezado de la aplicación</span>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="autoSave">Auto-guardado</label>
-                    <select class="form-select" id="autoSave">
-                        <option value="5" ${config.autoSave === 5 ? 'selected' : ''}>Cada 5 minutos</option>
-                        <option value="10" ${config.autoSave === 10 ? 'selected' : ''}>Cada 10 minutos</option>
-                        <option value="15" ${config.autoSave === 15 ? 'selected' : ''}>Cada 15 minutos</option>
-                        <option value="0" ${config.autoSave === 0 ? 'selected' : ''}>Desactivado</option>
-                    </select>
-                    <span class="form-help">Frecuencia de guardado automático</span>
-                </div>
+/**
+ * Generar sección general MEJORADA
+ * Incluye: Moneda Principal + Formato de Fecha + Confirmaciones
+ */
+generateGeneralSection() {
+    const config = this.storage.getConfiguracion();
+    const currentCurrency = this.currencyManager?.getCurrentCurrency() || 'CLP';
+    
+    return `
+        <div class="config-section-content">
+            <!-- Información de Usuario -->
+            <div class="form-group">
+                <label class="form-label" for="userName">Nombre de Usuario</label>
+                <input type="text" class="form-input" id="userName" value="${config.usuario || ''}" placeholder="Tu nombre">
+                <span class="form-help">Aparece en el encabezado de la aplicación</span>
+            </div>
+            
+            <!-- Moneda Principal -->
+            <div class="form-group">
+                <label class="form-label" for="generalCurrency">Moneda Principal del Sistema</label>
+                <select class="form-select" id="generalCurrency">
+                    <option value="CLP" ${currentCurrency === 'CLP' ? 'selected' : ''}>💰 Peso Chileno (CLP)</option>
+                    <option value="USD" ${currentCurrency === 'USD' ? 'selected' : ''}>💵 Dólar Estadounidense (USD)</option>
+                    <option value="EUR" ${currentCurrency === 'EUR' ? 'selected' : ''}>💶 Euro (EUR)</option>
+                </select>
+                <span class="form-help">Moneda que se usa en todo el sistema para mostrar importes</span>
+            </div>
+            
+            <!-- Formato de Fecha -->
+            <div class="form-group">
+                <label class="form-label" for="dateFormat">Formato de Fecha</label>
+                <select class="form-select" id="dateFormat">
+                    <option value="DD/MM/YYYY" ${(config.dateFormat || 'DD/MM/YYYY') === 'DD/MM/YYYY' ? 'selected' : ''}>📅 DD/MM/YYYY (15/01/2025)</option>
+                    <option value="MM/DD/YYYY" ${config.dateFormat === 'MM/DD/YYYY' ? 'selected' : ''}>📅 MM/DD/YYYY (01/15/2025)</option>
+                    <option value="YYYY-MM-DD" ${config.dateFormat === 'YYYY-MM-DD' ? 'selected' : ''}>📅 YYYY-MM-DD (2025-01-15)</option>
+                </select>
+                <span class="form-help">Formato para mostrar fechas en reportes y formularios</span>
+            </div>
+            
+            <!-- Auto-guardado -->
+            <div class="form-group">
+                <label class="form-label" for="autoSave">Auto-guardado</label>
+                <select class="form-select" id="autoSave">
+                    <option value="5" ${config.autoSave === 5 ? 'selected' : ''}>Cada 5 minutos</option>
+                    <option value="10" ${config.autoSave === 10 ? 'selected' : ''}>Cada 10 minutos</option>
+                    <option value="15" ${config.autoSave === 15 ? 'selected' : ''}>Cada 15 minutos</option>
+                    <option value="0" ${config.autoSave === 0 ? 'selected' : ''}>Desactivado</option>
+                </select>
+                <span class="form-help">Frecuencia de guardado automático</span>
+            </div>
 
-                <div class="form-group">
-                    <div class="checkbox-label">
-                        <input type="checkbox" class="form-checkbox" id="showWelcome" ${config.showWelcome !== false ? 'checked' : ''}>
-                        <span class="checkbox-text">Mostrar mensaje de bienvenida</span>
+            <!-- Vista Previa de Configuración -->
+            <div class="preview-section">
+                <label class="form-label">Vista Previa</label>
+                <div class="config-preview">
+                    <div class="preview-item">
+                        <span class="preview-label">Moneda:</span>
+                        <span class="preview-value" id="currencyPreviewGeneral">${this.currencyManager?.format(1234.56) || '$1,234.56'}</span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="preview-label">Fecha:</span>
+                        <span class="preview-value" id="datePreviewGeneral">${this.formatDatePreview(config.dateFormat || 'DD/MM/YYYY')}</span>
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <button class="btn-primary" onclick="window.configUI.saveGeneralConfig()">
-                        💾 Guardar Configuración
-                    </button>
-                </div>
             </div>
-        `;
+
+            <!-- Botón de Guardado -->
+            <div class="form-group">
+                <button class="btn-config-square" onclick="window.configUI.saveGeneralConfig()"> Guardar
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Formatear vista previa de fecha
+ */
+formatDatePreview(format) {
+    const today = new Date();
+    const day = today.getDate().toString().padStart(2, '0');
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const year = today.getFullYear();
+    
+    switch (format) {
+        case 'MM/DD/YYYY':
+            return `${month}/${day}/${year}`;
+        case 'YYYY-MM-DD':
+            return `${year}-${month}-${day}`;
+        case 'DD/MM/YYYY':
+        default:
+            return `${day}/${month}/${year}`;
     }
+}
+
+/**
+ * Actualizar vista previa en tiempo real
+ */
+updateGeneralPreviews() {
+    // Actualizar vista previa de moneda
+    const currencySelect = document.getElementById('generalCurrency');
+    const currencyPreview = document.getElementById('currencyPreviewGeneral');
+    if (currencySelect && currencyPreview && this.currencyManager) {
+        const tempCurrency = currencySelect.value;
+        currencyPreview.textContent = this.currencyManager.format(1234.56, tempCurrency);
+    }
+    
+    // Actualizar vista previa de fecha
+    const dateSelect = document.getElementById('dateFormat');
+    const datePreview = document.getElementById('datePreviewGeneral');
+    if (dateSelect && datePreview) {
+        datePreview.textContent = this.formatDatePreview(dateSelect.value);
+    }
+  }
+
+/**
+ * Notificar cambios de configuración a otros módulos
+ */
+notifyConfigurationChange(changes) {
+    // Disparar evento personalizado para que otros módulos se enteren
+    const event = new CustomEvent('configurationChanged', {
+        detail: changes,
+        bubbles: true
+    });
+    window.dispatchEvent(event);
+    
+    console.log('📢 Configuración actualizada:', changes);
+}
 
     /**
      * Generar sección de monedas
@@ -630,13 +761,9 @@ setupFormFocusFix() {
     saveGeneralConfig() {
         const userName = document.getElementById('userName')?.value || '';
         const autoSave = parseInt(document.getElementById('autoSave')?.value) || 5;
-        const showWelcome = document.getElementById('showWelcome')?.checked || false;
-
         const config = this.storage.getConfiguracion();
         config.usuario = userName;
         config.autoSave = autoSave;
-        config.showWelcome = showWelcome;
-
         this.storage.setConfiguracion(config);
         this.showSuccessMessage('Configuración general guardada');
     }
@@ -766,12 +893,8 @@ setupFormFocusFix() {
      * 🐛 FIX: Usar un método compatible con el sistema de modales actual.
      */
     showSuccessMessage(message) {
-        if (window.modalSystem && typeof window.modalSystem.show === 'function') {
-            window.modalSystem.show('Éxito', message, 'success');
-        } else {
-            alert('✅ ' + message);
-        }
-    }
+    console.log('✅ ' + message);
+}
 
     /**
      * 🐛 FIX: Usar un método compatible con el sistema de modales actual.
@@ -806,6 +929,68 @@ setupFormFocusFix() {
             this.injectConfigurationUI(contentArea);
         }
     }
+
+    /**
+ * Formatear vista previa de fecha
+ */
+formatDatePreview(format) {
+    const today = new Date();
+    const day = today.getDate().toString().padStart(2, '0');
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const year = today.getFullYear();
+    
+    switch (format) {
+        case 'MM/DD/YYYY':
+            return `${month}/${day}/${year}`;
+        case 'YYYY-MM-DD':
+            return `${year}-${month}-${day}`;
+        case 'DD/MM/YYYY':
+        default:
+            return `${day}/${month}/${year}`;
+    }
+}
+
+/**
+ * Configurar eventos de vista previa para sección general
+ */
+setupGeneralPreviewEvents() {
+    // Esperar a que los elementos estén disponibles
+    setTimeout(() => {
+        // Vista previa de moneda
+        const currencySelect = document.getElementById('generalCurrency');
+        if (currencySelect) {
+            currencySelect.addEventListener('change', () => {
+                this.updateGeneralPreviews();
+            });
+        }
+
+        // Vista previa de formato de fecha
+        const dateSelect = document.getElementById('dateFormat');
+        if (dateSelect) {
+            dateSelect.addEventListener('change', () => {
+                this.updateGeneralPreviews();
+            });
+        }
+   
+        // Actualizar vistas previas iniciales
+        this.updateGeneralPreviews();
+        
+    }, 200);
+}
+
+/**
+ * Notificar cambios de configuración a otros módulos
+ */
+notifyConfigurationChange(changes) {
+    // Disparar evento personalizado para que otros módulos se enteren
+    const event = new CustomEvent('configurationChanged', {
+        detail: changes,
+        bubbles: true
+    });
+    window.dispatchEvent(event);
+    
+    console.log('📢 Configuración actualizada:', changes);
+}
 }
 
 // Crear instancia global

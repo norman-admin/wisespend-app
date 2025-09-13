@@ -1,0 +1,546 @@
+/**
+ * 📄 DOCUMENTOS.CSS - Sistema de Gestión de Documentos
+ * WiseSpend - Control de Gastos Familiares
+ * Versión: 1.0.0 - Fase 1: Grid de Carpetas
+ * 
+ * 🎯 FUNCIONALIDADES FASE 1:
+ * ✅ Grid de carpetas organizacionales
+ * ✅ Diseño moderno tipo explorador
+ * ✅ Navegación entre carpetas
+ * ✅ Contador de documentos
+ * ✅ Estados hover y activos
+ */
+
+/* ===== VARIABLES CSS PARA DOCUMENTOS ===== */
+:root {
+    --doc-primary: #3b82f6;
+    --doc-primary-hover: #2563eb;
+    --doc-secondary: #f8fafc;
+    --doc-border: #e2e8f0;
+    --doc-text-primary: #1e293b;
+    --doc-text-secondary: #64748b;
+    --doc-success: #10b981;
+    --doc-warning: #f59e0b;
+    --doc-error: #ef4444;
+    --doc-bg-light: #ffffff;
+    --doc-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --doc-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --doc-radius: 8px;
+}
+
+/* ===== CONTENEDOR PRINCIPAL DE DOCUMENTOS ===== */
+.documentos-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--doc-bg-light);
+    border-radius: var(--doc-radius);
+    overflow: hidden;
+}
+
+/* ===== HEADER DE DOCUMENTOS ===== */
+.documentos-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: var(--doc-bg-light);
+    border-bottom: 1px solid var(--doc-border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.documentos-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--doc-text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.documentos-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* ===== BREADCRUMB DE NAVEGACIÓN ===== */
+.documentos-breadcrumb {
+    display: flex;
+    align-items: center;
+    padding: 12px 24px;
+    background: var(--doc-secondary);
+    border-bottom: 1px solid var(--doc-border);
+    font-size: 14px;
+    color: var(--doc-text-secondary);
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.breadcrumb-item:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--doc-primary);
+}
+
+.breadcrumb-separator {
+    color: var(--doc-text-secondary);
+    margin: 0 8px;
+    user-select: none;
+}
+
+.breadcrumb-item.active {
+    color: var(--doc-text-primary);
+    font-weight: 500;
+    cursor: default;
+}
+
+.breadcrumb-item.active:hover {
+    background: transparent;
+    color: var(--doc-text-primary);
+}
+
+/* ===== CONTENIDO PRINCIPAL ===== */
+.documentos-content {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+    background: var(--doc-secondary);
+}
+
+/* ===== GRID DE CARPETAS ===== */
+.carpetas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.carpeta-card {
+    background: var(--doc-bg-light);
+    border: 1px solid var(--doc-border);
+    border-radius: var(--doc-radius);
+    padding: 20px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--doc-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.carpeta-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--doc-shadow-hover);
+    border-color: var(--doc-primary);
+}
+
+.carpeta-card:active {
+    transform: translateY(0);
+}
+
+/* ===== ICONO DE CARPETA ===== */
+.carpeta-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    display: block;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* ===== INFORMACIÓN DE CARPETA ===== */
+.carpeta-info {
+    margin-top: 8px;
+}
+
+.carpeta-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--doc-text-primary);
+    margin-bottom: 4px;
+    line-height: 1.3;
+}
+
+.carpeta-count {
+    font-size: 12px;
+    color: var(--doc-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.carpeta-count-number {
+    background: var(--doc-primary);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+    min-width: 20px;
+}
+
+.carpeta-count-number.empty {
+    background: var(--doc-text-secondary);
+}
+
+/* ===== ESTADOS ESPECIALES DE CARPETAS ===== */
+.carpeta-card.has-documents {
+    border-left: 4px solid var(--doc-success);
+}
+
+.carpeta-card.empty {
+    opacity: 0.7;
+}
+
+.carpeta-card.recently-updated::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    background: var(--doc-success);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ===== VISTA DE DOCUMENTOS EN CARPETA ===== */
+.documentos-list {
+    background: var(--doc-bg-light);
+    border-radius: var(--doc-radius);
+    border: 1px solid var(--doc-border);
+    overflow: hidden;
+}
+
+.documentos-list-header {
+    padding: 16px 20px;
+    background: var(--doc-secondary);
+    border-bottom: 1px solid var(--doc-border);
+    font-weight: 600;
+    color: var(--doc-text-primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.documento-item {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--doc-border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.documento-item:last-child {
+    border-bottom: none;
+}
+
+.documento-item:hover {
+    background: var(--doc-secondary);
+}
+
+.documento-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.documento-info {
+    flex: 1;
+}
+
+.documento-name {
+    font-weight: 500;
+    color: var(--doc-text-primary);
+    margin-bottom: 4px;
+}
+
+.documento-meta {
+    font-size: 12px;
+    color: var(--doc-text-secondary);
+    display: flex;
+    gap: 16px;
+}
+
+/* ===== ACCIONES DE DOCUMENTOS ===== */
+.documento-actions {
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.documento-item:hover .documento-actions {
+    opacity: 1;
+}
+
+.doc-action-btn {
+    background: var(--doc-secondary);
+    border: 1px solid var(--doc-border);
+    color: var(--doc-text-secondary);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.doc-action-btn:hover {
+    background: var(--doc-primary);
+    color: white;
+    transform: scale(1.05);
+}
+
+.doc-action-btn.delete:hover {
+    background: var(--doc-error);
+    color: white;
+}
+
+/* ===== MODAL DE IMAGEN ===== */
+.modal-content-image {
+    background: white;
+    border-radius: 12px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header-image {
+    background: var(--doc-primary);
+    padding: 16px 20px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header-image h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.close-btn-image {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.modal-body-image {
+    padding: 20px;
+    text-align: center;
+    background: #f8fafc;
+}
+
+.modal-footer-image {
+    padding: 16px 20px;
+    background: var(--doc-secondary);
+    border-top: 1px solid var(--doc-border);
+    text-align: center;
+}
+
+.modal-footer-image button {
+    background: var(--doc-primary);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ===== ESTADO VACÍO ===== */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--doc-text-secondary);
+}
+
+.empty-state-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--doc-text-primary);
+    margin-bottom: 8px;
+}
+
+.empty-state-message {
+    font-size: 14px;
+    line-height: 1.5;
+    max-width: 400px;
+    margin: 0 auto 20px auto;
+}
+
+/* ===== BOTONES ===== */
+.btn-documento {
+    background: var(--doc-primary);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+}
+
+.btn-documento:hover {
+    background: var(--doc-primary-hover);
+    transform: translateY(-1px);
+}
+
+.btn-documento:active {
+    transform: translateY(0);
+}
+
+.btn-documento.secondary {
+    background: var(--doc-secondary);
+    color: var(--doc-text-primary);
+    border: 1px solid var(--doc-border);
+}
+
+.btn-documento.secondary:hover {
+    background: var(--doc-border);
+    transform: translateY(-1px);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .documentos-header {
+        padding: 16px 20px;
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+    
+    .documentos-title {
+        font-size: 18px;
+    }
+    
+    .documentos-content {
+        padding: 16px;
+    }
+    
+    .carpetas-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 12px;
+    }
+    
+    .carpeta-card {
+        padding: 16px 12px;
+    }
+    
+    .carpeta-icon {
+        font-size: 40px;
+        margin-bottom: 8px;
+    }
+    
+    .carpeta-name {
+        font-size: 13px;
+    }
+    
+    .documentos-breadcrumb {
+        padding: 8px 20px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .carpetas-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 8px;
+    }
+    
+    .carpeta-card {
+        padding: 12px 8px;
+    }
+    
+    .carpeta-icon {
+        font-size: 36px;
+    }
+    
+    .carpeta-name {
+        font-size: 12px;
+    }
+    
+    .documento-item {
+        padding: 12px 16px;
+    }
+    
+    .documento-icon {
+        font-size: 20px;
+    }
+    
+    .documentos-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 8px;
+    }
+    
+    .btn-documento {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ===== ANIMACIONES DE ENTRADA ===== */
+.carpeta-card {
+    animation: fadeInUp 0.3s ease forwards;
+}
+
+.carpeta-card:nth-child(1) { animation-delay: 0.05s; }
+.carpeta-card:nth-child(2) { animation-delay: 0.1s; }
+.carpeta-card:nth-child(3) { animation-delay: 0.15s; }
+.carpeta-card:nth-child(4) { animation-delay: 0.2s; }
+.carpeta-card:nth-child(5) { animation-delay: 0.25s; }
+.carpeta-card:nth-child(6) { animation-delay: 0.3s; }
+.carpeta-card:nth-child(7) { animation-delay: 0.35s; }
+.carpeta-card:nth-child(8) { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

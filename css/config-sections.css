@@ -1018,5 +1018,153 @@
     }
 }}
 
+/* Sección de actualización de tasas - Arriba */
+.currency-update-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-update-rates {
+    background: #6b7280;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-update-rates:hover {
+    background: #4b5563;
+    transform: translateY(-1px);
+}
+
+.last-update-text {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* Botón Aplicar principal - Abajo */
+.currency-apply-section {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.btn-currency-apply {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-currency-apply:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn-currency-apply:active {
+    transform: translateY(0);
+}
+
+.btn-theme-apply {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-theme-apply:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn-theme-apply:active {
+    transform: translateY(0);
+}
+
+/* Botón Descargar Respaldo */
+.btn-data-export {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-data-export:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn-data-export:active {
+    transform: translateY(0);
+}
+
+/* Botón Restablecer Todo */
+.btn-data-reset {
+    background: #f59e0b;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 12px;
+}
+
+.btn-data-reset:hover {
+    background: #d97706;
+    transform: translateY(-1px);
+}
+
+.btn-data-reset:active {
+    transform: translateY(0);
+}
+
 
 

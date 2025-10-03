@@ -578,15 +578,23 @@ notifyConfigurationChange(changes) {
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <button class="btn-primary" onclick="window.configUI.saveCurrencyConfig()">
-                        💱 Aplicar Cambios
-                    </button>
-                    <button class="btn-secondary" onclick="window.configUI.updateExchangeRates()" style="margin-left: 12px;">
-                        🔄 Actualizar Tasas
-                    </button>
-                </div>
-            </div>
+                <!-- Botón Actualizar Tasas (esquina superior) -->
+<div class="currency-update-section">
+    <button class="btn-update-rates" onclick="window.configUI.updateExchangeRates()">
+        🔄 Actualizar Tasas
+    </button>
+    <span class="last-update-text" id="lastUpdateText">
+        Última actualización: Hoy
+    </span>
+</div>
+
+<!-- Botón Aplicar Cambios (principal) -->
+<div class="form-group currency-apply-section">
+    <button class="btn-currency-apply" onclick="window.configUI.saveCurrencyConfig()">
+        Aplicar
+    </button>
+</div>
+</div>
         `;
     }
 
@@ -614,8 +622,8 @@ notifyConfigurationChange(changes) {
                 </div>
 
                 <div class="form-group">
-                    <button class="btn-primary" onclick="window.configUI.saveThemeConfig()">
-                        🎨 Aplicar Tema
+                    <button class="btn-theme-apply" onclick="window.configUI.saveThemeConfig()">
+                        Aplicar
                     </button>
                 </div>
             </div>
@@ -640,8 +648,8 @@ notifyConfigurationChange(changes) {
 
                 <div class="form-group">
                     <label class="form-label">Exportar Datos</label>
-                    <button class="btn-primary" onclick="window.configUI.exportData()">
-                        📤 Descargar Respaldo
+                    <button class="btn-data-export" onclick="window.configUI.exportData()">
+                        Descargar Respaldo
                     </button>
                     <span class="form-help">Descarga todos tus datos en formato JSON</span>
                 </div>
@@ -653,8 +661,8 @@ notifyConfigurationChange(changes) {
                 </div>
 
                 <div class="form-group">
-                    <button class="btn-warning" onclick="window.configUI.resetAllData()">
-                        🗑️ Restablecer Todo
+                    <button class="btn-data-reset" onclick="window.configUI.resetAllData()">
+                        Restablecer Todo
                     </button>
                     <span class="form-help">⚠️ Esta acción eliminará todos los datos</span>
                 </div>

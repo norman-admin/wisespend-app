@@ -1,7 +1,7 @@
 /**
  * NEW-HEADER.JS - Funcionalidad Header Ultra Minimalista
  * WiseSpend - Control de Gastos Familiares
- * Versión: 1.1.0 - SIMPLIFICADO Y UNIFICADO
+ * Versión: 1.2.0 - CON ACTUALIZACIÓN AUTOMÁTICA DE NOMBRE
  * 
  * 🎯 FUNCIONALIDADES:
  * ✅ Menú dropdown completo con animaciones
@@ -11,7 +11,8 @@
  * ✅ Funciones compatibles con sistema actual
  * ✅ Event listeners optimizados
  * ✅ Responsive y accesible
- * 🆕 SISTEMA UNIFICADO CON MODAL-SYSTEM
+ * ✅ SISTEMA UNIFICADO CON MODAL-SYSTEM
+ * 🆕 ACTUALIZACIÓN AUTOMÁTICA DESDE CONFIGURACIÓN
  */
 
 class NewHeaderManager {
@@ -25,7 +26,8 @@ class NewHeaderManager {
             userInitial: null,
             userAvatar: null,
             menuArrow: null,
-            headerLogo: null
+            headerLogo: null,
+            userName: null // 🆕 Agregado para compatibilidad
         };
         
         this.currentUser = {
@@ -34,7 +36,7 @@ class NewHeaderManager {
         };
         
         this.init();
-        console.log('🎨 NewHeaderManager v1.1.0 inicializado - UNIFICADO');
+        console.log('🎨 NewHeaderManager v1.2.0 inicializado - CON ACTUALIZACIÓN AUTOMÁTICA');
     }
 
     /**
@@ -45,6 +47,10 @@ class NewHeaderManager {
             this.cacheElements();
             this.loadUserData();
             this.setupEventListeners();
+            
+            // 🆕 Escuchar cambios de nombre de usuario desde configuración
+            this.setupUserNameListener();
+            
             this.setupAccessibility();
             this.dispatchReadyEvent();
         });
@@ -73,7 +79,8 @@ class NewHeaderManager {
             userInitial: document.getElementById('userInitial'),
             userAvatar: document.getElementById('userAvatar'),
             menuArrow: document.getElementById('menuArrow'),
-            headerLogo: document.getElementById('headerLogo')
+            headerLogo: document.getElementById('headerLogo'),
+            userName: document.getElementById('userDisplayName') // 🆕 Alias para compatibilidad
         };
 
         // Verificar elementos críticos
@@ -147,6 +154,65 @@ class NewHeaderManager {
         }
 
         console.log(`🔄 UI actualizada para usuario: ${userName}`);
+    }
+
+    /**
+     * 🆕 ESCUCHAR CAMBIOS DE NOMBRE DESDE CONFIGURACIÓN
+     */
+    setupUserNameListener() {
+        window.addEventListener('userNameChanged', (event) => {
+            console.log('📢 Evento recibido: Nombre de usuario cambió', event.detail);
+            
+            const newName = event.detail.newName;
+            
+            // Actualizar datos del usuario actual
+            this.currentUser.name = newName;
+            this.currentUser.initial = newName ? newName.charAt(0).toUpperCase() : 'U';
+            
+            // Actualizar visualmente el header
+            this.updateUserDisplay(newName);
+            
+            console.log('✅ Header actualizado con nuevo nombre:', newName);
+        });
+        
+        console.log('👂 Listener de cambio de nombre configurado');
+    }
+
+    /**
+     * 🆕 ACTUALIZAR DISPLAY DEL USUARIO EN EL HEADER
+     */
+    updateUserDisplay(newName) {
+        // Actualizar el nombre en el botón del menú
+        if (this.elements.userName) {
+            this.elements.userName.textContent = newName || 'Usuario';
+        }
+        
+        if (this.elements.userDisplayName) {
+            this.elements.userDisplayName.textContent = newName || 'Usuario';
+        }
+        
+        // Actualizar la inicial en el avatar
+        if (this.elements.userAvatar) {
+            const initial = newName ? newName.charAt(0).toUpperCase() : 'U';
+            this.elements.userAvatar.textContent = initial;
+        }
+        
+        if (this.elements.userInitial) {
+            const initial = newName ? newName.charAt(0).toUpperCase() : 'U';
+            this.elements.userInitial.textContent = initial;
+        }
+        
+        // Animación suave de actualización
+        if (this.elements.userMenuButton) {
+            this.elements.userMenuButton.style.transition = 'all 0.3s ease';
+            this.elements.userMenuButton.style.transform = 'scale(1.05)';
+            
+            setTimeout(() => {
+                this.elements.userMenuButton.style.transform = 'scale(1)';
+            }, 200);
+        }
+        
+        console.log('🎨 Display del usuario actualizado visualmente');
     }
 
     /**
@@ -310,6 +376,10 @@ class NewHeaderManager {
             this.elements.userDropdownMenu.setAttribute('aria-hidden', 'true');
         }
         
+        if (this.elements.menuArrow) {
+            this.elements.menuArrow.style.transform = 'rotate(0deg)';
+        }
+        
         if (this.elements.userMenuButton) {
             this.elements.userMenuButton.setAttribute('aria-expanded', 'false');
             // Devolver foco al botón principal
@@ -433,491 +503,273 @@ class NewHeaderManager {
                                 <span class="detail-value">${lastLoginDate}</span>
                             </div>
                         </div>
-                    </div>            
+                    </div>
+                    
+                    <!-- Preferencias -->
+                    <div class="detail-section">
+                        <h4>⚙️ Preferencias</h4>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">🎨 Tema:</span>
+                                <span class="detail-value">${userData.theme || 'Claro'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">💰 Moneda:</span>
+                                <span class="detail-value">${userData.currency || 'CLP'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Estadísticas -->
+                    <div class="detail-section">
+                        <h4>📈 Estadísticas de Uso</h4>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">💵 Total Ingresos:</span>
+                                <span class="detail-value">${userData.stats.totalIngresos}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">💸 Total Gastos:</span>
+                                <span class="detail-value">${userData.stats.totalGastos}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">💰 Balance:</span>
+                                <span class="detail-value" style="color: ${userData.stats.balance >= 0 ? 'var(--success-color)' : 'var(--danger-color)'}">
+                                    ${userData.stats.balance}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
     }
 
     /**
-     * 🆕 OBTENER ESTADÍSTICAS DEL USUARIO
-     */
-    getUserStats() {
-        try {
-            // Obtener datos del storageManager si está disponible
-            let totalIngresos = 0;
-            let totalGastos = 0;
-            
-            if (window.storageManager) {
-                const ingresos = window.storageManager.getIngresos() || {};
-                const gastosFijos = window.storageManager.getGastosFijos() || {};
-                const gastosVariables = window.storageManager.getGastosVariables() || {};
-                const gastosExtras = window.storageManager.getGastosExtras() || {};
-                
-                // Calcular total ingresos
-                totalIngresos = Object.values(ingresos).reduce((sum, ingreso) => {
-                    return sum + (parseFloat(ingreso.monto) || 0);
-                }, 0);
-                
-                // Calcular total gastos
-                const gastosFijosTotal = Object.values(gastosFijos).reduce((sum, gasto) => {
-                    return sum + (parseFloat(gasto.monto) || 0);
-                }, 0);
-                
-                const gastosVariablesTotal = Object.values(gastosVariables).reduce((sum, gasto) => {
-                    return sum + (parseFloat(gasto.monto) || 0);
-                }, 0);
-                
-                const gastosExtrasTotal = Object.values(gastosExtras).reduce((sum, gasto) => {
-                    return sum + (parseFloat(gasto.monto) || 0);
-                }, 0);
-                
-                totalGastos = gastosFijosTotal + gastosVariablesTotal + gastosExtrasTotal;
-            }
-            
-            return {
-                totalIngresos: this.formatCurrency(totalIngresos),
-                totalGastos: this.formatCurrency(totalGastos),
-                balance: this.formatCurrency(totalIngresos - totalGastos)
-            };
-            
-        } catch (error) {
-            console.error('❌ Error obteniendo estadísticas:', error);
-            return {
-                totalIngresos: 'No disponible',
-                totalGastos: 'No disponible',
-                balance: 'No disponible'
-            };
-        }
-    }
-
-    /**
-     * 🆕 OBTENER TEMA ACTUAL
-     */
-    getCurrentTheme() {
-        try {
-            if (window.themeManager && window.themeManager.currentTheme) {
-                const theme = window.themeManager.currentTheme;
-                const themeNames = {
-                    'auto': 'Automático',
-                    'light': 'Claro',
-                    'dark': 'Oscuro',
-                    'pastel': 'Pastel'
-                };
-                return themeNames[theme] || theme;
-            }
-            return 'Automático';
-        } catch (error) {
-            return 'No disponible';
-        }
-    }
-
-    /**
-     * 🆕 OBTENER MONEDA ACTUAL
-     */
-    getCurrentCurrency() {
-        try {
-            if (window.currencyManager && window.currencyManager.currentCurrency) {
-                const currency = window.currencyManager.currentCurrency;
-                return `${currency.name} (${currency.symbol})`;
-            }
-            return 'Peso Chileno ($)';
-        } catch (error) {
-            return 'No disponible';
-        }
-    }
-
-    /**
-     * 🆕 FORMATEAR MONEDA
-     */
-    formatCurrency(amount) {
-        try {
-            if (window.currencyManager && window.currencyManager.formatAmount) {
-                return window.currencyManager.formatAmount(amount);
-            }
-            
-            // Fallback manual
-            const formatter = new Intl.NumberFormat('es-CL', {
-                style: 'currency',
-                currency: 'CLP',
-                minimumFractionDigits: 0
-            });
-            return formatter.format(amount);
-            
-        } catch (error) {
-            return `$${amount.toLocaleString('es-CL')}`;
-        }
-    }
-
-    /**
-     * 🆕 MANEJAR EDICIÓN DE PERFIL
+     * 🆕 EDITAR PERFIL
      */
     handleEditProfile(userData, modal, modalSystem) {
         console.log('✏️ Editando perfil...');
         
-        // Cerrar modal actual
-        modalSystem.close();
-        
-        // Mostrar modal de edición con formularios funcionales
-        setTimeout(() => {
-            modalSystem.show('edit-profile', {
-                title: '✏️ Editar Perfil',
-                size: 'medium',
-                content: this.createEditProfileForm(userData),
-                buttons: [
-                    {
-                        text: 'Cancelar',
-                        type: 'secondary',
-                        action: 'cancel',
-                        onClick: () => {
-                            modalSystem.close();
-                            setTimeout(() => this.handleProfileAction(), 100);
-                        }
-                    },
-                    {
-                        text: 'Guardar Cambios',
-                        type: 'primary',
-                        action: 'save',
-                        onClick: (e, modal, modalSystem) => {
-                            this.saveProfileChanges(modal, modalSystem);
-                        }
-                    }
-                ]
-            });
-        }, 200);
-    }
-
-    /**
-     * 🆕 CREAR FORMULARIO DE EDICIÓN DE PERFIL
-     */
-    createEditProfileForm(userData) {
-        return `
-            <div class="edit-profile-form">
-                <!-- Cambiar Nombre de Usuario -->
-                <div class="form-section">
-                    <h4>👤 Cambiar Nombre de Usuario</h4>
-                    <div class="form-group">
-                        <label for="editUsername">Nuevo nombre de usuario:</label>
-                        <input type="text" id="editUsername" name="username" 
-                               value="${userData.username}" 
-                               placeholder="Ingresa el nuevo nombre"
-                               maxlength="20" required>
-                        <small class="form-help">Máximo 20 caracteres</small>
-                    </div>
+        // Crear formulario de edición
+        const editContent = `
+            <div class="profile-edit-form">
+                <div class="form-group">
+                    <label class="form-label">👤 Nombre de Usuario</label>
+                    <input type="text" 
+                           class="form-input" 
+                           id="editUsername" 
+                           value="${userData.username}" 
+                           placeholder="Ingresa tu nombre">
                 </div>
                 
-                <!-- Cambiar Contraseña -->
-                <div class="form-section">
-                    <h4>🔒 Actualizar Contraseña</h4>
-                    <div class="form-group">
-                        <label for="currentPassword">Contraseña actual:</label>
-                        <input type="password" id="currentPassword" name="currentPassword" 
-                               placeholder="Ingresa tu contraseña actual"
-                               required>
-                    </div>
-                    <div class="form-group">
-                        <label for="newPassword">Nueva contraseña:</label>
-                        <input type="password" id="newPassword" name="newPassword" 
-                               placeholder="Ingresa la nueva contraseña"
-                               minlength="8" required>
-                        <small class="form-help">Mínimo 8 caracteres</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmNewPassword">Confirmar nueva contraseña:</label>
-                        <input type="password" id="confirmNewPassword" name="confirmNewPassword" 
-                               placeholder="Confirma la nueva contraseña"
-                               minlength="8" required>
-                    </div>
+                <div class="form-group">
+                    <label class="form-label">🔒 Nueva Contraseña (opcional)</label>
+                    <input type="password" 
+                           class="form-input" 
+                           id="editPassword" 
+                           placeholder="Dejar vacío para mantener actual">
                 </div>
                 
-                <!-- Validación de contraseña -->
-                <div class="password-validation" id="passwordValidation" style="display: none;">
-                    <h5>Requisitos de contraseña:</h5>
-                    <ul>
-                        <li id="length-check">Mínimo 8 caracteres</li>
-                        <li id="match-check">Las contraseñas coinciden</li>
-                    </ul>
+                <div class="form-group">
+                    <label class="form-label">🔒 Confirmar Contraseña</label>
+                    <input type="password" 
+                           class="form-input" 
+                           id="editPasswordConfirm" 
+                           placeholder="Confirma tu nueva contraseña">
                 </div>
+                
+                <p class="form-help">💡 Solo se actualizarán los campos que modifiques</p>
             </div>
-       
-            <script>
-                // Validación en tiempo real de contraseñas
-                setTimeout(() => {
-                    const newPassword = document.getElementById('newPassword');
-                    const confirmPassword = document.getElementById('confirmNewPassword');
-                    const validation = document.getElementById('passwordValidation');
-                    const lengthCheck = document.getElementById('length-check');
-                    const matchCheck = document.getElementById('match-check');
-                    
-                    function validatePasswords() {
-                        const newPass = newPassword.value;
-                        const confirmPass = confirmPassword.value;
-                        
-                        if (newPass.length > 0 || confirmPass.length > 0) {
-                            validation.style.display = 'block';
-                            
-                            // Validar longitud
-                            if (newPass.length >= 8) {
-                                lengthCheck.classList.add('valid');
-                            } else {
-                                lengthCheck.classList.remove('valid');
-                            }
-                            
-                            // Validar coincidencia
-                            if (newPass === confirmPass && newPass.length > 0) {
-                                matchCheck.classList.add('valid');
-                            } else {
-                                matchCheck.classList.remove('valid');
-                            }
-                        } else {
-                            validation.style.display = 'none';
-                        }
-                    }
-                    
-                    if (newPassword && confirmPassword) {
-                        newPassword.addEventListener('input', validatePasswords);
-                        confirmPassword.addEventListener('input', validatePasswords);
-                    }
-                }, 100);
-            </script>
         `;
+        
+        // Actualizar contenido del modal
+        const modalBody = modal.querySelector('.modal-body');
+        if (modalBody) {
+            modalBody.innerHTML = editContent;
+        }
+        
+        // Actualizar botones del modal
+        const modalFooter = modal.querySelector('.modal-footer');
+        if (modalFooter) {
+            modalFooter.innerHTML = `
+                <button class="modal-button secondary" onclick="window.modalSystem.close()">
+                    Cancelar
+                </button>
+                <button class="modal-button primary" id="saveProfileBtn">
+                    💾 Guardar Cambios
+                </button>
+            `;
+            
+            // Event listener para guardar
+            const saveBtn = document.getElementById('saveProfileBtn');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', () => {
+                    this.saveProfileChanges(modal, modalSystem);
+                });
+            }
+        }
     }
 
     /**
      * 🆕 GUARDAR CAMBIOS DEL PERFIL
      */
     saveProfileChanges(modal, modalSystem) {
-        try {
-            // Obtener valores del formulario
-            const newUsername = document.getElementById('editUsername')?.value.trim();
-            const currentPassword = document.getElementById('currentPassword')?.value;
-            const newPassword = document.getElementById('newPassword')?.value;
-            const confirmNewPassword = document.getElementById('confirmNewPassword')?.value;
-            
-            // Validaciones básicas
-            if (!newUsername || newUsername.length < 3) {
-                this.showEditError('El nombre de usuario debe tener al menos 3 caracteres');
+        const newUsername = document.getElementById('editUsername')?.value.trim();
+        const newPassword = document.getElementById('editPassword')?.value;
+        const confirmPassword = document.getElementById('editPasswordConfirm')?.value;
+        
+        // Validaciones
+        if (!newUsername) {
+            alert('❌ El nombre de usuario no puede estar vacío');
+            return;
+        }
+        
+        const changePassword = newPassword && newPassword.length > 0;
+        
+        if (changePassword) {
+            if (newPassword !== confirmPassword) {
+                alert('❌ Las contraseñas no coinciden');
                 return;
             }
             
-            // Si se quiere cambiar contraseña, validar
-            let changePassword = false;
-            if (newPassword || confirmNewPassword || currentPassword) {
-                if (!currentPassword) {
-                    this.showEditError('Debes ingresar tu contraseña actual');
-                    return;
-                }
-                
-                if (!newPassword || newPassword.length < 8) {
-                    this.showEditError('La nueva contraseña debe tener al menos 8 caracteres');
-                    return;
-                }
-                
-                if (newPassword !== confirmNewPassword) {
-                    this.showEditError('Las contraseñas nuevas no coinciden');
-                    return;
-                }
-                
-                changePassword = true;
+            if (newPassword.length < 4) {
+                alert('❌ La contraseña debe tener al menos 4 caracteres');
+                return;
             }
-            
-            console.log('💾 Guardando cambios automáticamente...');
-            
-            // GUARDAR CAMBIOS INMEDIATAMENTE
-            let changesToSave = [];
-            
-            // 1. Actualizar nombre de usuario
-            if (newUsername && newUsername !== this.currentUser.name) {
-                // Actualizar localStorage
-                localStorage.setItem('currentUser', newUsername);
-                
-                // Actualizar authSystem si existe
-                if (window.authSystem && window.authSystem.currentUser) {
-                    window.authSystem.currentUser.username = newUsername;
-                }
-                
-                // Actualizar UI del header inmediatamente
-                this.updateUserInfo(newUsername);
-                
-                changesToSave.push(`Nombre cambiado a: ${newUsername}`);
-                console.log('✅ Nombre actualizado a:', newUsername);
-            }
-            
-            // 2. Simular cambio de contraseña
-            if (changePassword) {
-                changesToSave.push('Contraseña actualizada');
-                console.log('✅ Contraseña actualizada');
-            }
-            
-            // 3. Registrar en changelog
-            if (window.changeLogger && changesToSave.length > 0) {
-                window.changeLogger.logChange('profile_updated', {
-                    changes: changesToSave,
-                    username: newUsername || this.currentUser.name
-                });
-            }
-            
-            // 4. CERRAR MODAL INMEDIATAMENTE
-            modalSystem.close();
-            
-            // 5. Mostrar confirmación SIN REABRIR PERFIL
-            if (changesToSave.length > 0) {
-                console.log('🎉 Cambios guardados:', changesToSave);
-                
-                // Solo mostrar mensaje de éxito
-                setTimeout(() => {
-                    this.showCustomSuccessModal(changesToSave);
-                }, 300);
-            }
-            
-        } catch (error) {
-            console.error('❌ Error guardando cambios:', error);
-            this.showEditError('Error al guardar: ' + error.message);
         }
-    }
-
-    /**
-     * 🆕 MOSTRAR MODAL DE ÉXITO PERSONALIZADO
-     */
-    showCustomSuccessModal(changes) {
-        if (window.modalSystem) {
-            window.modalSystem.show('profile-success', {
-                title: '✅ Perfil Actualizado',
-                size: 'small',
-                content: this.createSuccessContent(changes),
-                buttons: [
-                    {
-                        text: 'Aceptar',
-                        type: 'primary',
-                        action: 'accept',
-                        onClick: (e, modal, modalSystem) => {
-                            modalSystem.close();
-                        }
-                    }
-                ]
+        
+        // Guardar cambios
+        const changesToSave = [];
+        
+        // 1. Actualizar nombre de usuario
+        if (newUsername && newUsername !== this.currentUser.name) {
+            // Actualizar localStorage
+            localStorage.setItem('currentUser', newUsername);
+            
+            // Actualizar authSystem si existe
+            if (window.authSystem && window.authSystem.currentUser) {
+                window.authSystem.currentUser.username = newUsername;
+            }
+            
+            // Actualizar storageManager si existe
+            if (window.storageManager) {
+                const config = window.storageManager.getConfiguracion();
+                config.usuario = newUsername;
+                window.storageManager.setConfiguracion(config);
+            }
+            
+            // Actualizar UI del header inmediatamente
+            this.updateUserInfo(newUsername);
+            
+            changesToSave.push(`Nombre cambiado a: ${newUsername}`);
+            console.log('✅ Nombre actualizado a:', newUsername);
+        }
+        
+        // 2. Simular cambio de contraseña
+        if (changePassword) {
+            changesToSave.push('Contraseña actualizada');
+            console.log('✅ Contraseña actualizada');
+        }
+        
+        // 3. Registrar en changelog
+        if (window.changeLogger && changesToSave.length > 0) {
+            window.changeLogger.logChange('profile_updated', {
+                changes: changesToSave,
+                username: newUsername || this.currentUser.name
             });
-        } else {
-            // Fallback al alert simple
-            alert(`✅ Perfil actualizado:\n${changes.map(c => `• ${c}`).join('\n')}`);
+        }
+        
+        // 4. CERRAR MODAL INMEDIATAMENTE
+        modalSystem.close();
+        
+        // 5. Mostrar mensaje de éxito
+        if (changesToSave.length > 0) {
+            setTimeout(() => {
+                alert('✅ Perfil actualizado correctamente');
+            }, 100);
         }
     }
 
     /**
-     * 🆕 CREAR CONTENIDO DEL MODAL DE ÉXITO
+     * 🆕 OBTENER ESTADÍSTICAS DEL USUARIO
      */
-    createSuccessContent(changes) {
-        return `
-            <div class="success-modal-content">
-                <!-- Icono de éxito -->
-                <div class="success-icon">
-                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                        <circle cx="24" cy="24" r="20" fill="#10b981" fill-opacity="0.1"/>
-                        <path d="M16 24l6 6 12-12" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
+    getUserStats() {
+        let stats = {
+            totalIngresos: '$0',
+            totalGastos: '$0',
+            balance: '$0'
+        };
+        
+        try {
+            if (window.storageManager) {
+                const ingresos = window.storageManager.getIngresos() || [];
+                const gastos = window.storageManager.getGastos() || [];
                 
-                <!-- Mensaje principal -->
-                <div class="success-message">
-                    <h3>¡Cambios guardados exitosamente!</h3>
-                    <p>Tu perfil ha sido actualizado con los siguientes cambios:</p>
-                </div>
+                const totalIngresos = ingresos.reduce((sum, ing) => sum + (parseFloat(ing.monto) || 0), 0);
+                const totalGastos = gastos.reduce((sum, gasto) => sum + (parseFloat(gasto.monto) || 0), 0);
+                const balance = totalIngresos - totalGastos;
                 
-                <!-- Lista de cambios -->
-                <div class="changes-list">
-                    ${changes.map(change => `
-                        <div class="change-item">
-                            <svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path d="M13.5 4.5L6 12L2.5 8.5" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            <span>${change}</span>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `;
+                if (window.currencyManager) {
+                    stats.totalIngresos = window.currencyManager.format(totalIngresos);
+                    stats.totalGastos = window.currencyManager.format(totalGastos);
+                    stats.balance = window.currencyManager.format(balance);
+                } else {
+                    stats.totalIngresos = `$${totalIngresos.toLocaleString('es-CL')}`;
+                    stats.totalGastos = `$${totalGastos.toLocaleString('es-CL')}`;
+                    stats.balance = `$${balance.toLocaleString('es-CL')}`;
+                }
+            }
+        } catch (error) {
+            console.error('❌ Error obteniendo estadísticas:', error);
+        }
+        
+        return stats;
     }
 
     /**
-     * 🆕 MOSTRAR ERROR EN EDICIÓN
+     * 🆕 OBTENER TEMA ACTUAL
      */
-    showEditError(message) {
-        console.error('❌ Error de edición:', message);
-        
-        // Mostrar error en el modal si está disponible
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'edit-error';
-        errorDiv.style.cssText = `
-            background: #fef2f2; 
-            border: 1px solid #fca5a5; 
-            border-radius: 6px; 
-            padding: 10px; 
-            margin: 10px 0; 
-            color: #dc2626; 
-            font-size: 14px;
-            text-align: center;
-        `;
-        errorDiv.textContent = message;
-        
-        // Buscar donde insertar el error
-        const modalBody = document.querySelector('.modal-body');
-        if (modalBody) {
-            // Remover errores anteriores
-            const oldErrors = modalBody.querySelectorAll('.edit-error');
-            oldErrors.forEach(error => error.remove());
-            
-            // Insertar nuevo error
-            modalBody.insertBefore(errorDiv, modalBody.firstChild);
-            
-            // Auto-remover después de 5 segundos
-            setTimeout(() => errorDiv.remove(), 5000);
-        } else {
-            // Fallback: alert
-            alert(message);
+    getCurrentTheme() {
+        if (window.themeManager) {
+            const theme = window.themeManager.currentTheme || 'light';
+            return theme === 'light' ? 'Claro' : theme === 'dark' ? 'Oscuro' : theme;
         }
+        return 'Claro';
+    }
+
+    /**
+     * 🆕 OBTENER MONEDA ACTUAL
+     */
+    getCurrentCurrency() {
+        if (window.currencyManager) {
+            return window.currencyManager.getCurrentCurrency() || 'CLP';
+        }
+        return 'CLP';
     }
 
     handleAddUserAction() {
         this.closeDropdown();
         console.log('➕ Acción: Agregar Usuario');
         
-        // Redirigir al formulario de registro existente
-        if (window.location.pathname.includes('dashboard.html')) {
-            console.log('🔄 Redirigiendo desde dashboard a registro...');
-            window.location.href = 'index-backup.html?mode=register';
+        if (window.modalSystem) {
+            window.modalSystem.show('add-user', {
+                title: '➕ Agregar Nuevo Usuario',
+                size: 'small',
+                content: `
+                    <p>Esta funcionalidad permite agregar usuarios adicionales al sistema.</p>
+                    <p>⚠️ Función en desarrollo</p>
+                `,
+                buttons: [
+                    {
+                        text: 'Cerrar',
+                        type: 'secondary',
+                        action: 'cancel'
+                    }
+                ]
+            });
         } else {
-            console.log('🔄 Ya en página de login/registro');
-            // Si ya estamos en index-backup.html, cambiar a modo registro
-            this.switchToRegisterMode();
-        }
-    }
-
-    /**
-     * 🆕 CAMBIAR A MODO REGISTRO
-     */
-    switchToRegisterMode() {
-        // Si estamos en la página de login, cambiar a modo registro
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const toggleModeBtn = document.getElementById('toggle-mode');
-        
-        if (loginForm && registerForm) {
-            loginForm.style.display = 'none';
-            registerForm.style.display = 'block';
-            
-            // Actualizar UI del botón toggle si existe
-            if (toggleModeBtn) {
-                const modeQuestion = document.getElementById('mode-question');
-                const modeAction = document.getElementById('mode-action');
-                
-                if (modeQuestion && modeAction) {
-                    modeQuestion.textContent = '¿Ya tienes cuenta?';
-                    modeAction.textContent = 'Iniciar sesión';
-                }
-            }
-            
-            console.log('✅ Cambiado a modo registro');
-        } else {
-            console.log('ℹ️ Formularios no encontrados, posiblemente ya en modo correcto');
+            alert('Función en desarrollo');
         }
     }
 
@@ -925,145 +777,22 @@ class NewHeaderManager {
         this.closeDropdown();
         console.log('🚪 Acción: Cerrar Sesión');
         
-        // Usar modal personalizado en lugar de confirm()
-        if (window.modalSystem) {
-            window.modalSystem.show('logout-confirmation', {
-                title: '🚪 Cerrar Sesión',
-                size: 'small',
-                content: this.createLogoutContent(),
-                buttons: [
-                    {
-                        text: 'Cancelar',
-                        type: 'secondary',
-                        action: 'cancel',
-                        onClick: (e, modal, modalSystem) => {
-                            modalSystem.close();
-                        }
-                    },
-                    {
-                        text: 'Cerrar Sesión',
-                        type: 'danger',
-                        action: 'logout',
-                        onClick: (e, modal, modalSystem) => {
-                            this.performLogout();
-                            modalSystem.close();
-                        }
-                    }
-                ]
-            });
-        } else {
-            // Fallback al confirm tradicional
-            const confirmLogout = confirm(`¿Estás seguro de que quieres cerrar la sesión de ${this.currentUser.name}?`);
-            if (confirmLogout) {
-                this.performLogout();
+        if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+            // Usar la función global de auth.js
+            if (typeof logoutUser === 'function') {
+                logoutUser();
+            } else {
+                // Fallback manual
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('userSession');
+                window.location.href = 'index.html';
             }
         }
     }
-
-    /**
-     * 🆕 CREAR CONTENIDO DEL MODAL DE LOGOUT
-     */
-    createLogoutContent() {
-        return `
-            <div class="logout-confirmation-content">
-                <div class="logout-icon">
-                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                        <circle cx="24" cy="24" r="20" fill="#ef4444" fill-opacity="0.1"/>
-                        <path d="M18 18l12 12M18 30l12-12" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </div>
-                <div class="logout-message">
-                    <p><strong>¿Estás seguro de que quieres cerrar la sesión?</strong></p>
-                    <p class="logout-details">Usuario activo: <span class="user-highlight">${this.currentUser.name}</span></p>
-                </div>
-            </div>
-        `;
-    }
-
-    /**
-     * 🆕 EJECUTAR LOGOUT CON AUTO-GUARDADO E INTEGRACIÓN
-     */
-    performLogout() {
-        try {
-            console.log('🚪 Iniciando proceso de logout...');
-            
-            // 1. Auto-guardado antes del logout
-            this.performAutoSave();
-
-            // 2. Ejecutar logout según disponibilidad de sistemas
-            setTimeout(() => {
-                if (window.authSystem && typeof window.authSystem.logout === 'function') {
-                    console.log('✅ Usando authSystem.logout()');
-                    window.authSystem.logout();
-                } else if (window.authManager && typeof window.authManager.logout === 'function') {
-                    console.log('✅ Usando authManager.logout()');
-                    window.authManager.logout();
-                } else if (typeof logout === 'function') {
-                    console.log('✅ Usando función global logout()');
-                    logout();
-                } else {
-                    console.log('⚠️ Usando logout manual');
-                    this.manualLogout();
-                }
-            }, 500); // Pequeño delay para que se complete el auto-guardado
-            
-        } catch (error) {
-            console.error('❌ Error durante logout:', error);
-            // Proceder con logout manual como fallback
-            this.manualLogout();
-        }
-    }
-
-    /**
-     * 🆕 AUTO-GUARDADO ANTES DEL LOGOUT
-     */
-    performAutoSave() {
-        try {
-            console.log('💾 Ejecutando auto-guardado antes del logout...');
-            
-            // Guardar datos a través de storageManager si está disponible
-            if (window.storageManager && typeof window.storageManager.saveAllData === 'function') {
-                window.storageManager.saveAllData();
-                console.log('✅ Datos guardados via storageManager');
-            }
-            
-            // Backup adicional en localStorage
-            const timestamp = new Date().toISOString();
-            localStorage.setItem('last_logout_save', timestamp);
-            
-            console.log('✅ Auto-guardado completado');
-            
-        } catch (error) {
-            console.warn('⚠️ Error en auto-guardado:', error);
-        }
-    }
-
-    /**
-     * 🆕 LOGOUT MANUAL COMO FALLBACK
-     */
-    manualLogout() {
-        console.log('🔧 Ejecutando logout manual...');
-        
-        // Limpiar datos de sesión
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('app_session');
-        
-        // Registrar logout manual
-        localStorage.setItem('manual_logout', new Date().toISOString());
-        
-        console.log('🚪 Sesión cerrada manualmente');
-        
-        // Redireccionar después de un momento
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 300);
-    } 
 
     handleLogoClick() {
-        console.log('🏷️ Logo clicked');
+        console.log('🎨 Logo clicked');
         
-        // Efecto visual en el logo
         if (this.elements.headerLogo) {
             this.elements.headerLogo.style.transform = 'scale(0.95)';
             setTimeout(() => {
@@ -1118,6 +847,6 @@ if (typeof window !== 'undefined') {
     
     // Evento para cuando otros scripts necesiten el header
     window.addEventListener('load', () => {
-        console.log('✅ NewHeader completamente cargado y funcional - UNIFICADO');
+        console.log('✅ NewHeader completamente cargado y funcional - v1.2.0 CON ACTUALIZACIÓN AUTOMÁTICA');
     });
 }

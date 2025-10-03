@@ -767,14 +767,34 @@ notifyConfigurationChange(changes) {
      */
 
     saveGeneralConfig() {
-        const userName = document.getElementById('userName')?.value || '';
-        const autoSave = parseInt(document.getElementById('autoSave')?.value) || 5;
-        const config = this.storage.getConfiguracion();
-        config.usuario = userName;
-        config.autoSave = autoSave;
-        this.storage.setConfiguracion(config);
-        this.showSuccessMessage('Configuración general guardada');
+    const userName = document.getElementById('userName')?.value || '';
+    const autoSave = parseInt(document.getElementById('autoSave')?.value) || 5;
+    const config = this.storage.getConfiguracion();
+    
+    // Guardar valores anteriores para comparar
+    const previousUserName = config.usuario || '';
+    
+    config.usuario = userName;
+    config.autoSave = autoSave;
+    this.storage.setConfiguracion(config);
+    
+    // 🆕 Si el nombre cambió, disparar evento para actualizar header
+    if (previousUserName !== userName) {
+        console.log('📢 Nombre de usuario actualizado:', userName);
+        
+        // Disparar evento personalizado
+        const event = new CustomEvent('userNameChanged', {
+            detail: {
+                newName: userName,
+                previousName: previousUserName
+            },
+            bubbles: true
+        });
+        window.dispatchEvent(event);
     }
+    
+    this.showSuccessMessage('Configuración general guardada');
+}
 
     saveCurrencyConfig() {
         const newCurrency = document.getElementById('mainCurrency')?.value;

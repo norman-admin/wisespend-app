@@ -557,24 +557,89 @@ showVariosError(container, message) {
     }
 }
   
-    loadPersonalSection(container) {
-        console.log('👤 Cargando espacio personal...');
-        container.innerHTML = `
-            <section class="content-section active">
-                <div class="section-header">
-                    <h2>Espacio personal</h2>
-                </div>
-                <div class="personal-content">
-                    </div>
-            </section>
-        `;
-        this.notifySectionReady('personal');
-    }
+// ACTUALIZACIÓN DEL MÉTODO loadPersonalSection en js/component-loader.js
+// Reemplaza el método completo por este:
 
-    loadDefaultSection(container) {
-        console.log('🏠 Cargando sección por defecto...');
-        this.loadIncomeSection(container);
-    }
+loadPersonalSection(container) {
+    console.log('👤 Cargando espacio personal...');
+    
+    container.innerHTML = `
+        <section class="content-section active">
+            <div class="espacio-personal-container">
+                <!-- Header del Bloc -->
+                <div class="notas-header">
+                    <h2 class="notas-title">
+                        📝 Mis Notas Personales
+                    </h2>
+                    <div class="notas-info">
+                        <span class="char-counter" id="charCounter">0 caracteres</span>
+                        <span class="last-saved-info" id="lastSavedInfo">Sin guardados previos</span>
+                    </div>
+                </div>
+
+                <!-- Área de Texto -->
+                <div class="notas-content">
+                    <textarea 
+                        class="notas-textarea" 
+                        id="notasPersonales"
+                        placeholder="Escribe tus notas personales aquí...
+
+Puedes usar este espacio para:
+• Recordatorios importantes
+• Ideas y objetivos financieros
+• Notas rápidas del día
+• Lo que necesites recordar
+
+Las notas se guardan automáticamente cada 5 minutos. 💾"
+                    ></textarea>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="notas-actions">
+                    <button class="btn-clear-notas" id="clearNotasBtn">
+                        🗑️ Limpiar Notas
+                    </button>
+                    <button class="btn-save-notas" id="saveNotasBtn">
+                        💾 Guardar
+                    </button>
+                    
+                    <!-- Menú Desplegable de Opciones -->
+                    <div class="notas-options-dropdown" id="notasOptionsDropdown">
+                        <button class="btn-options-notas" id="optionsNotasBtn">
+                            ⚙️ Opciones
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="options-menu" id="optionsMenu">
+                            <button class="option-item" id="downloadBackupBtn">
+                                <span class="option-icon">💾</span>
+                                <span class="option-text">Guardar notas como</span>
+                            </button>
+                            <button class="option-item" id="uploadBackupBtn">
+                                <span class="option-icon">📂</span>
+                                <span class="option-text">Abrir notas guardadas</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Input oculto para subir archivos -->
+                <input type="file" id="backupFileInput" accept=".txt" style="display: none;">
+            </div>
+        </section>
+    `;
+    
+    // Inicializar el gestor de espacio personal después de cargar
+    setTimeout(() => {
+        if (window.espacioPersonalManager) {
+            window.espacioPersonalManager.reload();
+            console.log('✅ Espacio Personal inicializado');
+        } else {
+            console.warn('⚠️ espacioPersonalManager no disponible aún');
+        }
+    }, 200);
+    
+    this.notifySectionReady('personal');
+}
 
     /**
      * 🆕 CONFIGURAR EVENTOS DEL HEADER

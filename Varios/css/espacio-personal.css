@@ -1,0 +1,381 @@
+/**
+ * ESPACIO-PERSONAL.CSS - Estilos del Bloc de Notas Personal
+ * WiseSpend - Control de Gastos Familiares
+ * Versión: 1.0.0
+ */
+
+/* ========== CONTENEDOR PRINCIPAL ========== */
+.espacio-personal-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 24px;
+    background: var(--bg-primary, #ffffff);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1));
+}
+
+/* ========== HEADER DEL BLOC ========== */
+.notas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--border-light, #e5e7eb);
+}
+
+.notas-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary, #1f2937);
+}
+
+.notas-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.char-counter {
+    font-size: 13px;
+    color: var(--text-secondary, #6b7280);
+    font-weight: 500;
+}
+
+.last-saved-info {
+    font-size: 12px;
+    color: var(--text-tertiary, #9ca3af);
+    font-style: italic;
+}
+
+/* ========== ÁREA DE TEXTO ========== */
+.notas-content {
+    margin-bottom: 20px;
+}
+
+.notas-textarea {
+    width: 100%;
+    min-height: 300px;
+    padding: 16px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-primary, #1f2937);
+    background: var(--bg-secondary, #f9fafb);
+    border: 2px solid var(--border-medium, #d1d5db);
+    border-radius: 8px;
+    resize: vertical;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.notas-textarea:focus {
+    border-color: var(--primary-color, #3b82f6);
+    background: var(--bg-primary, #ffffff);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.notas-textarea::placeholder {
+    color: var(--text-tertiary, #9ca3af);
+    font-style: italic;
+}
+
+/* ========== ACCIONES (BOTONES) ========== */
+.notas-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    align-items: center;
+    position: relative;
+}
+
+.btn-save-notas,
+.btn-clear-notas {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+}
+
+/* Botón Guardar */
+.btn-save-notas {
+    background: var(--primary-color, #3b82f6);
+    color: white;
+}
+
+.btn-save-notas:hover {
+    background: var(--primary-dark, #2563eb);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.btn-save-notas:active {
+    transform: translateY(0);
+}
+
+/* Botón Limpiar */
+.btn-clear-notas {
+    background: transparent;
+    color: var(--danger-color, #dc3545);
+    border: 2px solid var(--danger-color, #dc3545);
+}
+
+.btn-clear-notas:hover {
+    background: var(--danger-color, #dc3545);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.btn-clear-notas:active {
+    transform: translateY(0);
+}
+
+/* ========== NOTIFICACIÓN DE GUARDADO ========== */
+.save-notification {
+    position: fixed;
+    bottom: -100px;
+    right: 24px;
+    padding: 12px 20px;
+    background: var(--success-color, #10b981);
+    color: white;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    opacity: 0;
+}
+
+.save-notification.show {
+    bottom: 24px;
+    opacity: 1;
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+@media (max-width: 768px) {
+    .espacio-personal-container {
+        padding: 16px;
+    }
+
+    .notas-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .notas-info {
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    .notas-textarea {
+        min-height: 250px;
+        font-size: 16px; /* Evita zoom en iOS */
+    }
+
+    .notas-actions {
+        flex-direction: column-reverse;
+        width: 100%;
+    }
+
+    .btn-save-notas,
+    .btn-clear-notas {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .save-notification {
+        right: 12px;
+        left: 12px;
+        text-align: center;
+    }
+
+    .save-notification.show {
+        bottom: 12px;
+    }
+}
+
+/* ========== TEMA OSCURO ========== */
+@media (prefers-color-scheme: dark) {
+    .espacio-personal-container {
+        background: var(--bg-primary-dark, #1f2937);
+    }
+
+    .notas-title {
+        color: var(--text-primary-dark, #f9fafb);
+    }
+
+    .notas-textarea {
+        background: var(--bg-secondary-dark, #374151);
+        color: var(--text-primary-dark, #f9fafb);
+        border-color: var(--border-medium-dark, #4b5563);
+    }
+
+    .notas-textarea:focus {
+        background: var(--bg-primary-dark, #1f2937);
+    }
+
+    .char-counter {
+        color: var(--text-secondary-dark, #d1d5db);
+    }
+
+    .last-saved-info {
+        color: var(--text-tertiary-dark, #9ca3af);
+    }
+}
+
+/* ========== ANIMACIONES ========== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.espacio-personal-container {
+    animation: fadeIn 0.3s ease;
+}
+
+/* ========== SCROLLBAR PERSONALIZADO ========== */
+.notas-textarea::-webkit-scrollbar {
+    width: 8px;
+}
+
+.notas-textarea::-webkit-scrollbar-track {
+    background: var(--bg-secondary, #f3f4f6);
+    border-radius: 4px;
+}
+
+.notas-textarea::-webkit-scrollbar-thumb {
+    background: var(--border-medium, #d1d5db);
+    border-radius: 4px;
+}
+
+.notas-textarea::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary, #6b7280);
+}
+
+/* Menú desplegable */
+.options-menu {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    background: var(--bg-primary, #ffffff);
+    border: 2px solid var(--border-medium, #d1d5db);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    min-width: 220px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.2s ease;
+    z-index: 100;
+    overflow: hidden;
+    padding: 6px;
+}
+
+.options-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.option-item {
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-primary, #1f2937);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: inherit;
+    text-align: left;
+    border-radius: 8px;
+    position: relative;
+}
+
+.option-item:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.12) 100%);
+    color: var(--primary-color, #3b82f6);
+    transform: translateX(4px);
+}
+
+.option-item:active {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.2) 100%);
+    transform: translateX(2px);
+}
+
+.option-item:not(:last-child) {
+    margin-bottom: 4px;
+}
+
+.option-icon {
+    font-size: 18px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.option-text {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+
+.btn-options-notas {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: inherit;
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    color: white;
+    box-shadow: 0 2px 4px rgba(107, 114, 128, 0.2);
+}
+
+.btn-options-notas:hover {
+    background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
+}
+
+.btn-options-notas:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(107, 114, 128, 0.2);
+}
+
+.btn-options-notas.active {
+    background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+}

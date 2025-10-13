@@ -1702,31 +1702,6 @@
     box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
 }
 
-/* ===== ANIMACIONES DE ENTRADA ===== */
-.summary-metric-card.balance {
-    animation: slideInUp 0.6s ease-out;
-}
-
-.summary-metric-card:not(.balance) {
-    animation: slideInUp 0.4s ease-out;
-}
-
-.summary-metric-card.estado {
-    animation-delay: 0.1s;
-}
-
-.summary-metric-card.ingresos {
-    animation-delay: 0.2s;
-}
-
-.summary-metric-card.gastos {
-    animation-delay: 0.3s;
-}
-
-.summary-metric-card.presupuesto {
-    animation-delay: 0.4s;
-}
-
 /* ===== DISEÑO RESPONSIVE ===== */
 @media (max-width: 1200px) {
     .summary-cards-grid {

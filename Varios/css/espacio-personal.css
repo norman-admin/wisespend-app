@@ -237,22 +237,6 @@
     }
 }
 
-/* ========== ANIMACIONES ========== */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.espacio-personal-container {
-    animation: fadeIn 0.3s ease;
-}
-
 /* ========== SCROLLBAR PERSONALIZADO ========== */
 .notas-textarea::-webkit-scrollbar {
     width: 8px;

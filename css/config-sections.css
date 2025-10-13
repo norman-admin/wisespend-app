@@ -570,12 +570,6 @@
     border-color: var(--primary-600, #6366f1);
 }
 
-/* ========== ANIMACIONES ========== */
-
-.config-layout {
-    animation: slideInUp 0.4s ease;
-}
-
 @keyframes slideInUp {
     from {
         opacity: 0;
@@ -884,12 +878,6 @@
 .dark-theme .form-checkbox:checked {
     background: var(--primary-600, #6366f1);
     border-color: var(--primary-600, #6366f1);
-}
-
-/* ========== ANIMACIONES ========== */
-
-.config-section {
-    animation: slideInUp 0.3s ease;
 }
 
 @keyframes slideInUp {

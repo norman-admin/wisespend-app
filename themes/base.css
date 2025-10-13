@@ -81,18 +81,6 @@
     --border-width-thick: 2px;
     --border-width-thicker: 3px;
     
-    /* ⚡ Transiciones y animaciones */
-    --transition-fastest: 100ms ease;
-    --transition-fast: 150ms ease;
-    --transition-normal: 250ms ease;
-    --transition-slow: 350ms ease;
-    --transition-slowest: 500ms ease;
-    
-    --ease-in: cubic-bezier(0.4, 0, 1, 1);
-    --ease-out: cubic-bezier(0, 0, 0.2, 1);
-    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-    --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    
     /* 🎮 Z-index layers */
     --z-dropdown: 1000;
     --z-sticky: 1020;

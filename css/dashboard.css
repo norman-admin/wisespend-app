@@ -977,12 +977,6 @@
     background: #94a3b8;
 }
 
-/* ===== ANIMACIONES ===== */
-
-.content-section {
-    animation: fadeIn 0.3s ease;
-}
-
 @keyframes fadeIn {
     from {
         opacity: 0;

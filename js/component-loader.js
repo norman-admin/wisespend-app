@@ -179,41 +179,54 @@ async loadHeaderScript() {
      * 🆕 CARGAR CONTENIDO DE LA SECCIÓN
      */
     loadSectionContent(section) {
-        const contentArea = document.getElementById('dynamic-content');
-        if (!contentArea) {
-            console.error('❌ Área de contenido no encontrada');
-            return;
-        }
+    const contentArea = document.getElementById('dynamic-content');
+    if (!contentArea) {
+        console.error('❌ Área de contenido no encontrada');
+        return;
+    }
 
-        console.log(`📄 Cargando contenido para: ${section}`);
+    console.log(`📄 Cargando contenido para: ${section}`);
+    
+    // 🔥 CRÍTICO: Ocultar contenido actual sin borrar (evita pestañeo)
+    contentArea.style.visibility = 'hidden';
 
         switch (section) {
             case 'income':
                 this.loadIncomeSection(contentArea);
+                contentArea.style.visibility = 'visible';
                 break;
             case 'expenses':
                 this.loadExpensesSection(contentArea);
+                contentArea.style.visibility = 'visible';
                 break;
             case 'fixed-variable':
                 this.loadFixedVariableSection(contentArea);
+                contentArea.style.visibility = 'visible';
                 break;
             case 'extra-expenses':
                 this.loadExtraExpensesSection(contentArea);
+                contentArea.style.visibility = 'visible';
                 break;
             case 'misc':
                 this.loadMiscSection(contentArea);
+                contentArea.style.visibility = 'visible';
                 break;
             case 'reports':
                 this.loadReportsSection(contentArea);
+                contentArea.style.visibility = 'visible';
                 break;
             case 'personal':
                 this.loadPersonalSection(contentArea);
+                contentArea.style.visibility = 'visible';
                 break;
             case 'config':
                 this.loadConfigSection(contentArea);
+                contentArea.style.visibility = 'visible';
                 break;
             default:
                 this.loadDefaultSection(contentArea);
+                contentArea.style.visibility = 'visible';
+                break;
         }
     }
 
@@ -420,6 +433,9 @@ async loadHeaderScript() {
     loadMiscSection(container) {
     console.log('📋 Cargando sección varios con sistema de pestañas...');
     
+    // 🔥 Ocultar contenido actual sin borrar (evita pestañeo)
+    container.style.visibility = 'hidden';
+    
     // Verificar si varios-manager.js está cargado
     if (!window.variosManager) {
         console.log('📋 Cargando varios-manager.js...');
@@ -514,11 +530,16 @@ async initializeVariosSection(container) {
         // Notificar que está listo
         this.notifySectionReady('misc');
         
+        // 🔥 Mostrar contenido una vez cargado (evita pestañeo)
+        container.style.visibility = 'visible';
+        
         console.log('✅ Sección varios inicializada correctamente');
         
     } catch (error) {
         console.error('❌ Error inicializando sección varios:', error);
         this.showVariosError(container, 'Error al inicializar las pestañas');
+        // 🔥 Mostrar contenido incluso si hay error
+        container.style.visibility = 'visible';
     }
 }
 
@@ -537,6 +558,9 @@ showVariosError(container, message) {
             </div>
         </section>
     `;
+    
+    // 🔥 Mostrar contenido de error (evita pestañeo)
+    container.style.visibility = 'visible';
 }
 
     loadReportsSection() {

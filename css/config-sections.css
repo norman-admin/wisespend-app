@@ -158,7 +158,7 @@
 
 .config-content-body.section-loading {
     opacity: 0.6;
-    transition: opacity 0.3s ease;
+    transition: none;
 }
 
 /* ========== CONTENIDO DE SECCIONES ========== */
@@ -568,10 +568,6 @@
 .dark-theme .form-checkbox:checked {
     background: var(--primary-600, #6366f1);
     border-color: var(--primary-600, #6366f1);
-}
-
-.config-content-body {
-    transition: opacity 0.3s ease;
 }
 
 .config-menu-item {

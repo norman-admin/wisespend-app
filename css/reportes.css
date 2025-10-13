@@ -1641,56 +1641,6 @@
     text-align: left;
 }
 
-/* ===== ANIMACIONES ===== */
-@keyframes slideInLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes growBar {
-    from {
-        width: 0 !important;
-    }
-}
-
-@keyframes progressAnimation {
-    0% { stroke-dashoffset: 251; }
-    100% { stroke-dashoffset: 67; }
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
 /* ===== EFECTOS DE HOVER MEJORADOS ===== */
 .summary-metric-card:not(.balance):hover {
     transform: translateY(-2px);

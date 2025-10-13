@@ -339,41 +339,6 @@
     }
 }
 
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.varios-loading {
-    animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.7;
-    }
-}
-
-/* ===== TRANSICIONES SUAVES ===== */
-
-.varios-tab-btn,
-.btn-primary {
-    will-change: transform;
-}
-
-.varios-tabs-content {
-    will-change: contents;
-}
-
 /* ===== COMPATIBILIDAD CON TEMAS ===== */
 
 /* Tema oscuro */

@@ -570,17 +570,6 @@
     border-color: var(--primary-600, #6366f1);
 }
 
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 .config-content-body {
     transition: opacity 0.3s ease;
 }
@@ -630,11 +619,6 @@
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
 }
 
 /* ========== ACCESIBILIDAD ========== */
@@ -880,30 +864,6 @@
     border-color: var(--primary-600, #6366f1);
 }
 
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.config-tab-content.active {
-    animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
 /* ========== ESTADOS DE VALIDACIÓN ========== */
 
 .form-input.error,
@@ -945,11 +905,6 @@
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
 }
 
 /* ========== ACCESIBILIDAD ========== */

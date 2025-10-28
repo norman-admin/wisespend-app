@@ -36,8 +36,3 @@ config.local.js
 .idea/
 *.swp
 *.swo
-
-# Archivos específicos del proyecto
-voice_server/logs/
-voice_server/__pycache__/
-voice_server/*.log

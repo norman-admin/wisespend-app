@@ -1,20 +1,15 @@
 /**
- * 📝 NOTAS.JS - Sistema Completo de Notas y Recordatorios con Dictado por Voz + WebSocket
+ * 📝 NOTAS.JS - Sistema Completo de Notas y Recordatorios
  * Control de Gastos Familiares - WiseSpend
- * Versión: 2.1.0 - INTERFAZ ORIGINAL + WebSocket Python Flask
+ * Versión: 2.2.0 - INTERFAZ ORIGINAL (Sin funcionalidad de voz)
  * 
  * 🎯 FUNCIONALIDADES:
  * ✅ Sistema CRUD completo de tareas
- * ✅ Dictado por voz con Web Speech API
- * ✅ Comandos inteligentes de voz
  * ✅ Recordatorios de pagos
  * ✅ Storage local persistente
  * ✅ Filtros y ordenamiento
  * ✅ Integración con WiseSpend
- * 🆕 CONEXIÓN WEBSOCKET CON PYTHON FLASK
- * 🆕 PROCESAMIENTO SERVIDOR DE COMANDOS DE VOZ
- * 🆕 FALLBACK A SIMULACIÓN LOCAL
- * 🎨 INTERFAZ ORIGINAL DE 2 COLUMNAS RESTAURADA
+ * 🎨 INTERFAZ ORIGINAL DE 2 COLUMNAS
  */
 
 class NotasManager {
@@ -36,7 +31,7 @@ class NotasManager {
         this.initialized = false;
         this.container = null;
 
-        console.log('📝 NotasManager v2.1.0: Sistema simplificado...');
+        console.log('📝 NotasManager v2.2.0: Sistema limpio sin funcionalidad de voz');
     }
 
     /**
@@ -500,7 +495,7 @@ toggleReminderPaid(reminderId) {
     const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const tomorrowDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
     
-    console.log('🔍 Formato fecha:', { 
+    console.log('📅 Formato fecha:', { 
         original: dateString, 
         parsed: targetDate, 
         today: todayDate,
@@ -663,13 +658,13 @@ saveReminderFromEnter() {
         const dueDateInput = document.getElementById('dueDateInput');
         
         if (!textarea || !textarea.value.trim()) {
-            this.showNotification('⚠️ Campo requerido', 'Debes escribir o dictar una tarea', 'warning');
+            this.showNotification('⚠️ Campo requerido', 'Debes escribir una tarea', 'warning');
             return;
         }
 
 
     // 🔍 DEBUG: Ver qué fecha se está capturando
-    console.log('🔍 Fecha capturada:', dueDateInput ? dueDateInput.value : 'NO ENCONTRADO');
+    console.log('📅 Fecha capturada:', dueDateInput ? dueDateInput.value : 'NO ENCONTRADO');
 
     const newTask = {
         id: this.generateId(),
@@ -682,12 +677,12 @@ saveReminderFromEnter() {
     };
     
     // 🔍 DEBUG: Ver el objeto completo
-    console.log('🔍 Tarea creada:', newTask);
+    console.log('📝 Tarea creada:', newTask);
     
     this.tasks.unshift(newTask);
     this.saveData();
     this.refreshTasksList();
-    this.closeTaskModal();    // ✅ Ahora cierra el modal correcto
+    this.closeTaskModal();
     this.showNotification('✅ Tarea creada', newTask.title, 'success');   
         
 }
@@ -723,7 +718,7 @@ saveReminderFromEnter() {
     }
 
         /**
-     * ➕ ABRIR MODAL COMPLETO DE TAREA (sin voz)
+     * ➕ ABRIR MODAL COMPLETO DE TAREA
      */
     openTaskModal() {
         const modal = document.getElementById('taskModal');
@@ -761,7 +756,7 @@ saveReminderFromEnter() {
     }
 
     /**
- * 📝 RENDERIZAR MODAL DE TAREA (sin voz)
+ * 📝 RENDERIZAR MODAL DE TAREA
  */
 renderTaskModal() {
     return `
@@ -784,7 +779,7 @@ renderTaskModal() {
                     <div class="form-controls-task">
                         <div class="form-row-task">
                             <div class="form-group-task">
-                                <label for="categorySelect">📁 Categoría:</label>
+                                <label for="categorySelect">🏷️ Categoría:</label>
                                 <select id="categorySelect">
                                     <option value="personal">👤 Personal</option>
                                     <option value="work">💼 Trabajo</option>
@@ -1004,29 +999,6 @@ moveReminderToTop(reminderId) {
 }
 
     // =================================================================
-    // 🧩 MÉTODOS DE UTILIDAD Y PROCESAMIENTO
-    // =================================================================
-
-    /**
-     * 🎯 Procesar comandos de voz (local)
-     */
-    processVoiceCommands(text) {
-        const lowerText = text.toLowerCase();
-        
-        // Detectar tipo de comando
-        if (lowerText.includes('tarea') || lowerText.includes('crear') || lowerText.includes('agregar')) {
-            this.parseTaskCommand(text);
-        } else if (lowerText.includes('recordar') || lowerText.includes('recordatorio')) {
-            this.parseReminderCommand(text);
-        } else if (lowerText.includes('gasto') || lowerText.includes('pagar')) {
-            this.parseExpenseCommand(text);
-        } else {
-            // Comando genérico - crear tarea
-            this.parseTaskCommand(text);
-        }
-    }
-
-    // =================================================================
     // 🛠️ MÉTODOS DE SOPORTE Y CONFIGURACIÓN
     // =================================================================
 
@@ -1083,7 +1055,7 @@ moveReminderToTop(reminderId) {
     }
 
     /**
-     * 📝 Datos por defecto de tareas
+     * 📋 Datos por defecto de tareas
      */
     getDefaultTasks() {
         return [
@@ -1373,11 +1345,9 @@ document.addEventListener('click', (e) => {
     );
     
     if (confirmed) {
-        this.tasks = [];                    // ✅ Solo borrar tareas
-        // NO tocar this.reminders           // ✅ Mantener recordatorios intactos
+        this.tasks = [];
         this.saveData();
-        this.refreshTasksList();            // ✅ Solo refrescar tareas
-        // NO llamar this.refreshRemindersList() 
+        this.refreshTasksList();
         this.showNotification('🗑️ Tareas eliminadas', 'Todas las tareas han sido borradas.', 'info');
     }
 }
@@ -1390,7 +1360,7 @@ document.addEventListener('click', (e) => {
             tasks: this.tasks,
             reminders: this.reminders,
             exportDate: new Date().toISOString(),
-            version: '2.1.0'
+            version: '2.2.0'
         };
 
         const dataStr = JSON.stringify(data, null, 2);
@@ -1409,16 +1379,12 @@ document.addEventListener('click', (e) => {
      */
     getDebugInfo() {
         return {
-            version: '2.1.0',
+            version: '2.2.0',
             initialized: this.initialized,
             tasksCount: this.tasks.length,
             remindersCount: this.reminders.length,
-            isConnected: this.isConnected,
-            useWebSocket: this.useWebSocket,
-            hasRecognition: !!this.recognition,
             currentFilter: this.currentFilter,
-            currentSort: this.currentSort,
-            isListening: this.isListening
+            currentSort: this.currentSort
         };
     }
 
@@ -1588,7 +1554,7 @@ setSortOrder(sortType) {
 }
 
 /**
- * 📝 OBTENER NOMBRE DE VISUALIZACIÓN DEL ORDENAMIENTO
+ * 🔍 OBTENER NOMBRE DE VISUALIZACIÓN DEL ORDENAMIENTO
  */
 getSortDisplayName(sortType) {
     const names = {
@@ -1606,13 +1572,13 @@ getSortDisplayName(sortType) {
 sortTasks() {
     switch (this.currentSort) {
         case 'fecha':
-            this.tasks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate)); // ✅ Orden cronológico correcto
+            this.tasks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
             break;
         case 'recientes':
             this.tasks.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
             break;
         case 'titulo':
-            this.tasks.sort((a, b) => a.title.localeCompare(b.title));  // ✅ CORRECTO
+            this.tasks.sort((a, b) => a.title.localeCompare(b.title));
             break;
         case 'mi-orden':
         default:
@@ -2034,12 +2000,6 @@ updateItemData(itemId, itemType, fieldType, newValue) {
     restart() {
         console.log('🔄 Reiniciando NotasManager...');
         this.initialized = false;
-        this.isListening = false;
-        
-        if (this.socket) {
-            this.socket.disconnect();
-        }
-        
         this.init();
     }
 }
@@ -2082,8 +2042,7 @@ window.notasDebug = {
     info: () => window.notasManager?.getDebugInfo(),
     restart: () => window.notasManager?.restart(),
     clear: () => window.notasManager?.clearAllData(),
-    export: () => window.notasManager?.exportData(),
-    testServer: () => window.notasManager?.testServerConnection()
+    export: () => window.notasManager?.exportData()
 };
 
 // Exportar para módulos
@@ -2091,6 +2050,6 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = NotasManager;
 }
 
-console.log('📝 NotasManager v2.1.0 completamente cargado - Interfaz Original + WebSocket');
+console.log('📝 NotasManager v2.2.0 completamente cargado - Sistema limpio sin funcionalidad de voz');
 console.log('🧪 Debug disponible en: window.notasDebug');
 console.log('🎯 Manager disponible en: window.notasManager');

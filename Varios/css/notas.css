@@ -1,16 +1,15 @@
 /**
  * 📝 NOTAS.CSS - Estilos para Interfaz Original de 2 Columnas
  * Control de Gastos Familiares - WiseSpend
- * Versión: 2.1.0 - Estilo Original Restaurado
+ * Versión: 2.2.0 - Estilo Original
  * 
  * 🎯 FUNCIONALIDADES:
  * ✅ Layout original de 2 columnas (Tareas | Recordatorios)
  * ✅ Colores exactos de la captura original
  * ✅ Tarjetas con colores específicos (rosa, naranja, verde, etc.)
- * ✅ Modal de dictado por voz integrado
- * ✅ Indicador de conexión WebSocket
+ * ✅ Modales de edición y confirmación
  * ✅ Filtros horizontales de categorías
- * ✅ Compatible con funcionalidad de voz
+ * ✅ Diseño responsivo y adaptable
  */
 
 /* ===== VARIABLES ESPECÍFICAS DE NOTAS ===== */
@@ -1159,16 +1158,15 @@
 /* ===== LOG ===== */
 
 /*
-📝 NOTAS.CSS v2.1.0 - INTERFAZ ORIGINAL RESTAURADA
+📝 NOTAS.CSS v2.2.0 - INTERFAZ ORIGINAL
 ========================================================
 ✅ Layout original de 2 columnas implementado
 ✅ Colores exactos de la captura original aplicados
 ✅ Tarjetas con colores específicos por categoría/prioridad
 ✅ Filtros horizontales de categorías funcionales
-✅ Modal de dictado por voz minimalista integrado
-✅ Indicador de conexión WebSocket sutil
+✅ Modales de edición y confirmación personalizados
 ✅ Estados vacíos y responsive design
-✅ Compatible con funcionalidad de voz + servidor Python
+✅ Sistema de notificaciones integrado
 
-🎯 INTERFAZ EXACTAMENTE COMO LA CAPTURA ORIGINAL
+🎯 INTERFAZ LIMPIA Y FUNCIONAL
 */

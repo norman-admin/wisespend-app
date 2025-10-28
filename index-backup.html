@@ -263,6 +263,33 @@
     </div>
 
     <!-- Scripts -->
+
+<!-- 🔷 Supabase SDK - Versión específica -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+
+<script>
+    // Verificar que se cargó
+    console.log('🔍 Supabase SDK cargado:', typeof supabase);
+    
+    if (typeof supabase !== 'undefined' && supabase.createClient) {
+        const SUPABASE_URL = 'https://ikudmgmtrerssffihtgl.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlrdWRtZ210cmVyc3NmZmlodGdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA2MDQ5MDMsImV4cCI6MjA3NjE4MDkwM30.2Er8z4TZwtI9yvTqve0P_NHzfcxb_MkWKL6f4DHoe7Y';
+        
+        window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        console.log('✅ Supabase inicializado correctamente');
+        console.log('📍 URL:', SUPABASE_URL);
+        console.log('🔍 Cliente creado:', !!window.supabase);
+    } else {
+        console.error('❌ Supabase SDK no se cargó correctamente');
+        console.log('🔍 typeof supabase:', typeof supabase);
+    }
+</script>
+    
+    <!-- 🔷 Supabase Storage Manager -->
+    <script src="js/supabase-storage.js"></script>
+    
+    <!-- Scripts base del sistema -->
     <script src="js/storage.js"></script>
     <script src="js/gastos.js"></script>
     <script src="js/currency.js"></script>

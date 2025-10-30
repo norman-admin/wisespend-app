@@ -15,11 +15,13 @@
 
 class EspacioPersonalManager {
     constructor() {
-        this.storageKey = 'espacioPersonal_notas';
-        this.autoSaveInterval = null;
-        this.autoSaveTime = 5 * 60 * 1000; // 5 minutos en milisegundos
-        
-        this.elements = {
+    this.storageKey = 'espacioPersonal_notas';
+    this.autoSaveInterval = null;
+    this.autoSaveTime = 5 * 60 * 1000; // 5 minutos en milisegundos
+    this.setupAttempts = 0; // ← NUEVO: Contador de intentos
+    this.maxSetupAttempts = 5; // ← NUEVO: Máximo 5 intentos (5 segundos)
+    
+    this.elements = {
             notasTextarea: null,
             charCounter: null,
             saveBtn: null,
@@ -62,10 +64,16 @@ class EspacioPersonalManager {
             this.startAutoSave();
             this.updateCharCounter();
             console.log('✅ Espacio Personal configurado correctamente');
-        } else {
-            console.log('⏳ Esperando elementos del Espacio Personal...');
-            // Reintentar en 1 segundo
-            setTimeout(() => this.setup(), 1000);
+                } else {
+            this.setupAttempts++;
+            
+            if (this.setupAttempts < this.maxSetupAttempts) {
+                console.log(`⏳ Esperando elementos del Espacio Personal... (intento ${this.setupAttempts}/${this.maxSetupAttempts})`);
+                // Reintentar en 1 segundo
+                setTimeout(() => this.setup(), 1000);
+            } else {
+                console.log('⚠️ Espacio Personal: Elementos no encontrados después de varios intentos. El módulo se activará cuando navegues a la sección Personal.');
+            }
         }
     }
 

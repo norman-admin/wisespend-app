@@ -105,21 +105,48 @@ async loadHeaderScript() {
     try {
         console.log('🎨 Cargando script del header...');
         
-        // Crear script element
-        const script = document.createElement('script');
-        script.src = 'header-redesigned/js/new-header.js';
-        script.onload = () => {
+        // Cargar new-header.js
+        const headerScript = document.createElement('script');
+        headerScript.src = 'header-redesigned/js/new-header.js';
+        headerScript.onload = () => {
             console.log('✅ Script del header cargado correctamente');
+            
+            // 🆕 Cargar period-selector.js después del header
+            this.loadPeriodSelectorScript();
+        };
+        headerScript.onerror = () => {
+            console.error('❌ Error cargando script del header');
+        };
+        
+        // Agregar al DOM
+        document.head.appendChild(headerScript);
+        
+    } catch (error) {
+        console.error('❌ Error en loadHeaderScript:', error);
+    }
+}
+
+/**
+ * 🆕 CARGAR SCRIPT DEL PERIOD SELECTOR
+ */
+async loadPeriodSelectorScript() {
+    try {
+        console.log('📅 Cargando script del selector de períodos...');
+        
+        const script = document.createElement('script');
+        script.src = 'header-redesigned/js/period-selector.js';
+        script.onload = () => {
+            console.log('✅ Script del selector de períodos cargado correctamente');
         };
         script.onerror = () => {
-            console.error('❌ Error cargando script del header');
+            console.error('❌ Error cargando script del selector de períodos');
         };
         
         // Agregar al DOM
         document.head.appendChild(script);
         
     } catch (error) {
-        console.error('❌ Error en loadHeaderScript:', error);
+        console.error('❌ Error en loadPeriodSelectorScript:', error);
     }
 }
 

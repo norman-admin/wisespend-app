@@ -690,7 +690,7 @@ notifyConfigurationChange(changes) {
                         <strong>Características:</strong><br>
                         • Multi-moneda (CLP, USD, EUR)<br>
                         • Gestión de gastos fijos, variables y extras<br>
-                        • Sistema de notas con dictado por voz<br>
+                        • Sistema de notas y recordatorios<br>
                         • Reportes y gráficos avanzados<br>
                         • Herramientas financieras integradas
                     </div>

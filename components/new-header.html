@@ -1,15 +1,7 @@
 <!-- 
-    NEW-HEADER.HTML - Header Ultra Minimalista
+    NEW-HEADER.HTML - Header con Selector de Periodos
     WiseSpend - Control de Gastos Familiares
-    Versión: 1.0.0 - Integración con Sistema Existente
-    
-    🎯 CARACTERÍSTICAS:
-    ✅ Logo WiseSpend.png a la izquierda
-    ✅ Menú de usuario ultra minimalista a la derecha
-    ✅ Integrado con storageManager, currency.js, auth.js
-    ✅ Compatible con sistema de temas existente
-    ✅ Funciones: Ver Perfil, Agregar Usuario, Cerrar Sesión
-    ✅ Mantiene todas las funcionalidades del header original
+    Version: 2.0.0 - Con Period Selector Opcion A
 -->
 
 <header class="new-header" id="newHeader">
@@ -19,7 +11,30 @@
             <img src="assets/WiseSpend.png" alt="WiseSpend" class="header-logo-image" id="headerLogo">
         </div>
 
-        <!-- Menú Usuario Derecha -->
+        <!-- Selector de Periodo (CENTRO) -->
+        <div class="period-navigator" id="periodNavigator">
+            <div class="period-selector" id="periodSelector">
+                <span class="period-icon">&#128197;</span>
+                <span class="period-text" id="periodText">Cargando...</span>
+                <div class="period-arrows">
+                    <button class="arrow-btn" id="prevMonthBtn" title="Mes anterior">&#9664;</button>
+                    <button class="arrow-btn" id="nextMonthBtn" title="Mes siguiente">&#9654;</button>
+                </div>
+                <span class="dropdown-arrow" id="dropdownToggle">&#9660;</span>
+            </div>
+            
+            <!-- Dropdown de periodos -->
+            <div class="period-dropdown" id="periodDropdown">
+                <div class="dropdown-header">
+                    <span>Seleccionar Periodo</span>
+                </div>
+                <div class="periods-list" id="periodsList">
+                    <!-- Los periodos se cargan dinamicamente -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu Usuario Derecha -->
         <div class="header-user-section">
             <div class="user-menu-wrapper" id="userMenuWrapper">
                 <button class="user-menu-button" id="userMenuButton" aria-expanded="false" aria-haspopup="true">
@@ -35,24 +50,23 @@
                 <!-- Dropdown Menu -->
                 <div class="user-dropdown-menu" id="userDropdownMenu" role="menu" aria-hidden="true">
                     <button class="dropdown-menu-item" role="menuitem" data-action="profile" id="profileAction">
-                        <span class="menu-item-icon">👤</span>
+                        <span class="menu-item-icon">&#128100;</span>
                         <span>Ver Perfil</span>
                     </button>
                     
                     <button class="dropdown-menu-item" role="menuitem" data-action="add-user" id="addUserAction">
-                        <span class="menu-item-icon">➕</span>
+                        <span class="menu-item-icon">&#10133;</span>
                         <span>Agregar Usuario</span>
                     </button>
                     
                     <div class="menu-separator"></div>
                     
                     <button class="dropdown-menu-item logout-item" role="menuitem" data-action="logout" id="logoutAction">
-                        <span class="menu-item-icon">🚪</span>
-                        <span>Cerrar Sesión</span>
+                        <span class="menu-item-icon">&#128682;</span>
+                        <span>Cerrar Sesion</span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 </header>
-

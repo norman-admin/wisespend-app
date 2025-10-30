@@ -1,7 +1,7 @@
 /**
  * PERIOD-SELECTOR.CSS - Estilos para Selector de Periodos
  * WiseSpend - Opcion A
- * Version: 2.0.0 - SIN !important (Codigo Limpio)
+ * Version: 2.0.0 - ORIGINAL
  */
 
 /* ========================================
@@ -18,7 +18,7 @@
     align-items: center;
     gap: 12px;
     background: #ffffff;
-    border: 2px solid #e5e7eb;
+    border: 2px solid #3b82f6;
     color: #1f2937;
     padding: 8px 16px;
     border-radius: 8px;

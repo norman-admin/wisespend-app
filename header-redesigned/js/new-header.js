@@ -748,30 +748,13 @@ class NewHeaderManager {
         return 'CLP';
     }
 
-    handleAddUserAction() {
-        this.closeDropdown();
-        console.log('➕ Acción: Agregar Usuario');
-        
-        if (window.modalSystem) {
-            window.modalSystem.show('add-user', {
-                title: '➕ Agregar Nuevo Usuario',
-                size: 'small',
-                content: `
-                    <p>Esta funcionalidad permite agregar usuarios adicionales al sistema.</p>
-                    <p>⚠️ Función en desarrollo</p>
-                `,
-                buttons: [
-                    {
-                        text: 'Cerrar',
-                        type: 'secondary',
-                        action: 'cancel'
-                    }
-                ]
-            });
-        } else {
-            alert('Función en desarrollo');
-        }
-    }
+handleAddUserAction() {
+    this.closeDropdown();
+    console.log('➕ Acción: Agregar Usuario - Redirigiendo a registro');
+    
+    // Redirigir a la página de login con modo registro activado
+    window.location.href = 'index-backup.html?mode=register';
+}
 
     handleLogoutAction() {
         this.closeDropdown();

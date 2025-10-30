@@ -1,7 +1,7 @@
 /**
  * PERIOD-SELECTOR.JS - Navegador de Períodos para Header
  * WiseSpend - Opción A
- * Versión: 1.0.0
+ * Versión: 1.0.1 - FIX para dropdown y mes actual
  */
 
 class PeriodSelector {
@@ -23,22 +23,26 @@ class PeriodSelector {
     }
     
     async init() {
-        console.log('📅 Inicializando Period Selector...');
+        console.log('📅 Inicializando Period Selector v1.0.1...');
         
         // Esperar a que el DOM esté listo
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.setup());
         } else {
-            this.setup();
+            // Pequeño delay para asegurar que el HTML esté renderizado
+            setTimeout(() => this.setup(), 100);
         }
     }
     
     setup() {
+        console.log('🔧 Setup iniciando...');
+        
         // Cachear elementos
         this.cacheElements();
         
         if (!this.elements.selector) {
-            console.warn('⚠️ Elementos del selector de período no encontrados');
+            console.warn('⚠️ Elementos del selector de período no encontrados, reintentando en 500ms...');
+            setTimeout(() => this.setup(), 500);
             return;
         }
         
@@ -51,7 +55,8 @@ class PeriodSelector {
         // Configurar eventos
         this.setupEvents();
         
-        console.log('✅ Period Selector inicializado');
+        console.log('✅ Period Selector inicializado correctamente');
+        console.log('📅 Mes actual:', this.formatPeriodLabel(this.currentPeriod));
     }
     
     cacheElements() {
@@ -62,6 +67,13 @@ class PeriodSelector {
         this.elements.prevBtn = document.getElementById('prevMonthBtn');
         this.elements.nextBtn = document.getElementById('nextMonthBtn');
         this.elements.dropdownToggle = document.getElementById('dropdownToggle');
+        
+        console.log('📦 Elementos cacheados:', {
+            selector: !!this.elements.selector,
+            periodText: !!this.elements.periodText,
+            dropdown: !!this.elements.dropdown,
+            periodsList: !!this.elements.periodsList
+        });
     }
     
     loadCurrentPeriod() {
@@ -71,7 +83,9 @@ class PeriodSelector {
         const month = String(now.getMonth() + 1).padStart(2, '0');
         this.currentPeriod = `${year}-${month}`;
         
-        // Actualizar display
+        console.log('📅 Período actual establecido:', this.currentPeriod);
+        
+        // Actualizar display inmediatamente
         this.updateDisplay();
     }
     
@@ -94,6 +108,9 @@ class PeriodSelector {
         }
         
         this.availablePeriods = periods;
+        console.log(`📋 ${periods.length} períodos cargados`);
+        
+        // Renderizar lista
         this.renderPeriodsList();
     }
     
@@ -108,12 +125,19 @@ class PeriodSelector {
     
     updateDisplay() {
         if (this.elements.periodText) {
-            this.elements.periodText.textContent = this.formatPeriodLabel(this.currentPeriod);
+            const formattedPeriod = this.formatPeriodLabel(this.currentPeriod);
+            this.elements.periodText.textContent = formattedPeriod;
+            console.log('✅ Display actualizado:', formattedPeriod);
+        } else {
+            console.warn('⚠️ periodText element no disponible');
         }
     }
     
     renderPeriodsList() {
-        if (!this.elements.periodsList) return;
+        if (!this.elements.periodsList) {
+            console.warn('⚠️ periodsList element no disponible');
+            return;
+        }
         
         const html = this.availablePeriods.map(period => `
             <div class="period-item ${period.isCurrent ? 'active' : ''}" data-period="${period.value}">
@@ -123,31 +147,41 @@ class PeriodSelector {
         `).join('');
         
         this.elements.periodsList.innerHTML = html;
+        console.log('✅ Lista de períodos renderizada');
     }
     
     setupEvents() {
-        // Toggle dropdown
+        console.log('🎧 Configurando eventos...');
+        
+        // Toggle dropdown - Click en el selector completo
         if (this.elements.selector) {
             this.elements.selector.addEventListener('click', (e) => {
+                // No toggle si se clickeó un botón de flecha
                 if (!e.target.closest('.arrow-btn')) {
+                    console.log('🖱️ Click en selector, toggling dropdown');
                     this.toggleDropdown();
                 }
             });
+            console.log('✅ Evento selector configurado');
         }
         
         // Botones de navegación
         if (this.elements.prevBtn) {
             this.elements.prevBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
+                console.log('◀ Mes anterior');
                 this.changePeriod(-1);
             });
+            console.log('✅ Botón prev configurado');
         }
         
         if (this.elements.nextBtn) {
             this.elements.nextBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
+                console.log('▶ Mes siguiente');
                 this.changePeriod(1);
             });
+            console.log('✅ Botón next configurado');
         }
         
         // Click en items del dropdown
@@ -156,9 +190,11 @@ class PeriodSelector {
                 const item = e.target.closest('.period-item');
                 if (item) {
                     const period = item.dataset.period;
+                    console.log('📅 Período seleccionado:', period);
                     this.selectPeriod(period);
                 }
             });
+            console.log('✅ Eventos de items de dropdown configurados');
         }
         
         // Cerrar dropdown al hacer click fuera
@@ -167,10 +203,15 @@ class PeriodSelector {
                 this.closeDropdown();
             }
         });
+        console.log('✅ Evento click outside configurado');
+        
+        console.log('🎧 Todos los eventos configurados correctamente');
     }
     
     toggleDropdown() {
         const isOpen = this.elements.dropdown.classList.contains('show');
+        
+        console.log('🔄 Toggle dropdown, estaba:', isOpen ? 'abierto' : 'cerrado');
         
         if (isOpen) {
             this.closeDropdown();
@@ -180,11 +221,23 @@ class PeriodSelector {
     }
     
     openDropdown() {
+        if (!this.elements.dropdown || !this.elements.selector) {
+            console.warn('⚠️ No se pueden abrir dropdown, elementos faltantes');
+            return;
+        }
+        
+        console.log('📂 Abriendo dropdown...');
         this.elements.dropdown.classList.add('show');
         this.elements.selector.classList.add('open');
+        console.log('✅ Dropdown abierto');
     }
     
     closeDropdown() {
+        if (!this.elements.dropdown || !this.elements.selector) {
+            return;
+        }
+        
+        console.log('📁 Cerrando dropdown...');
         this.elements.dropdown.classList.remove('show');
         this.elements.selector.classList.remove('open');
     }
@@ -197,6 +250,7 @@ class PeriodSelector {
         const newMonth = String(date.getMonth() + 1).padStart(2, '0');
         const newPeriod = `${newYear}-${newMonth}`;
         
+        console.log(`📅 Cambiando período de ${this.currentPeriod} a ${newPeriod}`);
         this.selectPeriod(newPeriod);
     }
     
@@ -212,8 +266,7 @@ class PeriodSelector {
         // Disparar evento personalizado
         this.dispatchPeriodChangeEvent();
         
-        // TODO: Aquí filtrarás los datos por período
-        console.log(`📅 Período cambiado a: ${period}`);
+        console.log(`✅ Período cambiado a: ${this.formatPeriodLabel(period)}`);
     }
     
     dispatchPeriodChangeEvent() {
@@ -224,6 +277,7 @@ class PeriodSelector {
             }
         });
         window.dispatchEvent(event);
+        console.log('📡 Evento periodChanged dispatched');
     }
     
     // API Pública
@@ -238,7 +292,17 @@ class PeriodSelector {
 
 // Inicialización global
 if (typeof window !== 'undefined') {
-    window.periodSelector = new PeriodSelector();
+    // Esperar un momento antes de inicializar para asegurar que el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            window.periodSelector = new PeriodSelector();
+        });
+    } else {
+        // Si el DOM ya está listo, inicializar con un pequeño delay
+        setTimeout(() => {
+            window.periodSelector = new PeriodSelector();
+        }, 100);
+    }
 }
 
-console.log('📅 period-selector.js v1.0.0 cargado');
+console.log('📅 period-selector.js v1.0.1 (FIXED) cargado');

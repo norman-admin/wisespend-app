@@ -267,35 +267,19 @@ if (window.IncomeTableEnhanced) {
     /**
      * 🆕 NUEVO: Guardar ingreso desde modal unificado
      */
-    saveIncomeFromModal(data) {
-        const incomeData = {
-            fuente: data.fuente,
-            monto: parseInt(data.monto) || 0,
-            activo: true,
-            id: Utils.id.generate('income'),
-            fechaCreacion: Utils.time.now()
-        };
-
-        if (!incomeData.fuente || !incomeData.monto) {
-            window.modalSystem.showMessage('Por favor complete todos los campos requeridos', 'error');
-            return;
+    async saveIncomeFromModal(data) {
+        // ✅ DELEGAR A INGRESOSMANAGER que tiene integración con Supabase
+        if (window.ingresosManager && window.ingresosManager.saveIncomeFromModal) {
+            console.log('🔄 Delegando guardado a ingresosManager (con Supabase)');
+            await window.ingresosManager.saveIncomeFromModal(data, false, {});
+            
+            // Actualizar la interfaz después de guardar
+            this.updateHeaderTotals();
+            console.log('✅ Ingreso guardado en Supabase correctamente');
+        } else {
+            console.error('❌ ingresosManager no disponible');
+            window.modalSystem.showMessage('Error: Sistema de ingresos no disponible', 'error');
         }
-
-        // Agregar al storage
-        const ingresos = this.storage.getIngresos();
-        ingresos.desglose.push(incomeData);
-        ingresos.total = ingresos.desglose
-            .filter(item => item.activo !== false)
-            .reduce((total, item) => total + (item.monto || 0), 0);
-        
-        this.storage.setIngresos(ingresos);
-
-        // 🎯 SOLUCIÓN: Solo agregar fila nueva sin recargar tabla
-        this.addNewIncomeRow(incomeData);
-        this.updateHeaderTotals();
-        window.modalSystem.showMessage('Nuevo ingreso agregado correctamente', 'success');
-        
-        console.log('✅ Nuevo ingreso agregado:', incomeData);
     }
 
     /**

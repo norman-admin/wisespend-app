@@ -150,7 +150,7 @@ async showDeleteModal(incomeId) {
     });
 }
 
-    saveIncomeFromModal(data, isEdit, originalData = {}) {
+    async saveIncomeFromModal(data, isEdit, originalData = {}) {
     const incomeData = {
         fuente: data.fuente.trim(),
         monto: parseFloat(data.monto) || 0,
@@ -166,7 +166,7 @@ async showDeleteModal(incomeId) {
         return;
     }
 
-    this.saveIncomeData(incomeData, isEdit);
+    await this.saveIncomeData(incomeData, isEdit);
     window.modalSystem.showMessage(
         `Ingreso ${isEdit ? 'actualizado' : 'agregado'} correctamente`, 
         'success'
@@ -463,7 +463,7 @@ this.modalSystem.showMessage(
             // UX delay para mejor percepción
             await new Promise(resolve => setTimeout(resolve, 500));
             
-            this.saveIncomeData(incomeData, isEdit);
+            await this.saveIncomeData(incomeData, isEdit);
             this.modalSystem.close();
             this.modalSystem.showMessage(
                 `Ingreso ${isEdit ? 'actualizado' : 'agregado'} correctamente`, 
@@ -479,22 +479,33 @@ this.modalSystem.showMessage(
         }
     }
 
-    saveIncomeData(incomeData, isEdit) {
-        const ingresos = this.storage.getIngresos();
-        
-        if (isEdit) {
-            const index = ingresos.desglose.findIndex(item => item.id === incomeData.id);
-            if (index !== -1) {
-                incomeData.fechaCreacion = ingresos.desglose[index].fechaCreacion;
-                ingresos.desglose[index] = incomeData;
-            }
-        } else {
-            ingresos.desglose.push(incomeData);
-        }
-        
-        ingresos.total = this.calculateTotal(ingresos.desglose);
-        this.storage.setIngresos(ingresos);
+    async saveIncomeData(incomeData, isEdit) {
+    if (isEdit) {
+        // Actualizar ingreso existente en Supabase
+        await window.supabaseIngresosAdapter.updateIngreso(incomeData.id, {
+            fuente: incomeData.fuente,
+            monto: incomeData.monto,
+            activo: incomeData.activo
+        });
+    } else {
+        // Agregar nuevo ingreso a Supabase
+        await window.supabaseIngresosAdapter.addIngreso(incomeData);
     }
+    
+    // Actualizar localStorage (fallback)
+    const ingresos = this.storage.getIngresos();
+    if (isEdit) {
+        const index = ingresos.desglose.findIndex(item => item.id === incomeData.id);
+        if (index !== -1) {
+            incomeData.fechaCreacion = ingresos.desglose[index].fechaCreacion;
+            ingresos.desglose[index] = incomeData;
+        }
+    } else {
+        ingresos.desglose.push(incomeData);
+    }
+    ingresos.total = this.calculateTotal(ingresos.desglose);
+    this.storage.setIngresos(ingresos);
+}
 
     updateIncomeField(incomeId, field, value) {
     const ingresos = this.storage.getIngresos();
@@ -524,15 +535,19 @@ this.modalSystem.showMessage(
     }
 }
 
-    deleteIncome(incomeId) {
-        const ingresos = this.storage.getIngresos();
-        ingresos.desglose = ingresos.desglose.filter(item => item.id !== incomeId);
-        ingresos.total = this.calculateTotal(ingresos.desglose);
-        this.storage.setIngresos(ingresos);
-        
-        this.modalSystem.showMessage('Ingreso eliminado correctamente', 'success');
-        this.updateDashboard();
-    }
+    async deleteIncome(incomeId) {
+    // Eliminar de Supabase PRIMERO
+    await window.supabaseIngresosAdapter.deleteIngreso(incomeId);
+    
+    // Luego eliminar de localStorage (fallback)
+    const ingresos = this.storage.getIngresos();
+    ingresos.desglose = ingresos.desglose.filter(item => item.id !== incomeId);
+    ingresos.total = this.calculateTotal(ingresos.desglose);
+    this.storage.setIngresos(ingresos);
+    
+    this.modalSystem.showMessage('Ingreso eliminado correctamente', 'success');
+    this.updateDashboard();
+}
 
     /**
      * VALIDACIONES USANDO UTILS

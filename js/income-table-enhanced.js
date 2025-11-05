@@ -465,7 +465,7 @@ updateTableTotals(newTotal) {
     
     const totalRowElement = document.querySelector('#income-total-row .amount');
     if (totalRowElement) {
-        totalElement.textContent = this.gastosManager.formatNumber(newTotal);
+        totalRowElement.textContent = this.gastosManager.formatNumber(newTotal);
     }
     
     // 🆕 NOTIFICAR A GASTOS EXTRAS SOBRE CAMBIO EN INGRESOS

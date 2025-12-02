@@ -427,31 +427,33 @@ setTimeout(() => {
     /**
      * 🎯 EJECUTAR ELIMINACIÓN REAL
      */
-    executeDelete(id, ingresos) {
-        // 🎯 SOLUCIÓN: Eliminar fila del DOM primero
-        const row = document.querySelector(`[data-id="${id}"]`);
-        if (row) {
-            row.style.transition = 'opacity 0.2s ease';
-            row.style.opacity = '0';
-            setTimeout(() => {
-                if (row.parentNode) {
-                    row.remove();
-                }
-            }, 200);
+    async executeDelete(id, ingresos) {
+        // ✅ DELEGAR A INGRESOSMANAGER que tiene integración con Supabase
+        if (window.ingresosManager && window.ingresosManager.deleteIncome) {
+            console.log('🔄 Delegando eliminación a ingresosManager (con Supabase)');
+            await window.ingresosManager.deleteIncome(id);
+            
+            // 🎯 Eliminar fila del DOM
+            const row = document.querySelector(`[data-id="${id}"]`);
+            if (row) {
+                row.style.transition = 'opacity 0.2s ease';
+                row.style.opacity = '0';
+                setTimeout(() => {
+                    if (row.parentNode) {
+                        row.remove();
+                    }
+                }, 200);
+            }
+            
+            // 🎯 Actualizar interfaz
+            const ingresosActualizados = this.storage.getIngresos();
+            this.gastosManager.updateHeaderTotals();
+            this.updateTableTotals(ingresosActualizados.total);
+            
+            console.log('✅ Ingreso eliminado de Supabase y localStorage');
+        } else {
+            console.error('❌ ingresosManager no disponible');
         }
-        
-        // Eliminar del array
-        ingresos.desglose = ingresos.desglose.filter(item => item.id !== id);
-        ingresos.total = ingresos.desglose.reduce((total, item) => total + (item.monto || 0), 0);
-        
-        // Guardar datos
-        this.storage.setIngresos(ingresos);
-        
-        // 🎯 SOLO actualizar totales, NO recargar tabla
-        this.gastosManager.updateHeaderTotals();
-        this.updateTableTotals(ingresos.total);
-        
-        console.log('✅ Ingreso eliminado sin refresco');
     }
 
     /**

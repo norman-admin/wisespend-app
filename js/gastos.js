@@ -16,7 +16,7 @@ class GastosManager {
         this.storage = window.storageManager;
         this.currentView = 'income'; // Por defecto income
         this.editingItem = null;
-        
+
         if (!this.storage) {
             console.error('❌ StorageManager no está disponible');
             return;
@@ -24,7 +24,7 @@ class GastosManager {
 
         this.initializeGastosManager();
         this.bindEvents();
-        
+
         // 🆕 Asegurar IDs en elementos existentes
         this.ensureItemIds();
     }
@@ -56,13 +56,13 @@ class GastosManager {
         const menuButtons = document.querySelectorAll('.nav-item');
         menuButtons.forEach(btn => {
             const text = btn.textContent.trim().toLowerCase();
-            
+
             // 🎯 CAMBIO CLAVE: Solo navegación, sin modal
             if (text.includes('agregar ingresos')) {
                 btn.removeAttribute('onclick'); // Limpiar onclick del HTML
                 btn.onclick = null; // Limpiar onclick programático también
                 btn.onclick = () => this.switchView('income'); // SOLO navegación
-                
+
             } else if (text.includes('agregar gastos')) {
                 btn.onclick = () => this.switchView('expenses');
             } else if (text.includes('fijos') && text.includes('variables')) {
@@ -137,7 +137,7 @@ class GastosManager {
         }
 
         this.updateHeaderTotals();
-        
+
         // 🆕 ACTIVAR MENÚ CONTEXTUAL después de cada cambio de vista
         setTimeout(() => {
             if (window.contextualManager) {
@@ -151,8 +151,8 @@ class GastosManager {
      */
     getMainContainer() {
         return document.querySelector('#dynamic-content') ||
-               document.querySelector('.content-area') ||
-               document.body;
+            document.querySelector('.content-area') ||
+            document.body;
     }
 
     /**
@@ -160,17 +160,17 @@ class GastosManager {
      */
     renderIncomeSection(container) {
         const ingresos = this.storage.getIngresos();
-        
+
         // 🆕 PRIORIDAD 1: Asegurar que la tabla mejorada SIEMPRE esté disponible
-if (window.IncomeTableEnhanced) {
-    if (!window.incomeTableEnhanced) {
-        window.incomeTableEnhanced = new window.IncomeTableEnhanced(this);
-        console.log('🎯 Creando tabla mejorada global (forzada)');
-    }
-    console.log('🎯 Usando tabla mejorada global PERSISTENTE');
-    window.incomeTableEnhanced.renderIncomeSection(container);
-    return;
-}
+        if (window.IncomeTableEnhanced) {
+            if (!window.incomeTableEnhanced) {
+                window.incomeTableEnhanced = new window.IncomeTableEnhanced(this);
+                console.log('🎯 Creando tabla mejorada global (forzada)');
+            }
+            console.log('🎯 Usando tabla mejorada global PERSISTENTE');
+            window.incomeTableEnhanced.renderIncomeSection(container);
+            return;
+        }
 
         // 🆕 PRIORIDAD 2: Si no hay instancia global, crear una local
         if (window.IncomeTableEnhanced && !this.incomeTableEnhanced) {
@@ -201,18 +201,18 @@ if (window.IncomeTableEnhanced) {
 
                 <div class="income-breakdown">
                     ${ingresos.desglose.map(item => {
-                        // 🆕 Asegurar que el item tenga ID
-                        if (!item.id) {
-                            item.id = Utils.id.generate('income');
-                        }
-                        
-                        return `
+            // 🆕 Asegurar que el item tenga ID
+            if (!item.id) {
+                item.id = Utils.id.generate('income');
+            }
+
+            return `
                             <div class="breakdown-item" data-id="${item.id}">
                                 <span class="breakdown-name">${item.fuente}</span>
                                 <span class="breakdown-amount">${this.formatNumber(item.monto)}</span>
                             </div>
                         `;
-                    }).join('')}
+        }).join('')}
                 </div>
                 
                 <div class="total-section">
@@ -225,7 +225,7 @@ if (window.IncomeTableEnhanced) {
         `;
 
         container.innerHTML = html;
-        
+
         // 🆕 ACTIVAR MENÚ CONTEXTUAL después de renderizar
         setTimeout(() => {
             if (window.contextualManager) {
@@ -272,8 +272,24 @@ if (window.IncomeTableEnhanced) {
         if (window.ingresosManager && window.ingresosManager.saveIncomeFromModal) {
             console.log('🔄 Delegando guardado a ingresosManager (con Supabase)');
             await window.ingresosManager.saveIncomeFromModal(data, false, {});
-            
-            // Actualizar la interfaz después de guardar
+
+            // 🔄 RECARGAR LA TABLA DESPUÉS DE GUARDAR
+            console.log('🔄 Recargando tabla de ingresos...');
+            if (window.incomeTableEnhanced && window.incomeTableEnhanced.renderIncomeSection) {
+                const container = this.getMainContainer();
+                if (container) {
+                    window.incomeTableEnhanced.renderIncomeSection(container);
+                    console.log('✅ Tabla recargada exitosamente');
+                } else {
+                    console.warn('⚠️ Contenedor no encontrado, recargando página...');
+                    setTimeout(() => location.reload(), 500);
+                }
+            } else {
+                // Fallback: recargar página
+                console.log('🔄 Recargando página automáticamente...');
+                setTimeout(() => location.reload(), 500);
+            }
+
             this.updateHeaderTotals();
             console.log('✅ Ingreso guardado en Supabase correctamente');
         } else {
@@ -285,22 +301,22 @@ if (window.IncomeTableEnhanced) {
     /**
  * 🎯 AGREGAR NUEVA FILA SIN RECARGAR TABLA
  */
-addNewIncomeRow(incomeData) {
-    const tableBody = document.getElementById('income-table-body');
-    if (!tableBody) {
-        // Si no hay tabla, recargar completamente
-        this.renderIncomeSection(this.getMainContainer());
-        return;
-    }
+    addNewIncomeRow(incomeData) {
+        const tableBody = document.getElementById('income-table-body');
+        if (!tableBody) {
+            // Si no hay tabla, recargar completamente
+            this.renderIncomeSection(this.getMainContainer());
+            return;
+        }
 
-    // Remover fila vacía si existe
-    const emptyRow = tableBody.querySelector('.empty-row');
-    if (emptyRow) {
-        emptyRow.remove();
-    }
+        // Remover fila vacía si existe
+        const emptyRow = tableBody.querySelector('.empty-row');
+        if (emptyRow) {
+            emptyRow.remove();
+        }
 
-    const percentage = 10; // Se calculará después
-    const newRowHTML = `
+        const percentage = 10; // Se calculará después
+        const newRowHTML = `
         <tr class="income-row ${!incomeData.activo ? 'inactive' : ''}" data-id="${incomeData.id}" style="opacity: 0;">
             <td class="source-cell">
                 <div class="source-content breakdown-item" data-id="${incomeData.id}">
@@ -337,60 +353,60 @@ addNewIncomeRow(incomeData) {
         </tr>
     `;
 
-    // Agregar nueva fila
-    tableBody.insertAdjacentHTML('beforeend', newRowHTML);
-    
-    // Animar entrada
-    const newRow = tableBody.querySelector(`[data-id="${incomeData.id}"]`);
-    if (newRow) {
-        setTimeout(() => {
-            newRow.style.transition = 'opacity 0.3s ease';
-            newRow.style.opacity = '1';
-        }, 10);
+        // Agregar nueva fila
+        tableBody.insertAdjacentHTML('beforeend', newRowHTML);
+
+        // Animar entrada
+        const newRow = tableBody.querySelector(`[data-id="${incomeData.id}"]`);
+        if (newRow) {
+            setTimeout(() => {
+                newRow.style.transition = 'opacity 0.3s ease';
+                newRow.style.opacity = '1';
+            }, 10);
+        }
+
+        // Actualizar totales y porcentajes
+        this.recalculatePercentages();
     }
 
-    // Actualizar totales y porcentajes
-    this.recalculatePercentages();
-}
+    /**
+     * 🎯 RECALCULAR PORCENTAJES SIN RECARGAR
+     */
+    recalculatePercentages() {
+        const ingresos = this.storage.getIngresos();
+        const total = ingresos.total;
 
-/**
- * 🎯 RECALCULAR PORCENTAJES SIN RECARGAR
- */
-recalculatePercentages() {
-    const ingresos = this.storage.getIngresos();
-    const total = ingresos.total;
-    
-    ingresos.desglose.forEach(item => {
-        const percentage = ((item.monto / total) * 100).toFixed(1);
-        const row = document.querySelector(`[data-id="${item.id}"]`);
-        if (row) {
-            const percentageCell = row.querySelector('.breakdown-percentage');
-            if (percentageCell) {
-                percentageCell.textContent = `${percentage}%`;
+        ingresos.desglose.forEach(item => {
+            const percentage = ((item.monto / total) * 100).toFixed(1);
+            const row = document.querySelector(`[data-id="${item.id}"]`);
+            if (row) {
+                const percentageCell = row.querySelector('.breakdown-percentage');
+                if (percentageCell) {
+                    percentageCell.textContent = `${percentage}%`;
+                }
             }
+        });
+
+        // Actualizar total en el footer de la tabla
+        const totalRowElement = document.querySelector('#income-total-row .amount, .total-amount');
+        if (totalRowElement) {
+            totalRowElement.textContent = this.formatNumber(total);
         }
-    });
+    }
 
-   // Actualizar total en el footer de la tabla
-const totalRowElement = document.querySelector('#income-total-row .amount, .total-amount');
-if (totalRowElement) {
-    totalRowElement.textContent = this.formatNumber(total);
-}
-}
-
-/**
- * 🎯 FORMATEAR NÚMERO (HELPER)
- */
-formatNumber(amount) {
-    // Usar Utils.currency.format() que está disponible globalmente
-    return Utils.currency.format(amount);
-}
+    /**
+     * 🎯 FORMATEAR NÚMERO (HELPER)
+     */
+    formatNumber(amount) {
+        // Usar Utils.currency.format() que está disponible globalmente
+        return Utils.currency.format(amount);
+    }
 
     /**
  * Renderizar sección de gastos (botones para elegir tipo) - VERSIÓN ORIGINAL RESTAURADA
  */
-renderExpensesSection(container) {
-    const html = `
+    renderExpensesSection(container) {
+        const html = `
         <section class="content-section active">
             <div class="section-header">
                 <h2>💳 Agregar Nuevo Gasto</h2>
@@ -470,9 +486,9 @@ renderExpensesSection(container) {
         </section>
     `;
 
-    container.innerHTML = html;
-    console.log('💳 Sección de gastos renderizada con tarjetas');
-}
+        container.innerHTML = html;
+        console.log('💳 Sección de gastos renderizada con tarjetas');
+    }
 
     /**
      * 🔄 REFACTORIZADO: Mostrar modal para agregar gasto usando sistema unificado
@@ -508,34 +524,34 @@ renderExpensesSection(container) {
      * 🆕 NUEVO: Guardar gasto desde modal unificado
      */
     saveGastoFromModal(data, tipo) {
-    const gastoData = {
-        categoria: data.categoria,
-        monto: parseInt(data.monto) || 0,
-        activo: true,
-        id: Utils.id.generate(`gasto_${tipo}`),
-        fechaCreacion: Utils.time.now()
-    };
+        const gastoData = {
+            categoria: data.categoria,
+            monto: parseInt(data.monto) || 0,
+            activo: true,
+            id: Utils.id.generate(`gasto_${tipo}`),
+            fechaCreacion: Utils.time.now()
+        };
 
-    if (!gastoData.categoria || !gastoData.monto) {
-        window.modalSystem.showMessage('Por favor complete todos los campos requeridos', 'error');
-        return;
+        if (!gastoData.categoria || !gastoData.monto) {
+            window.modalSystem.showMessage('Por favor complete todos los campos requeridos', 'error');
+            return;
+        }
+
+        this.addGasto(gastoData, tipo);
+
+        // 🎯 SOLUCIÓN: Solo actualizar totales, NO recargar vista
+        this.updateHeaderTotals();
+        console.log('✅ Gasto agregado sin refresco');
+
+        window.modalSystem.showMessage(`Gasto ${this.getTipoDisplayName(tipo).toLowerCase()} agregado correctamente`, 'success');
     }
-
-    this.addGasto(gastoData, tipo);
-    
-    // 🎯 SOLUCIÓN: Solo actualizar totales, NO recargar vista
-    this.updateHeaderTotals();
-    console.log('✅ Gasto agregado sin refresco');
-    
-    window.modalSystem.showMessage(`Gasto ${this.getTipoDisplayName(tipo).toLowerCase()} agregado correctamente`, 'success');
-}
 
     /**
      * Renderizar gastos fijos
      */
     renderGastosFijos(container) {
         const gastosFijos = this.storage.getGastosFijos();
-        
+
         const html = `
             <section class="content-section active">
                 <div class="section-header">
@@ -556,7 +572,7 @@ renderExpensesSection(container) {
         `;
 
         container.innerHTML = html;
-        
+
         // 🆕 ACTIVAR MENÚ CONTEXTUAL después de renderizar
         setTimeout(() => {
             if (window.contextualManager) {
@@ -570,7 +586,7 @@ renderExpensesSection(container) {
      */
     renderGastosVariables(container) {
         const gastosVariables = this.storage.getGastosVariables();
-        
+
         const html = `
             <section class="content-section active">
                 <div class="section-header">
@@ -591,7 +607,7 @@ renderExpensesSection(container) {
         `;
 
         container.innerHTML = html;
-        
+
         // 🆕 ACTIVAR MENÚ CONTEXTUAL después de renderizar
         setTimeout(() => {
             if (window.contextualManager) {
@@ -603,26 +619,26 @@ renderExpensesSection(container) {
     /**
  * Renderizar gastos extras - VERSIÓN MEJORADA
  */
-renderGastosExtras(container) {
-    // Usar el nuevo sistema de gastos extras mejorados
-    if (window.gastosExtrasMejorados) {
-        window.gastosExtrasMejorados.renderGastosExtrasMejorados(container);
-    } else {
-        // Fallback si no está cargado
-        console.warn('⚠️ GastosExtrasMejorados no disponible, usando versión anterior');
-        this.renderGastosExtrasOriginal(container);
+    renderGastosExtras(container) {
+        // Usar el nuevo sistema de gastos extras mejorados
+        if (window.gastosExtrasMejorados) {
+            window.gastosExtrasMejorados.renderGastosExtrasMejorados(container);
+        } else {
+            // Fallback si no está cargado
+            console.warn('⚠️ GastosExtrasMejorados no disponible, usando versión anterior');
+            this.renderGastosExtrasOriginal(container);
+        }
     }
-}
 
-/**
- * Renderizar gastos extras - VERSIÓN ORIGINAL (RESPALDO)
- */
-renderGastosExtrasOriginal(container) {
-    const gastosExtras = this.storage.getGastosExtras();
-    const presupuesto = gastosExtras.presupuesto || 0;
-    const porcentaje = gastosExtras.porcentaje || 10;
-    
-    const html = `
+    /**
+     * Renderizar gastos extras - VERSIÓN ORIGINAL (RESPALDO)
+     */
+    renderGastosExtrasOriginal(container) {
+        const gastosExtras = this.storage.getGastosExtras();
+        const presupuesto = gastosExtras.presupuesto || 0;
+        const porcentaje = gastosExtras.porcentaje || 10;
+
+        const html = `
         <section class="content-section active">
             <div class="section-header">
                 <h2>Gastos Extras</h2>
@@ -650,9 +666,9 @@ renderGastosExtrasOriginal(container) {
         </section>
     `;
 
-    container.innerHTML = html;
-    this.bindPresupuestoEvents();
-}
+        container.innerHTML = html;
+        this.bindPresupuestoEvents();
+    }
 
     /**
      * Vista combinada fijos y variables
@@ -661,7 +677,7 @@ renderGastosExtrasOriginal(container) {
         const container = this.getMainContainer();
         const gastosFijos = this.storage.getGastosFijos();
         const gastosVariables = this.storage.getGastosVariables();
-        
+
         const html = `
             <section class="content-section active">
                 <div class="section-header">
@@ -702,7 +718,7 @@ renderGastosExtrasOriginal(container) {
         `;
 
         container.innerHTML = html;
-        
+
         // 🆕 ACTIVAR MENÚ CONTEXTUAL después de renderizar
         setTimeout(() => {
             if (window.contextualManager) {
@@ -719,12 +735,12 @@ renderGastosExtrasOriginal(container) {
         const isPaid = item.pagado === true;
         const activeClass = isActive ? 'active' : 'inactive';
         const paidClass = isPaid ? 'paid' : '';
-        
+
         // 🆕 Asegurar que el item tenga ID
         if (!item.id) {
             item.id = Utils.id.generate(`gasto_${tipo}`);
         }
-        
+
         return `
             <div class="expense-item ${activeClass} ${paidClass}" data-id="${item.id}" data-tipo="${tipo}">
                 <div class="expense-checkbox">
@@ -744,7 +760,7 @@ renderGastosExtrasOriginal(container) {
      */
     addGasto(gastoData, tipo) {
         let gastos;
-        
+
         switch (tipo) {
             case 'fijos':
                 gastos = this.storage.getGastosFijos();
@@ -775,7 +791,7 @@ renderGastosExtrasOriginal(container) {
         if (!gasto) return;
 
         gasto.pagado = isPagado;
-        
+
         // Actualizar en storage
         let gastos;
         switch (tipo) {
@@ -823,7 +839,7 @@ renderGastosExtrasOriginal(container) {
      */
     ensureItemIds() {
         let updated = false;
-        
+
         // Verificar ingresos
         const ingresos = this.storage.getIngresos();
         ingresos.desglose.forEach(item => {
@@ -833,7 +849,7 @@ renderGastosExtrasOriginal(container) {
             }
         });
         if (updated) this.storage.setIngresos(ingresos);
-        
+
         // Verificar gastos fijos
         const gastosFijos = this.storage.getGastosFijos();
         gastosFijos.items.forEach(item => {
@@ -843,7 +859,7 @@ renderGastosExtrasOriginal(container) {
             }
         });
         if (updated) this.storage.setGastosFijos(gastosFijos);
-        
+
         // Verificar gastos variables
         const gastosVariables = this.storage.getGastosVariables();
         gastosVariables.items.forEach(item => {
@@ -853,7 +869,7 @@ renderGastosExtrasOriginal(container) {
             }
         });
         if (updated) this.storage.setGastosVariables(gastosVariables);
-        
+
         // Verificar gastos extras
         const gastosExtras = this.storage.getGastosExtras();
         gastosExtras.items.forEach(item => {
@@ -863,7 +879,7 @@ renderGastosExtrasOriginal(container) {
             }
         });
         if (updated) this.storage.setGastosExtras(gastosExtras);
-        
+
         if (updated) {
             console.log('✅ IDs agregados a elementos existentes');
         }
@@ -968,7 +984,7 @@ renderGastosExtrasOriginal(container) {
         const activeItems = items.filter(item => item.activo !== false);
         const pagadosItems = activeItems.filter(item => item.pagado === true);
         const pendientesItems = activeItems.filter(item => item.pagado !== true);
-        
+
         return {
             total: activeItems.reduce((sum, item) => sum + (item.monto || 0), 0),
             pagados: pagadosItems.reduce((sum, item) => sum + (item.monto || 0), 0),

@@ -21,10 +21,10 @@ class AuthenticationSystem {
             requireNumbers: false,
             requireSpecialChars: false
         };
-        
+
         this.isIntegrated = false;
         this.integrationLog = [];
-        
+
         this.init();
     }
 
@@ -40,13 +40,13 @@ class AuthenticationSystem {
             data,
             user: this.currentUser ? this.currentUser.username : 'anonymous'
         };
-        
+
         this.integrationLog.push(logEntry);
-        
+
         if (this.integrationLog.length > 100) {
             this.integrationLog.shift();
         }
-        
+
         const styles = {
             info: 'color: #2196F3; font-weight: bold',
             success: 'color: #4CAF50; font-weight: bold',
@@ -54,13 +54,13 @@ class AuthenticationSystem {
             error: 'color: #F44336; font-weight: bold',
             integration: 'color: #9C27B0; font-weight: bold'
         };
-        
+
         console.log(
             `%c[AUTH-${type.toUpperCase()}] ${message}`,
             styles[type] || styles.info,
             data || ''
         );
-        
+
         try {
             localStorage.setItem('auth_integration_logs', JSON.stringify(this.integrationLog));
         } catch (e) {
@@ -73,7 +73,7 @@ class AuthenticationSystem {
      */
     init() {
         this.log('🚀 Inicializando sistema de autenticación', 'info');
-        
+
         this.checkSession();
         this.setupPasswordValidation();
         this.setupEventListeners();
@@ -85,12 +85,12 @@ class AuthenticationSystem {
      */
     initializeIntegration() {
         this.log('🔗 Iniciando integración con módulos...', 'integration');
-        
+
         if (window.location.pathname.includes('dashboard.html')) {
             this.log('📊 Detectado dashboard, verificando sesión...', 'integration');
             this.verifyDashboardAccess();
         }
-        
+
         this.waitForModules();
     }
 
@@ -98,22 +98,22 @@ class AuthenticationSystem {
      * ⏳ ESPERAR A QUE LOS MÓDULOS ESTÉN DISPONIBLES
      */
     waitForModules() {
-        if (window.location.pathname.includes('index.html') || 
+        if (window.location.pathname.includes('index.html') ||
             !window.location.pathname.includes('dashboard.html')) {
             this.log('📄 Página de login detectada - saltando espera de módulos', 'info');
             this.isIntegrated = true;
             return;
         }
-        
+
         const checkModules = () => {
             const modulesAvailable = {
                 storage: !!window.storageManager,
                 gastos: !!window.gastosManager,
                 currency: !!window.currencyManager
             };
-            
+
             this.log('🔍 Verificando módulos disponibles', 'integration', modulesAvailable);
-            
+
             if (Object.values(modulesAvailable).every(Boolean)) {
                 this.log('✅ Todos los módulos están disponibles', 'success');
                 this.completeIntegration();
@@ -128,7 +128,7 @@ class AuthenticationSystem {
                 setTimeout(checkModules, 100);
             }
         };
-        
+
         this.moduleCheckStart = Date.now();
         setTimeout(checkModules, 50);
     }
@@ -141,11 +141,11 @@ class AuthenticationSystem {
             if (window.storageManager) {
                 this.integrateWithStorage();
             }
-            
+
             this.setupModuleEvents();
             this.isIntegrated = true;
             this.log('🎉 Integración completada exitosamente', 'success');
-            
+
         } catch (error) {
             this.log('❌ Error en integración', 'error', error.message);
         }
@@ -158,14 +158,14 @@ class AuthenticationSystem {
         try {
             if (this.currentUser && window.storageManager) {
                 const userData = window.storageManager.getUserData();
-                
+
                 if (!userData.username) {
                     const userInfo = {
                         username: this.currentUser.username,
                         lastLogin: this.currentUser.lastLogin,
                         settings: this.currentUser.settings || {}
                     };
-                    
+
                     window.storageManager.setUserData(userInfo);
                     this.log('👤 Datos de usuario sincronizados con storage', 'integration', userInfo);
                 }
@@ -182,7 +182,7 @@ class AuthenticationSystem {
         window.addEventListener('beforeunload', () => {
             this.log('👋 Cerrando aplicación', 'info');
         });
-        
+
         window.addEventListener('storage', (e) => {
             if (e.key === 'app_session') {
                 this.log('🔄 Cambio detectado en sesión', 'integration');
@@ -196,13 +196,13 @@ class AuthenticationSystem {
      */
     verifyDashboardAccess() {
         const hasValidSession = this.checkSession();
-        
+
         if (!hasValidSession) {
             this.log('🚫 Sesión inválida, redirigiendo al login', 'warning');
             this.redirectToLogin();
             return false;
         }
-        
+
         this.log('✅ Sesión válida, acceso al dashboard permitido', 'success');
         return true;
     }
@@ -244,7 +244,7 @@ class AuthenticationSystem {
         }
 
         const strength = Object.values(checks).filter(Boolean).length;
-        
+
         return {
             isValid: errors.length === 0,
             errors: errors,
@@ -291,7 +291,7 @@ class AuthenticationSystem {
             }
 
             this.log('🔷 Registrando con Supabase Auth...', 'info');
-            
+
             if (!window.supabaseStorageManager) {
                 throw new Error('Sistema de base de datos no disponible');
             }
@@ -333,29 +333,29 @@ class AuthenticationSystem {
         try {
             const loginForm = document.getElementById('login-form');
             const registerForm = document.getElementById('register-form');
-            
+
             if (loginForm && registerForm) {
                 loginForm.style.display = 'block';
                 registerForm.style.display = 'none';
-                
+
                 const modeQuestion = document.getElementById('mode-question');
                 const modeAction = document.getElementById('mode-action');
-                
+
                 if (modeQuestion && modeAction) {
                     modeQuestion.textContent = '¿No tienes cuenta?';
                     modeAction.textContent = 'Crear cuenta';
                 }
-                
+
                 registerForm.reset();
                 this.clearAllMessages();
                 this.hideLoadingState();
-                                       
+
                 this.log('✅ Cambiado al formulario de login después del registro', 'success');
-                
+
             } else {
                 this.log('⚠️ No se encontraron los formularios para cambiar', 'warning');
             }
-            
+
         } catch (error) {
             this.log('❌ Error cambiando al login', 'error', error.message);
         }
@@ -372,16 +372,16 @@ class AuthenticationSystem {
                     msg.parentNode.removeChild(msg);
                 }
             });
-            
+
             const successElements = document.querySelectorAll('[class*="success"], [class*="alert"]');
             successElements.forEach(el => {
                 if (el.textContent && el.textContent.includes('exitosamente')) {
                     el.style.display = 'none';
                 }
             });
-            
+
             this.log('🧹 Mensajes limpiados', 'info');
-            
+
         } catch (error) {
             this.log('⚠️ Error limpiando mensajes', 'warning', error.message);
         }
@@ -400,7 +400,7 @@ class AuthenticationSystem {
             }
 
             this.log('🔷 Autenticando con Supabase Auth...', 'info');
-            
+
             if (!window.supabaseStorageManager) {
                 throw new Error('Sistema de base de datos no disponible');
             }
@@ -415,7 +415,7 @@ class AuthenticationSystem {
                 throw new Error(result.error || 'Usuario o contraseña incorrectos');
             }
 
-            this.log('✅ Login exitoso con Supabase', 'success', { 
+            this.log('✅ Login exitoso con Supabase', 'success', {
                 username,
                 userId: result.user.id
             });
@@ -425,7 +425,13 @@ class AuthenticationSystem {
             this.hideLoadingState();
             this.showSuccess('¡Bienvenido de vuelta!');
 
-            setTimeout(() => {
+            setTimeout(async () => {
+                // 🔄 Sincronización automática post-login
+                if (window.hybridStorage) {
+                    this.log('🔄 Iniciando sincronización post-login...', 'info');
+                    await window.hybridStorage.syncLocalToCloud();
+                }
+
                 this.log('🚀 Redirigiendo al dashboard...', 'success');
                 this.redirectToDashboard();
             }, 1500);
@@ -458,13 +464,13 @@ class AuthenticationSystem {
             id: supabaseUser.id,
             email: supabaseUser.email
         };
-        
+
         this.log('🎫 Sesión creada desde Supabase', 'success', {
             username: username,
             userId: supabaseUser.id,
             expiresAt: session.expiresAt
         });
-        
+
         this.scheduleSessionRefresh();
     }
 
@@ -489,7 +495,7 @@ class AuthenticationSystem {
      */
     checkSession() {
         const session = JSON.parse(localStorage.getItem('app_session') || '{}');
-        
+
         if (!session.username || !session.expiresAt) {
             this.log('❌ No hay sesión activa', 'info');
             return false;
@@ -505,15 +511,15 @@ class AuthenticationSystem {
             username: session.username,
             id: session.userId
         };
-        
+
         if (this.currentUser) {
-            this.log('✅ Sesión válida', 'success', { 
+            this.log('✅ Sesión válida', 'success', {
                 username: this.currentUser.username,
                 expiresAt: session.expiresAt
             });
             return true;
         }
-        
+
         this.log('❌ Usuario de sesión no encontrado', 'error');
         return false;
     }
@@ -523,9 +529,9 @@ class AuthenticationSystem {
      */
     async logout() {
         const username = this.currentUser ? this.currentUser.username : 'unknown';
-        
+
         this.log('🚪 Cerrando sesión', 'info', { username });
-        
+
         if (window.supabaseStorageManager) {
             try {
                 await window.supabaseStorageManager.signOut();
@@ -534,10 +540,10 @@ class AuthenticationSystem {
                 this.log('⚠️ Error cerrando sesión en Supabase', 'warning', error.message);
             }
         }
-        
+
         localStorage.removeItem('app_session');
         this.currentUser = null;
-        
+
         if (!window.location.pathname.includes('index.html')) {
             this.redirectToLogin();
         }
@@ -563,7 +569,7 @@ class AuthenticationSystem {
         if (!feedbackContainer) return;
 
         const strength = validation.strengthLabel;
-        
+
         feedbackContainer.innerHTML = `
             <div class="password-strength">
                 <div class="strength-bar">
@@ -589,7 +595,7 @@ class AuthenticationSystem {
                 }
             }, { passive: true });
         });
-        
+
         // Ejecutar después de un delay para asegurar que el DOM esté listo
         setTimeout(() => {
             this.setupFormHandlers();
@@ -607,7 +613,7 @@ class AuthenticationSystem {
         if (toggleModeBtn) {
             toggleModeBtn.addEventListener('click', () => {
                 const isLoginMode = loginForm.style.display !== 'none';
-                
+
                 if (isLoginMode) {
                     loginForm.style.display = 'none';
                     registerForm.style.display = 'block';
@@ -628,7 +634,7 @@ class AuthenticationSystem {
                 const formData = new FormData(loginForm);
                 const username = formData.get('username');
                 const password = formData.get('password');
-                
+
                 await this.loginUser(username, password);
             });
         }
@@ -640,7 +646,7 @@ class AuthenticationSystem {
                 const username = formData.get('username');
                 const password = formData.get('password');
                 const confirmPassword = formData.get('confirmPassword');
-                
+
                 await this.registerUser(username, password, confirmPassword);
             });
         }
@@ -651,7 +657,7 @@ class AuthenticationSystem {
      */
     showLoadingState(message) {
         this.log(`⏳ Mostrando estado de carga: ${message}`, 'info');
-        
+
         const loadingEl = document.getElementById('loading-state');
         if (loadingEl) {
             loadingEl.textContent = message;
@@ -670,7 +676,7 @@ class AuthenticationSystem {
      */
     hideLoadingState() {
         this.log('✅ Ocultando estado de carga', 'info');
-        
+
         const loadingEl = document.getElementById('loading-state');
         if (loadingEl) {
             loadingEl.style.display = 'none';
@@ -728,7 +734,7 @@ class AuthenticationSystem {
     getIntegrationLogs() {
         return this.integrationLog;
     }
-    
+
     /**
      * 🧹 LIMPIAR LOGS
      */
@@ -737,7 +743,7 @@ class AuthenticationSystem {
         localStorage.removeItem('auth_integration_logs');
         this.log('🧹 Logs limpiados', 'info');
     }
-    
+
     /**
      * 📈 OBTENER ESTADO DEL SISTEMA
      */
@@ -762,9 +768,9 @@ class AuthenticationSystem {
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🎬 DOM cargado, inicializando AuthenticationSystem...');
-    
+
     window.authSystem = new AuthenticationSystem();
-    
+
     window.authDebug = {
         getLogs: () => window.authSystem.getIntegrationLogs(),
         clearLogs: () => window.authSystem.clearLogs(),
@@ -774,7 +780,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.table(window.authSystem.getIntegrationLogs());
         }
     };
-    
+
     console.log('🔧 AuthSystem inicializado. Usa window.authDebug para debugging.');
     console.log('📊 Comandos disponibles:');
     console.log('   - window.authDebug.getLogs() - Ver todos los logs');
@@ -788,7 +794,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // FUNCIONES GLOBALES DE COMPATIBILIDAD
 // ========================================
 
-window.loginUser = async function(username, password) {
+window.loginUser = async function (username, password) {
     if (window.authSystem) {
         return await window.authSystem.loginUser(username, password);
     } else {
@@ -797,7 +803,7 @@ window.loginUser = async function(username, password) {
     }
 };
 
-window.registerUser = async function(username, password, confirmPassword) {
+window.registerUser = async function (username, password, confirmPassword) {
     if (window.authSystem) {
         return await window.authSystem.registerUser(username, password, confirmPassword);
     } else {
@@ -805,52 +811,3 @@ window.registerUser = async function(username, password, confirmPassword) {
         return { success: false, error: 'Sistema no disponible' };
     }
 };
-
-window.logoutUser = function() {
-    if (window.authSystem) {
-        window.authSystem.logout();
-    } else {
-        console.error('❌ AuthSystem no está disponible');
-    }
-};
-
-window.checkUserSession = function() {
-    if (window.authSystem) {
-        return window.authSystem.checkSession();
-    } else {
-        console.error('❌ AuthSystem no está disponible');
-        return false;
-    }
-};
-
-// ========================================
-// AUTO-VERIFICACIÓN EN DASHBOARD
-// ========================================
-
-if (window.location.pathname.includes('dashboard.html')) {
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => {
-            if (window.authSystem && !window.authSystem.verifyDashboardAccess()) {
-                console.log('🚫 Acceso denegado al dashboard');
-            }
-        }, 100);
-    });
-}
-
-// ========================================
-// GESTIÓN DE ERRORES GLOBALES
-// ========================================
-
-window.addEventListener('error', (event) => {
-    if (window.authSystem) {
-        window.authSystem.log('💥 Error global capturado', 'error', {
-            message: event.message,
-            filename: event.filename,
-            line: event.lineno
-        });
-    }
-});
-
-console.log('🔐 Auth.js v2.0 cargado correctamente - SOLO SUPABASE AUTH');
-console.log('📱 Funciones globales disponibles: loginUser, registerUser, logoutUser, checkUserSession');
-console.log('🛠️ Debug disponible en: window.authDebug');

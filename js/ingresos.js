@@ -150,7 +150,7 @@ async showDeleteModal(incomeId) {
     });
 }
 
-    async saveIncomeFromModal(data, isEdit, originalData = {}) {
+async saveIncomeFromModal(data, isEdit, originalData = {}) {
     const incomeData = {
         fuente: data.fuente.trim(),
         monto: parseFloat(data.monto) || 0,
@@ -171,26 +171,22 @@ async showDeleteModal(incomeId) {
         `Ingreso ${isEdit ? 'actualizado' : 'agregado'} correctamente`, 
         'success'
     );
-
-   // 🎯 ACTUALIZACIÓN OPTIMIZADA SIN REFRESCO - CORREGIDA
-if (!isEdit && window.incomeTableEnhanced) {
-  
-    // 🎯 USAR LA INSTANCIA CORRECTA DE LA TABLA
-if (window.gastosManager && window.gastosManager.incomeTableEnhanced) {
-    window.gastosManager.incomeTableEnhanced.addNewIncomeRow(incomeData);
-} else {
-    // Fallback: recargar tabla completa
-    console.warn('⚠️ incomeTableEnhanced no disponible, recargando tabla');
-    this.updateDashboard();
-}
-    // Actualizar solo los totales del header, NO recalcular porcentajes aquí
-    if (window.gastosManager) {
-        window.gastosManager.updateHeaderTotals();
+// 🎯 ACTUALIZACIÓN DESPUÉS DE GUARDAR - SIMPLIFICADO
+    if (window.supabaseIngresosAdapter) {
+        console.log('🔄 Sincronizando datos desde Supabase...');
+        await window.supabaseIngresosAdapter.sincronizarDatos();
+        
+        // Recargar la vista actual usando el mismo método de carga inicial
+        if (window.gastosManager && window.gastosManager.loadGastosView) {
+            console.log('🔄 Recargando vista de ingresos...');
+            window.gastosManager.loadGastosView();
+        } else {
+            console.warn('⚠️ gastosManager no disponible, forzando recarga completa');
+            location.reload();
+        }
+    } else {
+        console.error('❌ supabaseIngresosAdapter no disponible');
     }
-} else if (!isEdit) {
-    // Fallback: recargar tabla completa
-    this.updateDashboard();
-}
     
     console.log(`✅ Ingreso ${isEdit ? 'actualizado' : 'agregado'}:`, incomeData);
 }

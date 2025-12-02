@@ -29,7 +29,7 @@ class DashboardOrchestrator {
             lastDataUpdate: null,
             buttonsConfigured: false // Guard para botones
         };
-       
+
         this.initializeOrchestrator();
     }
 
@@ -38,14 +38,14 @@ class DashboardOrchestrator {
      */
     async initializeOrchestrator() {
         console.log('🎯 Iniciando DashboardOrchestrator...');
-        
+
         try {
-           // TEMPORALMENTE DESHABILITADO PARA TESTING
-// // 1. Verificar autenticación
-// if (!this.verifyAuthentication()) {
-//     this.redirectToLogin();
-//     return;
-// }
+            // TEMPORALMENTE DESHABILITADO PARA TESTING
+            // // 1. Verificar autenticación
+            // if (!this.verifyAuthentication()) {
+            //     this.redirectToLogin();
+            //     return;
+            // }
 
             // 2. Esperar a que los módulos estén disponibles
             await this.waitForModules();
@@ -67,7 +67,7 @@ class DashboardOrchestrator {
 
             this.state.isInitialized = true;
             console.log('✅ DashboardOrchestrator inicializado correctamente');
-            
+
         } catch (error) {
             console.error('❌ Error inicializando dashboard:', error);
             this.handleInitializationError(error);
@@ -103,7 +103,7 @@ class DashboardOrchestrator {
     async waitForModules() {
         const requiredModules = [
             'storageManager',
-            'gastosManager', 
+            'gastosManager',
             'currencyManager',
             'authSystem',
             'ingresosManager',
@@ -117,19 +117,19 @@ class DashboardOrchestrator {
                 let allAvailable = true;
 
                 requiredModules.forEach(moduleName => {
-                const isAvailable = !!window[moduleName];
-                moduleStatus[moduleName] = isAvailable;
-                if (!isAvailable) allAvailable = false;
-            });
+                    const isAvailable = !!window[moduleName];
+                    moduleStatus[moduleName] = isAvailable;
+                    if (!isAvailable) allAvailable = false;
+                });
 
-            // console.log('🔍 Estado de módulos:', moduleStatus); // TEMPORALMENTE COMENTADO
+                // console.log('🔍 Estado de módulos:', moduleStatus); // TEMPORALMENTE COMENTADO
 
-            if (allAvailable) {
-                console.log('✅ Todos los módulos disponibles');
-                resolve();
-            } else {
-                setTimeout(checkModules, 100);
-            }
+                if (allAvailable) {
+                    console.log('✅ Todos los módulos disponibles');
+                    resolve();
+                } else {
+                    setTimeout(checkModules, 100);
+                }
             };
 
             checkModules();
@@ -141,7 +141,7 @@ class DashboardOrchestrator {
      */
     registerModules() {
         const moduleList = [
-            { name: 'storage', instance: window.storageManager },
+            { name: 'storage', instance: window.hybridStorage || window.storageManager },
             { name: 'gastos', instance: window.gastosManager },
             { name: 'currency', instance: window.currencyManager },
             { name: 'auth', instance: window.authSystem },
@@ -169,7 +169,7 @@ class DashboardOrchestrator {
      */
     async loadInitialData() {
         console.log('📊 Cargando datos iniciales...');
-        
+
         try {
             const storage = this.modules.get('storage');
             if (!storage) {
@@ -183,7 +183,7 @@ class DashboardOrchestrator {
             const config = this.state.dashboardData.configuracion;
             if (config && config.monedaPrincipal) {
                 this.state.currentCurrency = config.monedaPrincipal;
-                
+
                 const currency = this.modules.get('currency');
                 if (currency) {
                     currency.setCurrency(config.monedaPrincipal);
@@ -191,7 +191,7 @@ class DashboardOrchestrator {
             }
 
             console.log('📈 Datos cargados:', this.state.dashboardData);
-            
+
         } catch (error) {
             console.error('❌ Error cargando datos:', error);
             throw error;
@@ -203,12 +203,12 @@ class DashboardOrchestrator {
      */
     refreshData() {
         console.log('🔄 Actualizando datos del dashboard...');
-        
+
         const storage = this.modules.get('storage');
         if (storage) {
             this.state.dashboardData = storage.getDashboardData();
             this.state.lastDataUpdate = new Date().toISOString();
-            
+
             this.updateStatCards();
             this.dispatchDataUpdateEvent();
         }
@@ -223,16 +223,16 @@ class DashboardOrchestrator {
      */
     initializeInterface() {
         console.log('🎨 Inicializando interfaz...');
-        
+
         // Actualizar tarjetas de estadísticas
         this.updateStatCards();
-        
+
         // Configurar selector de moneda
         this.setupCurrencySelector();
-        
+
         // Configurar botones del header
         this.setupHeaderButtons();
-        
+
         // 🆕 INICIALIZAR TABLA MEJORADA DE INGRESOS - POSICIÓN CORREGIDA
         if (window.IncomeTableEnhanced && window.gastosManager) {
             window.incomeTableEnhanced = new window.IncomeTableEnhanced(window.gastosManager);
@@ -240,7 +240,7 @@ class DashboardOrchestrator {
         } else {
             console.log('⚠️ IncomeTableEnhanced o gastosManager no disponibles aún');
         }
-        
+
         console.log('✅ Interfaz inicializada');
     }
 
@@ -252,10 +252,10 @@ class DashboardOrchestrator {
 
         const data = this.state.dashboardData;
         const currency = this.modules.get('currency');
-        
+
         const formatAmount = (amount) => {
-            return currency ? 
-                currency.format(amount, this.state.currentCurrency) : 
+            return currency ?
+                currency.format(amount, this.state.currentCurrency) :
                 `${amount.toLocaleString('es-CL')}`;
         };
 
@@ -263,13 +263,13 @@ class DashboardOrchestrator {
         const totalGastosExtras = data.gastosExtras.presupuesto || 0;
         const totalGastos = data.gastosFijos.total + data.gastosVariables.total;
         const balance = data.ingresos.total - totalGastos;
-        
+
         // Calcular pagados y pendientes
         const todosLosGastos = [
-    ...(data.gastosFijos.items || []),
-    ...(data.gastosVariables.items || [])
-    
-    ];
+            ...(data.gastosFijos.items || []),
+            ...(data.gastosVariables.items || [])
+
+        ];
 
         const pagados = todosLosGastos
             .filter(item => item.pagado === true && item.activo !== false)
@@ -336,14 +336,14 @@ class DashboardOrchestrator {
      */
     changeCurrency(newCurrency) {
         console.log(`💱 Cambiando moneda a: ${newCurrency}`);
-        
+
         this.state.currentCurrency = newCurrency;
-        
+
         const currency = this.modules.get('currency');
         if (currency) {
             currency.setCurrency(newCurrency);
         }
-        
+
         // Actualizar configuración en storage
         const storage = this.modules.get('storage');
         if (storage) {
@@ -351,16 +351,16 @@ class DashboardOrchestrator {
             config.monedaPrincipal = newCurrency;
             storage.setConfiguracion(config);
         }
-        
+
         // Actualizar interfaz
         this.updateStatCards();
-        
+
         // Recargar vista actual si es necesario
         const gastos = this.modules.get('gastos');
         if (gastos && gastos.currentView) {
             gastos.loadGastosView();
         }
-        
+
         this.dispatchCurrencyChangeEvent(newCurrency);
     }
 
@@ -431,9 +431,9 @@ class DashboardOrchestrator {
      */
     loadSection(sectionName) {
         console.log(`📄 Cargando sección: ${sectionName}`);
-        
+
         this.state.currentSection = sectionName;
-        
+
         const gastos = this.modules.get('gastos');
         if (gastos) {
             gastos.switchView(sectionName);
@@ -463,7 +463,7 @@ class DashboardOrchestrator {
         }
 
         console.log('💰 Configurando sección de ingresos...');
-        
+
         // Usar observer para detectar cuando el DOM esté listo
         this.waitForIncomeSection().then(() => {
             this.configureIncomeButtons();
@@ -478,9 +478,9 @@ class DashboardOrchestrator {
         return new Promise((resolve) => {
             const checkSection = () => {
                 const incomeSection = document.querySelector('.content-area');
-                const hasIncomeContent = incomeSection && 
+                const hasIncomeContent = incomeSection &&
                     incomeSection.innerHTML.includes('Agregar Ingresos');
-                
+
                 if (hasIncomeContent) {
                     console.log('✅ Sección de ingresos detectada en DOM');
                     resolve();
@@ -488,7 +488,7 @@ class DashboardOrchestrator {
                     setTimeout(checkSection, 200);
                 }
             };
-            
+
             checkSection();
         });
     }
@@ -498,7 +498,7 @@ class DashboardOrchestrator {
      */
     configureIncomeButtons() {
         console.log('🔍 Configurando botones de ingresos...');
-        
+
         // Selectores específicos y contextualizados
         const specificSelectors = [
             // Texto específico
@@ -512,31 +512,31 @@ class DashboardOrchestrator {
             // Contexto específico: botón primario en sección de ingresos
             '.content-area .btn.btn-primary'
         ];
-        
+
         let buttonFound = false;
-        
+
         // Implementar contains selector manualmente
         const buttons = document.querySelectorAll('button, .btn');
-        
+
         buttons.forEach(btn => {
             // Verificar si ya está configurado
             if (this.configuredElements.has(btn)) {
                 return;
             }
-            
+
             const text = btn.textContent.trim().toLowerCase();
-            const isIncomeButton = text.includes('agregar') && 
-                                 (text.includes('ingreso') || text.includes('ingresos'));
-            
+            const isIncomeButton = text.includes('agregar') &&
+                (text.includes('ingreso') || text.includes('ingresos'));
+
             // Verificar contexto: debe estar en la sección de ingresos
             const isInIncomeSection = btn.closest('.content-area');
-            
+
             if (isIncomeButton && isInIncomeSection) {
                 console.log('🎯 Botón de ingresos encontrado:', btn.textContent.trim());
-                
+
                 // Limpiar eventos previos
                 this.cleanButtonEvents(btn);
-                
+
                 // Configurar evento específico
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -544,16 +544,16 @@ class DashboardOrchestrator {
                     console.log('💰 Click en botón agregar ingreso detectado');
                     this.handleAddIncome();
                 });
-                
+
                 // Marcar como configurado
                 this.configuredElements.add(btn);
                 btn.setAttribute('data-income-configured', 'true');
-                
+
                 buttonFound = true;
                 console.log('✅ Botón de ingresos configurado correctamente');
             }
         });
-        
+
         if (!buttonFound) {
             console.log('⚠️ No se encontró botón de ingresos, reintentando...');
             setTimeout(() => this.configureIncomeButtons(), 500);
@@ -581,32 +581,32 @@ class DashboardOrchestrator {
      */
     setupEventListeners() {
         console.log('🎧 Configurando event listeners...');
-        
+
         // Eventos de datos
-// 🔧 TEMPORALMENTE DESHABILITADO PARA EVITAR REFRESCO EN EDICIÓN INLINE
-/*
-window.addEventListener('storageSaved', () => {
-if (!this.isUpdatingDashboard) {
-    this.isUpdatingDashboard = true;
-    setTimeout(() => {
-        this.handleDataChange();
-        this.isUpdatingDashboard = false;
-    }, 50);
-}
-});
-*/
+        // 🔧 TEMPORALMENTE DESHABILITADO PARA EVITAR REFRESCO EN EDICIÓN INLINE
+        /*
+        window.addEventListener('storageSaved', () => {
+        if (!this.isUpdatingDashboard) {
+            this.isUpdatingDashboard = true;
+            setTimeout(() => {
+                this.handleDataChange();
+                this.isUpdatingDashboard = false;
+            }, 50);
+        }
+        });
+        */
         window.addEventListener('gastos_gastoAdded', () => this.handleDataChange());
         window.addEventListener('gastos_gastoUpdated', () => this.handleDataChange());
         window.addEventListener('income_incomeAdded', () => this.handleDataChange());
         window.addEventListener('income_incomeUpdated', () => this.handleDataChange());
         window.addEventListener('income_incomeDeleted', () => this.handleDataChange());
-        
+
         // Eventos de componentes
         window.addEventListener('component_allComponentsLoaded', () => this.handleComponentsLoaded());
-        
+
         // Eventos de moneda
         window.addEventListener('currency_currencyChanged', (e) => this.handleCurrencyChanged(e));
-        
+
         // Evento de cambio de sección - NUEVO
         window.addEventListener('dashboard_sectionChanged', (e) => {
             if (e.detail.section === 'income') {
@@ -614,7 +614,7 @@ if (!this.isUpdatingDashboard) {
                 this.state.buttonsConfigured = false;
             }
         });
-        
+
         console.log('✅ Event listeners configurados');
     }
 
@@ -622,24 +622,24 @@ if (!this.isUpdatingDashboard) {
      * Manejar cambios en datos
      */
     handleDataChange() {
-    // NUEVO: Si estamos en gastos extras, dejar que se maneje solo
-    const currentSection = document.querySelector('.gastos-extras-layout');
-    if (currentSection) {
-        console.log('📊 Gastos extras activo, delegando actualización...');
-        return;
+        // NUEVO: Si estamos en gastos extras, dejar que se maneje solo
+        const currentSection = document.querySelector('.gastos-extras-layout');
+        if (currentSection) {
+            console.log('📊 Gastos extras activo, delegando actualización...');
+            return;
+        }
+
+        if (this.isUpdatingDashboard) {
+            return; // Evitar bucle si ya estamos actualizando
+        }
+
+        this.isUpdatingDashboard = true;
+        console.log('🔄 Datos cambiados, actualizando...');
+        setTimeout(() => {
+            this.refreshData();
+            this.isUpdatingDashboard = false; // Resetear flag
+        }, 300);
     }
-    
-    if (this.isUpdatingDashboard) {
-        return; // Evitar bucle si ya estamos actualizando
-    }
-    
-    this.isUpdatingDashboard = true;
-    console.log('🔄 Datos cambiados, actualizando...');
-    setTimeout(() => {
-        this.refreshData();
-        this.isUpdatingDashboard = false; // Resetear flag
-    }, 300);
-}
 
     /**
      * Manejar componentes cargados
@@ -649,7 +649,7 @@ if (!this.isUpdatingDashboard) {
         if (this.state.isInitialized) {
             this.initializeInterface();
         }
-        
+
         // 🆕 BACKUP: Si la tabla no se inicializó antes, intentar aquí
         if (!window.incomeTableEnhanced && window.IncomeTableEnhanced && window.gastosManager) {
             window.incomeTableEnhanced = new window.IncomeTableEnhanced(window.gastosManager);
@@ -674,7 +674,7 @@ if (!this.isUpdatingDashboard) {
      */
     handleAddIncome() {
         console.log('💰 Procesando solicitud de agregar ingreso...');
-        
+
         const ingresos = this.modules.get('ingresos');
         if (!ingresos) {
             console.error('❌ IngresosManager no disponible');
@@ -698,7 +698,7 @@ if (!this.isUpdatingDashboard) {
     handleLogout() {
         if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
             console.log('🚪 Cerrando sesión...');
-            
+
             const auth = this.modules.get('auth');
             if (auth) {
                 auth.logout();
@@ -711,7 +711,7 @@ if (!this.isUpdatingDashboard) {
      */
     handleExportData() {
         console.log('📤 Exportando datos...');
-        
+
         const storage = this.modules.get('storage');
         if (storage) {
             const exportResult = storage.exportData();
@@ -739,13 +739,13 @@ if (!this.isUpdatingDashboard) {
     cleanButtonEvents(button) {
         // Remover atributos de configuración previa
         button.removeAttribute('data-income-configured');
-        
+
         // Clonar elemento para eliminar todos los event listeners
         const newButton = button.cloneNode(true);
         if (button.parentNode) {
             button.parentNode.replaceChild(newButton, button);
         }
-        
+
         return newButton;
     }
 
@@ -756,7 +756,7 @@ if (!this.isUpdatingDashboard) {
         console.log('🔄 Reseteando configuración de botones...');
         this.configuredElements.clear();
         this.state.buttonsConfigured = false;
-        
+
         // Limpiar atributos de configuración
         document.querySelectorAll('[data-income-configured]').forEach(btn => {
             btn.removeAttribute('data-income-configured');
@@ -790,7 +790,7 @@ if (!this.isUpdatingDashboard) {
      */
     handleInitializationError(error) {
         console.error('💥 Error crítico en inicialización:', error);
-        
+
         // Mostrar mensaje de error al usuario
         const errorMessage = document.createElement('div');
         errorMessage.className = 'initialization-error';
@@ -826,7 +826,7 @@ if (!this.isUpdatingDashboard) {
                 </button>
             </div>
         `;
-        
+
         document.body.appendChild(errorMessage);
     }
 
@@ -920,12 +920,12 @@ if (!this.isUpdatingDashboard) {
      */
     destroy() {
         console.log('🧹 Destruyendo DashboardOrchestrator...');
-        
+
         // Limpiar referencias
         this.modules.clear();
         this.configuredElements.clear();
         this.state = null;
-        
+
         console.log('✅ DashboardOrchestrator destruido');
     }
 }
@@ -934,7 +934,7 @@ if (!this.isUpdatingDashboard) {
 window.dashboardOrchestrator = new DashboardOrchestrator();
 
 // Funciones globales para compatibilidad
-window.showChart = function() {
+window.showChart = function () {
     const reportes = window.dashboardOrchestrator.modules.get('reportes');
     if (reportes) {
         window.dashboardOrchestrator.loadSection('reports');
@@ -943,14 +943,14 @@ window.showChart = function() {
     }
 };
 
-window.showBalanceDetail = function() {
+window.showBalanceDetail = function () {
     const gastos = window.dashboardOrchestrator.modules.get('gastos');
     if (gastos) {
         gastos.showBalanceDetalle();
     }
 };
 
-window.showIncomeDetail = function() {
+window.showIncomeDetail = function () {
     const gastos = window.dashboardOrchestrator.modules.get('gastos');
     if (gastos) {
         gastos.showIngresoDetalle();

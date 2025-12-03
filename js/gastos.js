@@ -759,26 +759,15 @@ class GastosManager {
      * Agregar nuevo gasto
      */
     addGasto(gastoData, tipo) {
-        let gastos;
-
         switch (tipo) {
             case 'fijos':
-                gastos = this.storage.getGastosFijos();
-                gastos.items.push(gastoData);
-                gastos.total = this.calculateTotal(gastos.items);
-                this.storage.setGastosFijos(gastos);
+                this.storage.addGastoFijo(gastoData);
                 break;
             case 'variables':
-                gastos = this.storage.getGastosVariables();
-                gastos.items.push(gastoData);
-                gastos.total = this.calculateTotal(gastos.items);
-                this.storage.setGastosVariables(gastos);
+                this.storage.addGastoVariable(gastoData);
                 break;
             case 'extras':
-                gastos = this.storage.getGastosExtras();
-                gastos.items.push(gastoData);
-                gastos.total = this.calculateTotal(gastos.items);
-                this.storage.setGastosExtras(gastos);
+                this.storage.addGastoExtra(gastoData);
                 break;
         }
     }
@@ -841,44 +830,53 @@ class GastosManager {
         let updated = false;
 
         // Verificar ingresos
+        // Verificar ingresos
         const ingresos = this.storage.getIngresos();
-        ingresos.desglose.forEach(item => {
-            if (!item.id) {
-                item.id = Utils.id.generate('income');
-                updated = true;
-            }
-        });
-        if (updated) this.storage.setIngresos(ingresos);
+        if (ingresos && ingresos.desglose) {
+            ingresos.desglose.forEach(item => {
+                if (!item.id) {
+                    item.id = Utils.id.generate('income');
+                    updated = true;
+                }
+            });
+            if (updated) this.storage.setIngresos(ingresos);
+        }
 
         // Verificar gastos fijos
         const gastosFijos = this.storage.getGastosFijos();
-        gastosFijos.items.forEach(item => {
-            if (!item.id) {
-                item.id = Utils.id.generate('gasto_fijo');
-                updated = true;
-            }
-        });
-        if (updated) this.storage.setGastosFijos(gastosFijos);
+        if (gastosFijos && gastosFijos.items) {
+            gastosFijos.items.forEach(item => {
+                if (!item.id) {
+                    item.id = Utils.id.generate('gasto_fijo');
+                    updated = true;
+                }
+            });
+            if (updated) this.storage.setGastosFijos(gastosFijos);
+        }
 
         // Verificar gastos variables
         const gastosVariables = this.storage.getGastosVariables();
-        gastosVariables.items.forEach(item => {
-            if (!item.id) {
-                item.id = Utils.id.generate('gasto_variable');
-                updated = true;
-            }
-        });
-        if (updated) this.storage.setGastosVariables(gastosVariables);
+        if (gastosVariables && gastosVariables.items) {
+            gastosVariables.items.forEach(item => {
+                if (!item.id) {
+                    item.id = Utils.id.generate('gasto_variable');
+                    updated = true;
+                }
+            });
+            if (updated) this.storage.setGastosVariables(gastosVariables);
+        }
 
         // Verificar gastos extras
         const gastosExtras = this.storage.getGastosExtras();
-        gastosExtras.items.forEach(item => {
-            if (!item.id) {
-                item.id = Utils.id.generate('gasto_extra');
-                updated = true;
-            }
-        });
-        if (updated) this.storage.setGastosExtras(gastosExtras);
+        if (gastosExtras && gastosExtras.items) {
+            gastosExtras.items.forEach(item => {
+                if (!item.id) {
+                    item.id = Utils.id.generate('gasto_extra');
+                    updated = true;
+                }
+            });
+            if (updated) this.storage.setGastosExtras(gastosExtras);
+        }
 
         if (updated) {
             console.log('✅ IDs agregados a elementos existentes');

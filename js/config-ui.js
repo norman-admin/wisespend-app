@@ -19,18 +19,19 @@ class ConfigUI {
         this.themeManager = window.themeManager;
         this.currentSection = 'general';
         this.isInjected = false;
-        
+
         this.init();
     }
 
-    /**
-     * Inicializar sistema de configuración
-     */
     init() {
         console.log('⚙️ ConfigUI v2.1.3: Inicializando...');
-        
+
         if (!this.storage) {
-            console.error('❌ StorageManager no está disponible');
+            console.warn('⚠️ StorageManager no está disponible, reintentando en 500ms...');
+            setTimeout(() => {
+                this.storage = window.storageManager;
+                this.init();
+            }, 500);
             return;
         }
 
@@ -40,9 +41,6 @@ class ConfigUI {
         }, 1000);
     }
 
-    /**
-     * Intentar inyectar la interfaz de configuración
-     */
     tryInjectUI() {
         const contentArea = document.getElementById('dynamic-content');
         if (!contentArea || this.isInjected) {
@@ -158,61 +156,61 @@ class ConfigUI {
         `;
     }
 
-/**
- * Configurar eventos de la interfaz MEJORADO
- * Incluye previsualizaciones en tiempo real
- */
-setupConfigEvents() {
-    // Eventos del menú lateral
-    const menuItems = document.querySelectorAll('.config-menu-item');
-    menuItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const section = item.dataset.section;
-            this.switchSection(section);
+    /**
+     * Configurar eventos de la interfaz MEJORADO
+     * Incluye previsualizaciones en tiempo real
+     */
+    setupConfigEvents() {
+        // Eventos del menú lateral
+        const menuItems = document.querySelectorAll('.config-menu-item');
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const section = item.dataset.section;
+                this.switchSection(section);
+            });
         });
-    });
 
-    // Eventos para vista previa en tiempo real (sección general)
-    this.setupGeneralPreviewEvents();
+        // Eventos para vista previa en tiempo real (sección general)
+        this.setupGeneralPreviewEvents();
 
-    console.log('🎧 ConfigUI: Eventos configurados con previsualizaciones');
-}
+        console.log('🎧 ConfigUI: Eventos configurados con previsualizaciones');
+    }
 
-/**
- * Configurar eventos de vista previa para sección general
- */
-setupGeneralPreviewEvents() {
-    // Esperar a que los elementos estén disponibles
-    setTimeout(() => {
-        // Vista previa de moneda
-        const currencySelect = document.getElementById('generalCurrency');
-        if (currencySelect) {
-            currencySelect.addEventListener('change', () => {
-                this.updateGeneralPreviews();
-            });
-        }
+    /**
+     * Configurar eventos de vista previa para sección general
+     */
+    setupGeneralPreviewEvents() {
+        // Esperar a que los elementos estén disponibles
+        setTimeout(() => {
+            // Vista previa de moneda
+            const currencySelect = document.getElementById('generalCurrency');
+            if (currencySelect) {
+                currencySelect.addEventListener('change', () => {
+                    this.updateGeneralPreviews();
+                });
+            }
 
-        // Vista previa de formato de fecha
-        const dateSelect = document.getElementById('dateFormat');
-        if (dateSelect) {
-            dateSelect.addEventListener('change', () => {
-                this.updateGeneralPreviews();
-            });
-        }
+            // Vista previa de formato de fecha
+            const dateSelect = document.getElementById('dateFormat');
+            if (dateSelect) {
+                dateSelect.addEventListener('change', () => {
+                    this.updateGeneralPreviews();
+                });
+            }
 
-        // Vista previa de confirmaciones
-        const confirmCheck = document.getElementById('confirmDeletions');
-        if (confirmCheck) {
-            confirmCheck.addEventListener('change', () => {
-                this.updateGeneralPreviews();
-            });
-        }
+            // Vista previa de confirmaciones
+            const confirmCheck = document.getElementById('confirmDeletions');
+            if (confirmCheck) {
+                confirmCheck.addEventListener('change', () => {
+                    this.updateGeneralPreviews();
+                });
+            }
 
-        // Actualizar vistas previas iniciales
-        this.updateGeneralPreviews();
-        
-    }, 200);
-}
+            // Actualizar vistas previas iniciales
+            this.updateGeneralPreviews();
+
+        }, 200);
+    }
 
     /**
      * Cambiar de sección
@@ -271,165 +269,165 @@ setupGeneralPreviewEvents() {
         if (section === 'data') this.setupDataEvents();
     }
 
-/**
- * 🎯 FIX AGRESIVO v4: Configuración para GANAR la batalla contra notas.js
- * Este método es MÁS agresivo que el sistema de notas.js
- */
-setupFormFocusFix() {
-    console.log('🚨 ACTIVANDO FIX AGRESIVO v4 - Modo Competencia contra notas.js');
-    
-    const formElements = document.querySelectorAll('#config-content-body .form-input, #config-content-body .form-select, #config-content-body .form-checkbox');
-    
-    if (formElements.length === 0) {
-        console.log('⚠️ No se encontraron elementos de formulario en config-content-body');
-        return;
-    }
+    /**
+     * 🎯 FIX AGRESIVO v4: Configuración para GANAR la batalla contra notas.js
+     * Este método es MÁS agresivo que el sistema de notas.js
+     */
+    setupFormFocusFix() {
+        console.log('🚨 ACTIVANDO FIX AGRESIVO v4 - Modo Competencia contra notas.js');
 
-    formElements.forEach((element, index) => {
-        // ESTRATEGIA 1: Interceptar ANTES que notas.js con capture: true
-        element.addEventListener('mousedown', (e) => {
-            console.log(`🎯 ConfigUI interceptando mousedown en elemento ${index}`);
-            
-            // DETENER INMEDIATAMENTE cualquier propagación
-            e.stopImmediatePropagation();
-            e.stopPropagation();
-            e.preventDefault();
-            
-            // FORZAR FOCO MÚLTIPLE - más agresivo que notas.js
-            setTimeout(() => {
-                element.focus();
-                console.log(`✅ Foco forzado en elemento ${index}`);
-            }, 0);
-            
-            setTimeout(() => {
-                element.focus();
-                console.log(`🔄 Segundo intento de foco en elemento ${index}`);
-            }, 10);
-            
-            setTimeout(() => {
-                element.focus();
-                console.log(`🔄 Tercer intento de foco en elemento ${index}`);
-            }, 50);
-            
-            return false; // Máxima prevención
-            
-        }, { capture: true, passive: false }); // capture: true = interceptar ANTES que notas.js
+        const formElements = document.querySelectorAll('#config-content-body .form-input, #config-content-body .form-select, #config-content-body .form-checkbox');
 
-        // ESTRATEGIA 2: También interceptar click
-        element.addEventListener('click', (e) => {
-            console.log(`🖱️ ConfigUI interceptando click en elemento ${index}`);
-            
-            e.stopImmediatePropagation();
-            e.stopPropagation();
-            
-            // Triple foco para asegurar
-            element.focus();
-            setTimeout(() => element.focus(), 0);
-            setTimeout(() => element.focus(), 25);
-            
-        }, { capture: true, passive: false });
+        if (formElements.length === 0) {
+            console.log('⚠️ No se encontraron elementos de formulario en config-content-body');
+            return;
+        }
 
-        // ESTRATEGIA 3: Defender el foco una vez obtenido
-        element.addEventListener('focus', (e) => {
-            console.log(`🎯 Elemento ${index} recibió foco - DEFENDIENDO`);
-            
-            // Programar re-foco defensivo
-            const defendFocus = () => {
-                if (document.activeElement !== element) {
-                    console.log(`🛡️ Defendiendo foco del elemento ${index}`);
-                    element.focus();
-                }
-            };
-            
-            setTimeout(defendFocus, 10);
-            setTimeout(defendFocus, 50);
-            setTimeout(defendFocus, 100);
-            
-        }, { capture: true });
+        formElements.forEach((element, index) => {
+            // ESTRATEGIA 1: Interceptar ANTES que notas.js con capture: true
+            element.addEventListener('mousedown', (e) => {
+                console.log(`🎯 ConfigUI interceptando mousedown en elemento ${index}`);
 
-        // ESTRATEGIA 4: Prevenir que pierda el foco
-        element.addEventListener('blur', (e) => {
-            console.log(`⚠️ Elemento ${index} perdiendo foco - RECUPERANDO`);
-            
-            // Recuperar foco inmediatamente si no fue intencional
-            setTimeout(() => {
-                // Solo recuperar si no hay otro elemento de configuración activo
-                const activeElement = document.activeElement;
-                const isConfigElement = activeElement && activeElement.closest('#config-content-body');
-                
-                if (!isConfigElement) {
-                    console.log(`🔄 Recuperando foco para elemento ${index}`);
-                    element.focus();
-                }
-            }, 5);
-        });
-
-        // ESTRATEGIA 5: Event listener global para proteger este elemento específico
-        const protectElement = (e) => {
-            // Si el evento target es nuestro elemento protegido
-            if (e.target === element) {
-                console.log(`🛡️ Protegiendo elemento ${index} de interferencia externa`);
+                // DETENER INMEDIATAMENTE cualquier propagación
                 e.stopImmediatePropagation();
                 e.stopPropagation();
+                e.preventDefault();
+
+                // FORZAR FOCO MÚLTIPLE - más agresivo que notas.js
+                setTimeout(() => {
+                    element.focus();
+                    console.log(`✅ Foco forzado en elemento ${index}`);
+                }, 0);
+
+                setTimeout(() => {
+                    element.focus();
+                    console.log(`🔄 Segundo intento de foco en elemento ${index}`);
+                }, 10);
+
+                setTimeout(() => {
+                    element.focus();
+                    console.log(`🔄 Tercer intento de foco en elemento ${index}`);
+                }, 50);
+
+                return false; // Máxima prevención
+
+            }, { capture: true, passive: false }); // capture: true = interceptar ANTES que notas.js
+
+            // ESTRATEGIA 2: También interceptar click
+            element.addEventListener('click', (e) => {
+                console.log(`🖱️ ConfigUI interceptando click en elemento ${index}`);
+
+                e.stopImmediatePropagation();
+                e.stopPropagation();
+
+                // Triple foco para asegurar
                 element.focus();
-                return false;
-            }
-        };
+                setTimeout(() => element.focus(), 0);
+                setTimeout(() => element.focus(), 25);
 
-        // Agregar protección global
-        document.addEventListener('mousedown', protectElement, { capture: true });
-        document.addEventListener('click', protectElement, { capture: true });
+            }, { capture: true, passive: false });
 
-        console.log(`🔧 Elemento ${index} (${element.tagName}.${element.className}) PROTEGIDO con FIX AGRESIVO v4`);
-    });
+            // ESTRATEGIA 3: Defender el foco una vez obtenido
+            element.addEventListener('focus', (e) => {
+                console.log(`🎯 Elemento ${index} recibió foco - DEFENDIENDO`);
 
-    // ESTRATEGIA 6: Observer para detectar cambios en activeElement
-    let lastActiveElement = null;
-    const focusObserver = setInterval(() => {
-        const currentActive = document.activeElement;
-        
-        if (currentActive !== lastActiveElement) {
-            lastActiveElement = currentActive;
-            
-            // Si el elemento activo NO es de configuración, verificar si deberíamos intervenir
-            const isConfigElement = currentActive && currentActive.closest('#config-content-body');
-            const configContainer = document.getElementById('config-content-body');
-            
-            if (!isConfigElement && configContainer && configContainer.offsetParent !== null) {
-                console.log('🔍 Foco perdido de área de configuración - elemento activo:', currentActive?.tagName, currentActive?.className);
-                
-                // Si hay un elemento de configuración que debería tener foco, dárselo
-                const firstInput = configContainer.querySelector('.form-input, .form-select, .form-checkbox');
-                if (firstInput && !currentActive?.closest('.modal-overlay, .modal-system')) {
-                    console.log('🔄 Redirigiendo foco a primer elemento de configuración');
-                    setTimeout(() => firstInput.focus(), 10);
+                // Programar re-foco defensivo
+                const defendFocus = () => {
+                    if (document.activeElement !== element) {
+                        console.log(`🛡️ Defendiendo foco del elemento ${index}`);
+                        element.focus();
+                    }
+                };
+
+                setTimeout(defendFocus, 10);
+                setTimeout(defendFocus, 50);
+                setTimeout(defendFocus, 100);
+
+            }, { capture: true });
+
+            // ESTRATEGIA 4: Prevenir que pierda el foco
+            element.addEventListener('blur', (e) => {
+                console.log(`⚠️ Elemento ${index} perdiendo foco - RECUPERANDO`);
+
+                // Recuperar foco inmediatamente si no fue intencional
+                setTimeout(() => {
+                    // Solo recuperar si no hay otro elemento de configuración activo
+                    const activeElement = document.activeElement;
+                    const isConfigElement = activeElement && activeElement.closest('#config-content-body');
+
+                    if (!isConfigElement) {
+                        console.log(`🔄 Recuperando foco para elemento ${index}`);
+                        element.focus();
+                    }
+                }, 5);
+            });
+
+            // ESTRATEGIA 5: Event listener global para proteger este elemento específico
+            const protectElement = (e) => {
+                // Si el evento target es nuestro elemento protegido
+                if (e.target === element) {
+                    console.log(`🛡️ Protegiendo elemento ${index} de interferencia externa`);
+                    e.stopImmediatePropagation();
+                    e.stopPropagation();
+                    element.focus();
+                    return false;
+                }
+            };
+
+            // Agregar protección global
+            document.addEventListener('mousedown', protectElement, { capture: true });
+            document.addEventListener('click', protectElement, { capture: true });
+
+            console.log(`🔧 Elemento ${index} (${element.tagName}.${element.className}) PROTEGIDO con FIX AGRESIVO v4`);
+        });
+
+        // ESTRATEGIA 6: Observer para detectar cambios en activeElement
+        let lastActiveElement = null;
+        const focusObserver = setInterval(() => {
+            const currentActive = document.activeElement;
+
+            if (currentActive !== lastActiveElement) {
+                lastActiveElement = currentActive;
+
+                // Si el elemento activo NO es de configuración, verificar si deberíamos intervenir
+                const isConfigElement = currentActive && currentActive.closest('#config-content-body');
+                const configContainer = document.getElementById('config-content-body');
+
+                if (!isConfigElement && configContainer && configContainer.offsetParent !== null) {
+                    console.log('🔍 Foco perdido de área de configuración - elemento activo:', currentActive?.tagName, currentActive?.className);
+
+                    // Si hay un elemento de configuración que debería tener foco, dárselo
+                    const firstInput = configContainer.querySelector('.form-input, .form-select, .form-checkbox');
+                    if (firstInput && !currentActive?.closest('.modal-overlay, .modal-system')) {
+                        console.log('🔄 Redirigiendo foco a primer elemento de configuración');
+                        setTimeout(() => firstInput.focus(), 10);
+                    }
                 }
             }
-        }
-    }, 100); // Verificar cada 100ms
+        }, 100); // Verificar cada 100ms
 
-    // Limpiar observer cuando se destruya ConfigUI
-    this.focusObserver = focusObserver;
+        // Limpiar observer cuando se destruya ConfigUI
+        this.focusObserver = focusObserver;
 
-    console.log(`🚨 FIX AGRESIVO v4 aplicado a ${formElements.length} elementos`);
-    console.log('📋 Estrategias implementadas:');
-    console.log('  1. ✅ Interceptación con capture: true');
-    console.log('  2. ✅ Triple foco forzado');
-    console.log('  3. ✅ Defensa activa del foco');
-    console.log('  4. ✅ Recuperación automática');
-    console.log('  5. ✅ Protección global');
-    console.log('  6. ✅ Observer de cambios de foco');
-}
+        console.log(`🚨 FIX AGRESIVO v4 aplicado a ${formElements.length} elementos`);
+        console.log('📋 Estrategias implementadas:');
+        console.log('  1. ✅ Interceptación con capture: true');
+        console.log('  2. ✅ Triple foco forzado');
+        console.log('  3. ✅ Defensa activa del foco');
+        console.log('  4. ✅ Recuperación automática');
+        console.log('  5. ✅ Protección global');
+        console.log('  6. ✅ Observer de cambios de foco');
+    }
 
-/**
- * Generar sección general MEJORADA
- * Incluye: Moneda Principal + Formato de Fecha + Confirmaciones
- */
-generateGeneralSection() {
-    const config = this.storage.getConfiguracion();
-    const currentCurrency = this.currencyManager?.getCurrentCurrency() || 'CLP';
-    
-    return `
+    /**
+     * Generar sección general MEJORADA
+     * Incluye: Moneda Principal + Formato de Fecha + Confirmaciones
+     */
+    generateGeneralSection() {
+        const config = this.storage.getConfiguracion();
+        const currentCurrency = this.currencyManager?.getCurrentCurrency() || 'CLP';
+
+        return `
         <div class="config-section-content">
             <!-- Información de Usuario -->
             <div class="form-group">
@@ -494,61 +492,61 @@ generateGeneralSection() {
             </div>
         </div>
     `;
-}
-
-/**
- * Formatear vista previa de fecha
- */
-formatDatePreview(format) {
-    const today = new Date();
-    const day = today.getDate().toString().padStart(2, '0');
-    const month = (today.getMonth() + 1).toString().padStart(2, '0');
-    const year = today.getFullYear();
-    
-    switch (format) {
-        case 'MM/DD/YYYY':
-            return `${month}/${day}/${year}`;
-        case 'YYYY-MM-DD':
-            return `${year}-${month}-${day}`;
-        case 'DD/MM/YYYY':
-        default:
-            return `${day}/${month}/${year}`;
     }
-}
 
-/**
- * Actualizar vista previa en tiempo real
- */
-updateGeneralPreviews() {
-    // Actualizar vista previa de moneda
-    const currencySelect = document.getElementById('generalCurrency');
-    const currencyPreview = document.getElementById('currencyPreviewGeneral');
-    if (currencySelect && currencyPreview && this.currencyManager) {
-        const tempCurrency = currencySelect.value;
-        currencyPreview.textContent = this.currencyManager.format(1234.56, tempCurrency);
-    }
-    
-    // Actualizar vista previa de fecha
-    const dateSelect = document.getElementById('dateFormat');
-    const datePreview = document.getElementById('datePreviewGeneral');
-    if (dateSelect && datePreview) {
-        datePreview.textContent = this.formatDatePreview(dateSelect.value);
-    }
-  }
+    /**
+     * Formatear vista previa de fecha
+     */
+    formatDatePreview(format) {
+        const today = new Date();
+        const day = today.getDate().toString().padStart(2, '0');
+        const month = (today.getMonth() + 1).toString().padStart(2, '0');
+        const year = today.getFullYear();
 
-/**
- * Notificar cambios de configuración a otros módulos
- */
-notifyConfigurationChange(changes) {
-    // Disparar evento personalizado para que otros módulos se enteren
-    const event = new CustomEvent('configurationChanged', {
-        detail: changes,
-        bubbles: true
-    });
-    window.dispatchEvent(event);
-    
-    console.log('📢 Configuración actualizada:', changes);
-}
+        switch (format) {
+            case 'MM/DD/YYYY':
+                return `${month}/${day}/${year}`;
+            case 'YYYY-MM-DD':
+                return `${year}-${month}-${day}`;
+            case 'DD/MM/YYYY':
+            default:
+                return `${day}/${month}/${year}`;
+        }
+    }
+
+    /**
+     * Actualizar vista previa en tiempo real
+     */
+    updateGeneralPreviews() {
+        // Actualizar vista previa de moneda
+        const currencySelect = document.getElementById('generalCurrency');
+        const currencyPreview = document.getElementById('currencyPreviewGeneral');
+        if (currencySelect && currencyPreview && this.currencyManager) {
+            const tempCurrency = currencySelect.value;
+            currencyPreview.textContent = this.currencyManager.format(1234.56, tempCurrency);
+        }
+
+        // Actualizar vista previa de fecha
+        const dateSelect = document.getElementById('dateFormat');
+        const datePreview = document.getElementById('datePreviewGeneral');
+        if (dateSelect && datePreview) {
+            datePreview.textContent = this.formatDatePreview(dateSelect.value);
+        }
+    }
+
+    /**
+     * Notificar cambios de configuración a otros módulos
+     */
+    notifyConfigurationChange(changes) {
+        // Disparar evento personalizado para que otros módulos se enteren
+        const event = new CustomEvent('configurationChanged', {
+            detail: changes,
+            bubbles: true
+        });
+        window.dispatchEvent(event);
+
+        console.log('📢 Configuración actualizada:', changes);
+    }
 
     /**
      * Generar sección de monedas
@@ -556,7 +554,7 @@ notifyConfigurationChange(changes) {
     generateCurrencySection() {
         const currentCurrency = this.currencyManager.getCurrentCurrency();
         const supportedCurrencies = this.currencyManager.getSupportedCurrencies();
-        
+
         return `
             <div class="config-section-content">
                 <div class="form-group">
@@ -603,7 +601,7 @@ notifyConfigurationChange(changes) {
      */
     generateThemeSection() {
         const currentTheme = this.themeManager?.getCurrentTheme() || 'light';
-        
+
         return `
             <div class="config-section-content">
                 <div class="form-group">
@@ -635,7 +633,7 @@ notifyConfigurationChange(changes) {
      */
     generateDataSection() {
         const lastBackup = this.storage.getItem('lastBackup') || 'Nunca';
-        
+
         return `
             <div class="config-section-content">
                 <div class="config-info-box">
@@ -746,7 +744,7 @@ notifyConfigurationChange(changes) {
     updateCurrencyPreview() {
         const currencySelect = document.getElementById('mainCurrency');
         const preview = document.getElementById('currencyPreview');
-        
+
         if (currencySelect && preview) {
             const tempCurrency = currencySelect.value;
             preview.textContent = this.currencyManager.format(1234567, tempCurrency);
@@ -767,43 +765,43 @@ notifyConfigurationChange(changes) {
      */
 
     saveGeneralConfig() {
-    const userName = document.getElementById('userName')?.value || '';
-    const autoSave = parseInt(document.getElementById('autoSave')?.value) || 5;
-    const config = this.storage.getConfiguracion();
-    
-    // Guardar valores anteriores para comparar
-    const previousUserName = config.usuario || '';
-    
-    config.usuario = userName;
-    config.autoSave = autoSave;
-    this.storage.setConfiguracion(config);
-    
-    // 🆕 Si el nombre cambió, disparar evento para actualizar header
-    if (previousUserName !== userName) {
-        console.log('📢 Nombre de usuario actualizado:', userName);
-        
-        // Disparar evento personalizado
-        const event = new CustomEvent('userNameChanged', {
-            detail: {
-                newName: userName,
-                previousName: previousUserName
-            },
-            bubbles: true
-        });
-        window.dispatchEvent(event);
+        const userName = document.getElementById('userName')?.value || '';
+        const autoSave = parseInt(document.getElementById('autoSave')?.value) || 5;
+        const config = this.storage.getConfiguracion();
+
+        // Guardar valores anteriores para comparar
+        const previousUserName = config.usuario || '';
+
+        config.usuario = userName;
+        config.autoSave = autoSave;
+        this.storage.setConfiguracion(config);
+
+        // 🆕 Si el nombre cambió, disparar evento para actualizar header
+        if (previousUserName !== userName) {
+            console.log('📢 Nombre de usuario actualizado:', userName);
+
+            // Disparar evento personalizado
+            const event = new CustomEvent('userNameChanged', {
+                detail: {
+                    newName: userName,
+                    previousName: previousUserName
+                },
+                bubbles: true
+            });
+            window.dispatchEvent(event);
+        }
+
+        this.showSuccessMessage('Configuración general guardada');
     }
-    
-    this.showSuccessMessage('Configuración general guardada');
-}
 
     saveCurrencyConfig() {
         const newCurrency = document.getElementById('mainCurrency')?.value;
-        
+
         if (newCurrency && this.currencyManager) {
             this.currencyManager.setCurrency(newCurrency);
             this.updateCurrencyPreview();
             this.showSuccessMessage('Moneda actualizada correctamente');
-            
+
             setTimeout(() => {
                 if (window.dashboardMain) {
                     window.dashboardMain.updateStatCards();
@@ -814,7 +812,7 @@ notifyConfigurationChange(changes) {
 
     saveThemeConfig() {
         const newTheme = document.getElementById('themeSelect')?.value;
-        
+
         if (newTheme && this.themeManager) {
             this.themeManager.setTheme(newTheme);
             this.showSuccessMessage('Tema aplicado correctamente');
@@ -850,7 +848,7 @@ notifyConfigurationChange(changes) {
             const blob = new Blob([JSON.stringify(exportData, null, 2)], {
                 type: 'application/json'
             });
-            
+
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -876,7 +874,7 @@ notifyConfigurationChange(changes) {
         reader.onload = (e) => {
             try {
                 const importData = JSON.parse(e.target.result);
-                
+
                 if (!importData.data) {
                     throw new Error('Formato de archivo inválido');
                 }
@@ -886,7 +884,7 @@ notifyConfigurationChange(changes) {
                         localStorage.setItem(key, JSON.stringify(importData.data[key]));
                     }
                     this.showSuccessMessage('Datos importados correctamente. Recargando...');
-                    
+
                     setTimeout(() => {
                         window.location.reload();
                     }, 2000);
@@ -896,7 +894,7 @@ notifyConfigurationChange(changes) {
                 this.showErrorMessage('Error al importar datos: Formato inválido');
             }
         };
-        
+
         reader.readAsText(file);
     }
 
@@ -905,7 +903,7 @@ notifyConfigurationChange(changes) {
             if (confirm('🚨 Confirmación final: Se eliminarán todos los gastos, ingresos y configuraciones. ¿Continuar?')) {
                 localStorage.clear();
                 this.showSuccessMessage('Datos eliminados. Redirigiendo al login...');
-                
+
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 2000);
@@ -921,8 +919,8 @@ notifyConfigurationChange(changes) {
      * 🐛 FIX: Usar un método compatible con el sistema de modales actual.
      */
     showSuccessMessage(message) {
-    console.log('✅ ' + message);
-}
+        console.log('✅ ' + message);
+    }
 
     /**
      * 🐛 FIX: Usar un método compatible con el sistema de modales actual.
@@ -940,15 +938,15 @@ notifyConfigurationChange(changes) {
     }
 
     destroy() {
-    // Limpiar focus observer
-    if (this.focusObserver) {
-        clearInterval(this.focusObserver);
-        this.focusObserver = null;
+        // Limpiar focus observer
+        if (this.focusObserver) {
+            clearInterval(this.focusObserver);
+            this.focusObserver = null;
+        }
+
+        this.isInjected = false;
+        console.log('🧹 ConfigUI destruido');
     }
-    
-    this.isInjected = false;
-    console.log('🧹 ConfigUI destruido');
-}
 
     forceInject() {
         const contentArea = document.getElementById('dynamic-content');
@@ -961,64 +959,64 @@ notifyConfigurationChange(changes) {
     /**
  * Formatear vista previa de fecha
  */
-formatDatePreview(format) {
-    const today = new Date();
-    const day = today.getDate().toString().padStart(2, '0');
-    const month = (today.getMonth() + 1).toString().padStart(2, '0');
-    const year = today.getFullYear();
-    
-    switch (format) {
-        case 'MM/DD/YYYY':
-            return `${month}/${day}/${year}`;
-        case 'YYYY-MM-DD':
-            return `${year}-${month}-${day}`;
-        case 'DD/MM/YYYY':
-        default:
-            return `${day}/${month}/${year}`;
+    formatDatePreview(format) {
+        const today = new Date();
+        const day = today.getDate().toString().padStart(2, '0');
+        const month = (today.getMonth() + 1).toString().padStart(2, '0');
+        const year = today.getFullYear();
+
+        switch (format) {
+            case 'MM/DD/YYYY':
+                return `${month}/${day}/${year}`;
+            case 'YYYY-MM-DD':
+                return `${year}-${month}-${day}`;
+            case 'DD/MM/YYYY':
+            default:
+                return `${day}/${month}/${year}`;
+        }
     }
-}
 
-/**
- * Configurar eventos de vista previa para sección general
- */
-setupGeneralPreviewEvents() {
-    // Esperar a que los elementos estén disponibles
-    setTimeout(() => {
-        // Vista previa de moneda
-        const currencySelect = document.getElementById('generalCurrency');
-        if (currencySelect) {
-            currencySelect.addEventListener('change', () => {
-                this.updateGeneralPreviews();
-            });
-        }
+    /**
+     * Configurar eventos de vista previa para sección general
+     */
+    setupGeneralPreviewEvents() {
+        // Esperar a que los elementos estén disponibles
+        setTimeout(() => {
+            // Vista previa de moneda
+            const currencySelect = document.getElementById('generalCurrency');
+            if (currencySelect) {
+                currencySelect.addEventListener('change', () => {
+                    this.updateGeneralPreviews();
+                });
+            }
 
-        // Vista previa de formato de fecha
-        const dateSelect = document.getElementById('dateFormat');
-        if (dateSelect) {
-            dateSelect.addEventListener('change', () => {
-                this.updateGeneralPreviews();
-            });
-        }
-   
-        // Actualizar vistas previas iniciales
-        this.updateGeneralPreviews();
-        
-    }, 200);
-}
+            // Vista previa de formato de fecha
+            const dateSelect = document.getElementById('dateFormat');
+            if (dateSelect) {
+                dateSelect.addEventListener('change', () => {
+                    this.updateGeneralPreviews();
+                });
+            }
 
-/**
- * Notificar cambios de configuración a otros módulos
- */
-notifyConfigurationChange(changes) {
-    // Disparar evento personalizado para que otros módulos se enteren
-    const event = new CustomEvent('configurationChanged', {
-        detail: changes,
-        bubbles: true
-    });
-    window.dispatchEvent(event);
-    
-    console.log('📢 Configuración actualizada:', changes);
-}
+            // Actualizar vistas previas iniciales
+            this.updateGeneralPreviews();
+
+        }, 200);
+    }
+
+    /**
+     * Notificar cambios de configuración a otros módulos
+     */
+    notifyConfigurationChange(changes) {
+        // Disparar evento personalizado para que otros módulos se enteren
+        const event = new CustomEvent('configurationChanged', {
+            detail: changes,
+            bubbles: true
+        });
+        window.dispatchEvent(event);
+
+        console.log('📢 Configuración actualizada:', changes);
+    }
 }
 
 // Crear instancia global

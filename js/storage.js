@@ -138,7 +138,7 @@ class StorageManager {
 
             // Actualizar último acceso
             this.updateLastAccess();
-            
+
             console.log('✅ Sistema de almacenamiento inicializado correctamente');
         } catch (error) {
             console.error('❌ Error inicializando storage:', error);
@@ -203,21 +203,21 @@ class StorageManager {
      * Guarda un elemento en localStorage con manejo de errores
      */
     setItem(key, value) {
-    try {
-        const serializedValue = JSON.stringify(value);
-        localStorage.setItem(key, serializedValue);
-        this.updateLastSave();
-        
-    // 🔧 TEMPORALMENTE DESHABILITADO PARA EVITAR REFRESCO EN EDICIÓN INLINE
-    // this.dispatchSaveEvent();
-        
-        return true;
-    } catch (error) {
-        console.error(`❌ Error guardando ${key}:`, error);
-        this.handleStorageError(error);
-        return false;
+        try {
+            const serializedValue = JSON.stringify(value);
+            localStorage.setItem(key, serializedValue);
+            this.updateLastSave();
+
+            // 🔧 TEMPORALMENTE DESHABILITADO PARA EVITAR REFRESCO EN EDICIÓN INLINE
+            // this.dispatchSaveEvent();
+
+            return true;
+        } catch (error) {
+            console.error(`❌ Error guardando ${key}:`, error);
+            this.handleStorageError(error);
+            return false;
+        }
     }
-}
 
     /**
      * Obtiene un elemento de localStorage con manejo de errores
@@ -303,9 +303,6 @@ class StorageManager {
         return this.setItem(this.storageKeys.USER_DATA, userData);
     }
 
-    /**
-     * Calcula el balance actual
-     */
     calcularBalance() {
         const ingresos = this.getIngresos();
         const gastosFijos = this.getGastosFijos();
@@ -387,13 +384,13 @@ class StorageManager {
         try {
             // Crear backup de seguridad
             this.createBackup();
-            
+
             // Actualizar timestamp del último guardado
             this.updateLastSave();
-            
+
             // Disparar evento personalizado para notificar otros módulos
             this.dispatchSaveEvent();
-            
+
             console.log('💾 Auto-guardado completado:', new Date().toLocaleTimeString());
         } catch (error) {
             console.error('❌ Error en auto-guardado:', error);
@@ -456,7 +453,7 @@ class StorageManager {
     restoreFromBackup() {
         try {
             const backupData = this.getItem(this.storageKeys.BACKUP_DATA);
-            
+
             if (!backupData || !backupData.data) {
                 throw new Error('No hay datos de backup disponibles');
             }
@@ -495,7 +492,7 @@ class StorageManager {
 
             const dataStr = JSON.stringify(exportData, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            
+
             return {
                 blob: dataBlob,
                 filename: `presupuesto-familiar-${new Date().toISOString().split('T')[0]}.json`
@@ -512,14 +509,14 @@ class StorageManager {
     importData(jsonData) {
         try {
             const importedData = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
-            
+
             if (!importedData.data) {
                 throw new Error('Formato de datos inválido');
             }
 
             // Validar y restaurar datos
             const data = importedData.data;
-            
+
             if (data.ingresos) this.setIngresos(data.ingresos);
             if (data.gastosFijos) this.setGastosFijos(data.gastosFijos);
             if (data.gastosVariables) this.setGastosVariables(data.gastosVariables);
@@ -559,15 +556,15 @@ class StorageManager {
         this.dispatchErrorEvent(error);
     }
 
-        /**
-     * Dispara evento personalizado de guardado CON DEBOUNCE
-     */
+    /**
+ * Dispara evento personalizado de guardado CON DEBOUNCE
+ */
     dispatchSaveEvent() {
         // Limpiar timeout anterior si existe
         if (this.saveEventTimeout) {
             clearTimeout(this.saveEventTimeout);
         }
-        
+
         // Programar nuevo evento con debounce de 300ms
         this.saveEventTimeout = setTimeout(() => {
             const event = new CustomEvent('storageSaved', {
@@ -577,7 +574,7 @@ class StorageManager {
                 }
             });
             window.dispatchEvent(event);
-            
+
             // Limpiar timeout
             this.saveEventTimeout = null;
         }, 300);
@@ -608,10 +605,10 @@ class StorageManager {
             Object.values(this.storageKeys).forEach(key => {
                 localStorage.removeItem(key);
             });
-            
+
             // Reinicializar con datos por defecto
             this.initializeStorage();
-            
+
             console.log('🗑️ Todos los datos han sido eliminados');
             return true;
         } catch (error) {
@@ -640,13 +637,13 @@ class StorageManager {
      */
     calculateStorageUsage() {
         let totalSize = 0;
-        
+
         for (let key in localStorage) {
             if (localStorage.hasOwnProperty(key)) {
                 totalSize += localStorage[key].length;
             }
         }
-        
+
         return {
             bytes: totalSize,
             kb: (totalSize / 1024).toFixed(2),

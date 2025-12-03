@@ -264,16 +264,45 @@
         }
     </script>
 
-    <!-- 🔷 Supabase Storage Manager -->
-    <script src="js/supabase-storage.js"></script>
-
-    <!-- Scripts base del sistema -->
+    <!-- 🔷 Scripts base del sistema -->
+    <script src="js/utils.js"></script>
+    <script src="js/modal-system.js"></script>
     <script src="js/storage.js"></script>
-    <script src="js/gastos.js"></script>
     <script src="js/currency.js"></script>
+
+    <!-- 🔷 Supabase Storage -->
+    <script src="js/supabase-client.js"></script>
+    <script src="js/supabase-storage.js"></script>
+    <script src="js/supabase-ingresos-adapter.js"></script>
+
+    <!-- 🔷 Hybrid Storage Manager -->
+    <script src="js/hybrid-storage.js"></script>
+
+    <!-- 🔷 Módulos de la aplicación -->
+    <script src="js/ingresos.js"></script>
+    <script src="js/gastos.js"></script>
     <script src="js/theme-manager.js"></script>
     <script src="js/password-toggle.js"></script>
     <script src="js/auth.js"></script>
+
+    <!-- 🔷 Reportes -->
+    <script src="js/reportes/reportes-manager.js"></script>
+    <script src="js/reportes/reportes-charts.js"></script>
+    <script src="js/reportes/reportes-html.js"></script>
+    <script src="js/reportes/reportes-export.js"></script>
+    <script src="js/reportes/reportes-generator.js"></script>
+
+    <!-- 🔷 Configuración -->
+    <script src="js/config-manager.js"></script>
+    <script src="js/config-ui.js"></script>
+
+    <!-- 🔷 Varios -->
+    <script src="Varios/js/varios-manager.js"></script>
+    <script src="Varios/js/espacio-personal.js"></script>
+
+    <!-- 🔷 Dashboard -->
+    <script src="js/component-loader.js"></script>
+    <script src="js/dashboard-main.js"></script>
 
     <script>
         // 🎯 DETECTAR MODO REGISTRO DESDE URL
@@ -284,18 +313,15 @@
             if (mode === 'register') {
                 console.log('🔄 Parámetro mode=register detectado, cambiando a registro...');
 
-                // Buscar los elementos específicos del index-backup.html
                 const loginForm = document.getElementById('login-form');
                 const registerForm = document.getElementById('register-form');
                 const modeQuestion = document.getElementById('mode-question');
                 const modeAction = document.getElementById('mode-action');
 
-                // Cambiar a modo registro
                 if (loginForm && registerForm) {
                     loginForm.style.display = 'none';
                     registerForm.style.display = 'block';
 
-                    // Actualizar texto del toggle
                     if (modeQuestion && modeAction) {
                         modeQuestion.textContent = '¿Ya tienes cuenta?';
                         modeAction.textContent = 'Iniciar sesión';
@@ -303,7 +329,6 @@
 
                     console.log('✅ Cambiado automáticamente a modo registro');
 
-                    // Opcional: Limpiar URL después del cambio
                     setTimeout(() => {
                         const newUrl = window.location.pathname;
                         window.history.replaceState({}, document.title, newUrl);

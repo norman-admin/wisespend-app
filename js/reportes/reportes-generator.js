@@ -15,17 +15,17 @@ class ReportesGenerator {
         this.storage = window.storageManager;
         this.currentMonth = null;
         this.currentYear = null;
-        
+
         if (!this.storage) {
             console.error('❌ StorageManager no disponible para generador de reportes');
             return;
         }
-        
+
         // Configurar período actual
         const now = new Date();
         this.currentMonth = String(now.getMonth() + 1).padStart(2, '0');
         this.currentYear = String(now.getFullYear());
-        
+
         console.log('📊 ReportesGenerator v2.1.0 inicializado');
     }
 
@@ -60,14 +60,14 @@ class ReportesGenerator {
 
             // Encontrar mayor ingreso
             const mayorIngreso = this.findMaxItem(ingresos.desglose || [], 'monto', 'fuente');
-            
+
             // Encontrar mayor gasto
             const allGastos = [
                 ...(gastosFijos.items || []),
                 ...(gastosVariables.items || []),
                 ...(gastosExtras.items || [])
             ].filter(item => item.activo !== false);
-            
+
             const mayorGasto = this.findMaxItem(allGastos, 'monto', 'categoria');
 
             // Categoría más costosa
@@ -104,7 +104,7 @@ class ReportesGenerator {
         try {
             // Obtener datos históricos simulados (en una implementación real, estos vendrían del storage histórico)
             const periodData = this.generatePeriodData(period);
-            
+
             const reportData = {
                 periodo: period,
                 promedioIngresos: this.calculateAverage(periodData.ingresos),
@@ -204,7 +204,7 @@ class ReportesGenerator {
                 if (item.activo !== false) {
                     categorias.push({
                         nombre: item.categoria,
-                        tipo: 'Variables', 
+                        tipo: 'Variables',
                         monto: item.monto || 0,
                         pagado: item.pagado || false
                     });
@@ -283,7 +283,7 @@ class ReportesGenerator {
      */
     calculateGastosExtrasRealizados(gastosExtras) {
         if (!gastosExtras || !gastosExtras.items) return 0;
-        
+
         return gastosExtras.items
             .filter(item => item.activo !== false)
             .reduce((total, item) => total + (item.monto || 0), 0);
@@ -294,7 +294,7 @@ class ReportesGenerator {
      */
     findMaxItem(items, valueField, nameField) {
         if (!items || items.length === 0) return null;
-        
+
         return items.reduce((max, item) => {
             return (item[valueField] || 0) > (max[valueField] || 0) ? item : max;
         });
@@ -306,7 +306,7 @@ class ReportesGenerator {
     findMostExpensiveCategory() {
         const categoriesReport = this.generateCategoriesReport();
         if (!categoriesReport || !categoriesReport.categorias.length) return 'N/A';
-        
+
         return categoriesReport.categorias[0].nombre;
     }
 
@@ -324,10 +324,10 @@ class ReportesGenerator {
      */
     calculateTrend(values) {
         if (!values || values.length < 2) return 'estable';
-        
+
         const first = values[0] || 0;
         const last = values[values.length - 1] || 0;
-        
+
         if (last > first * 1.05) return 'positiva';
         if (last < first * 0.95) return 'negativa';
         return 'estable';
@@ -341,7 +341,7 @@ class ReportesGenerator {
             '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
             '#06b6d4', '#84cc16', '#f97316', '#ec4899', '#6366f1'
         ];
-        
+
         const result = [];
         for (let i = 0; i < count; i++) {
             result.push(colors[i % colors.length]);
@@ -357,7 +357,7 @@ class ReportesGenerator {
         const months = ['Ene', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
         const currentMonth = this.storage.getIngresos().total || 0;
         const variation = currentMonth * 0.1;
-        
+
         return {
             labels: months,
             datasets: [{
@@ -396,7 +396,7 @@ class ReportesGenerator {
         const currentData = this.generateMonthlyReport();
         const baseIncome = currentData?.totalIngresos || 1000000;
         const baseExpenses = currentData?.totalGastos || 800000;
-        
+
         let months;
         switch (period) {
             case 'quarterly': months = 3; break;
@@ -436,17 +436,17 @@ class ReportesGenerator {
     generatePeriodAnalysis(period, data) {
         const promedioBalance = this.calculateAverage(data.balances);
         const tendencia = this.calculateTrend(data.balances);
-        
+
         let analysis = `Análisis ${this.getPeriodName(period)}: `;
-        
+
         if (promedioBalance > 0) {
             analysis += `Balance promedio positivo de ${this.formatCurrency(promedioBalance)}. `;
         } else {
             analysis += `Balance promedio negativo de ${this.formatCurrency(Math.abs(promedioBalance))}. `;
         }
-        
+
         analysis += `Tendencia ${tendencia}. `;
-        
+
         if (tendencia === 'positiva') {
             analysis += 'Continúa con la gestión actual.';
         } else if (tendencia === 'negativa') {
@@ -454,7 +454,7 @@ class ReportesGenerator {
         } else {
             analysis += 'Mantén el control de tus finanzas.';
         }
-        
+
         return analysis;
     }
 
@@ -518,19 +518,19 @@ class ReportesGenerator {
      */
     generateRecommendations(monthlyReport) {
         const recommendations = [];
-        
+
         if (monthlyReport.balance < 0) {
             recommendations.push('Reduce gastos variables o busca ingresos adicionales');
         }
-        
+
         if (monthlyReport.porcentajeAhorro < 10) {
             recommendations.push('Intenta ahorrar al menos el 10% de tus ingresos');
         }
-        
+
         if (monthlyReport.totalGastosExtras > monthlyReport.totalIngresos * 0.15) {
             recommendations.push('Los gastos extras son muy altos, considera reducirlos');
         }
-        
+
         return recommendations;
     }
 
@@ -540,7 +540,7 @@ class ReportesGenerator {
     generateComparatives(period, data) {
         const current = data.balances[data.balances.length - 1];
         const previous = data.balances[data.balances.length - 2];
-        
+
         return {
             variacionBalance: current - previous,
             porcentajeVariacion: previous !== 0 ? ((current - previous) / Math.abs(previous)) * 100 : 0,
@@ -559,7 +559,7 @@ class ReportesGenerator {
                 data: data.ingresos.slice(0, 3),
                 backgroundColor: '#10b981'
             }, {
-                label: 'Gastos', 
+                label: 'Gastos',
                 data: data.gastos.slice(0, 3),
                 backgroundColor: '#ef4444'
             }]
@@ -589,7 +589,7 @@ class ReportesGenerator {
         const periods = {
             monthly: 'mensual',
             quarterly: 'trimestral',
-            semester: 'semestral', 
+            semester: 'semestral',
             yearly: 'anual'
         };
         return periods[period] || 'desconocido';
@@ -617,13 +617,207 @@ function initializeReportesGenerator() {
         console.warn('⚠️ Esperando StorageManager para inicializar ReportesGenerator');
         setTimeout(initializeReportesGenerator, 500);
     }
+} else {
+    return `Balance positivo pero bajo. Solo ahorras ${porcentajeAhorro.toFixed(1)}%. Revisa tus gastos.`;
+}
+        } else {
+    return `Balance negativo de ${this.formatCurrency(Math.abs(balance))}. Es necesario reducir gastos o aumentar ingresos.`;
+}
+    }
+
+/**
+ * 📊 GENERAR ANÁLISIS POR PERÍODO
+ */
+generatePeriodAnalysis(period, data) {
+    const promedioBalance = this.calculateAverage(data.balances);
+    const tendencia = this.calculateTrend(data.balances);
+
+    let analysis = `Análisis ${this.getPeriodName(period)}: `;
+
+    if (promedioBalance > 0) {
+        analysis += `Balance promedio positivo de ${this.formatCurrency(promedioBalance)}. `;
+    } else {
+        analysis += `Balance promedio negativo de ${this.formatCurrency(Math.abs(promedioBalance))}. `;
+    }
+
+    analysis += `Tendencia ${tendencia}. `;
+
+    if (tendencia === 'positiva') {
+        analysis += 'Continúa con la gestión actual.';
+    } else if (tendencia === 'negativa') {
+        analysis += 'Revisa y ajusta tus gastos.';
+    } else {
+        analysis += 'Mantén el control de tus finanzas.';
+    }
+
+    return analysis;
+}
+
+/**
+ * 📊 RESUMIR POR TIPO
+ */
+summarizeByType(categorias) {
+    const summary = {
+        Fijos: { count: 0, total: 0 },
+        Variables: { count: 0, total: 0 },
+        Extras: { count: 0, total: 0 }
+    };
+
+    categorias.forEach(cat => {
+        if (summary[cat.tipo]) {
+            summary[cat.tipo].count++;
+            summary[cat.tipo].total += cat.monto || 0;
+        }
+    });
+
+    return summary;
+}
+
+/**
+ * 📊 CALCULAR ESTADÍSTICAS DE CATEGORÍAS
+ */
+calculateCategoryStatistics(categorias) {
+    if (!categorias.length) return {};
+
+    const montos = categorias.map(cat => cat.monto || 0);
+    return {
+        total: montos.reduce((acc, val) => acc + val, 0),
+        promedio: this.calculateAverage(montos),
+        maximo: Math.max(...montos),
+        minimo: Math.min(...montos),
+        pagadas: categorias.filter(cat => cat.pagado).length,
+        pendientes: categorias.filter(cat => !cat.pagado).length
+    };
+}
+
+/**
+ * 🔮 GENERAR PROYECCIONES
+ */
+generateProjections(monthlyReport) {
+    return {
+        proximoMes: {
+            ingresos: monthlyReport.totalIngresos * 1.02,
+            gastos: monthlyReport.totalGastos * 1.01,
+            balance: (monthlyReport.totalIngresos * 1.02) - (monthlyReport.totalGastos * 1.01)
+        },
+        anual: {
+            ingresos: monthlyReport.totalIngresos * 12,
+            gastos: monthlyReport.totalGastos * 12,
+            ahorro: monthlyReport.balance * 12
+        }
+    };
+}
+
+/**
+ * 💡 GENERAR RECOMENDACIONES
+ */
+generateRecommendations(monthlyReport) {
+    const recommendations = [];
+
+    if (monthlyReport.balance < 0) {
+        recommendations.push('Reduce gastos variables o busca ingresos adicionales');
+    }
+
+    if (monthlyReport.porcentajeAhorro < 10) {
+        recommendations.push('Intenta ahorrar al menos el 10% de tus ingresos');
+    }
+
+    if (monthlyReport.totalGastosExtras > monthlyReport.totalIngresos * 0.15) {
+        recommendations.push('Los gastos extras son muy altos, considera reducirlos');
+    }
+
+    return recommendations;
+}
+
+/**
+ * 📊 GENERAR COMPARATIVAS
+ */
+generateComparatives(period, data) {
+    const current = data.balances[data.balances.length - 1];
+    const previous = data.balances[data.balances.length - 2];
+
+    return {
+        variacionBalance: current - previous,
+        porcentajeVariacion: previous !== 0 ? ((current - previous) / Math.abs(previous)) * 100 : 0,
+        mejoraRespectoPeriodoAnterior: current > previous
+    };
+}
+
+/**
+ * 📊 PREPARAR DATOS PARA GRÁFICOS
+ */
+prepareChartData(data) {
+    return {
+        labels: ['Período 1', 'Período 2', 'Período 3'],
+        datasets: [{
+            label: 'Ingresos',
+            data: data.ingresos.slice(0, 3),
+            backgroundColor: '#10b981'
+        }, {
+            label: 'Gastos',
+            data: data.gastos.slice(0, 3),
+            backgroundColor: '#ef4444'
+        }]
+    };
+}
+
+/**
+ * 🔧 UTILIDADES
+ */
+formatCurrency(amount) {
+    return new Intl.NumberFormat('es-CL', {
+        style: 'currency',
+        currency: 'CLP',
+        minimumFractionDigits: 0
+    }).format(amount || 0);
+}
+
+getMonthName(monthNumber) {
+    const months = [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    return months[parseInt(monthNumber) - 1] || 'Mes desconocido';
+}
+
+getPeriodName(period) {
+    const periods = {
+        monthly: 'mensual',
+        quarterly: 'trimestral',
+        semester: 'semestral',
+        yearly: 'anual'
+    };
+    return periods[period] || 'desconocido';
+}
+
+/**
+ * 🔄 REFRESCAR DATOS
+ */
+refreshData() {
+    // Limpiar cache si existe
+    this.cache = null;
+    console.log('🔄 Datos del generador actualizados');
+}
+}
+
+// Inicialización global
+window.reportesGenerator = null;
+
+// Función de inicialización
+function initializeReportesGenerator() {
+    if (window.storageManager) {
+        window.reportesGenerator = new ReportesGenerator();
+        console.log('✅ ReportesGenerator v2.1.0 inicializado globalmente');
+    } else {
+        console.warn('⚠️ Esperando StorageManager para inicializar ReportesGenerator');
+        setTimeout(initializeReportesGenerator, 500);
+    }
 }
 
 // Auto-inicializar cuando el DOM esté listo
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeReportesGenerator);
 } else {
-    initializeReportesGenerator();
 }
 
 console.log('📊 reportes-generator.js v2.1.0 cargado - Generación de datos completa');

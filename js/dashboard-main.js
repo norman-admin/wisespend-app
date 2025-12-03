@@ -1,6 +1,6 @@
 /**
  * DASHBOARD-MAIN.JS - Orchestrator Principal del Dashboard
- * Presupuesto Familiar - Versión 1.2.0 - TABLA MEJORADA INTEGRADA
+ * Presupuesto Familiar - Versión 1.2.1 - ASYNC FIX
  * 
  * ✅ FUNCIONALIDADES:
  * 🎯 Orchestración central de módulos
@@ -10,11 +10,10 @@
  * 🚀 Inicialización secuencial
  * 📊 Tabla mejorada de ingresos integrada
  * 
- * 🔧 CAMBIOS v1.2.0:
- * ✅ Inicialización de tabla mejorada movida al lugar correcto
- * ✅ Mantiene TODAS las funcionalidades existentes
- * ✅ Sin duplicación de código
- * ✅ Mejor timing de inicialización
+ * 🔧 CAMBIOS v1.2.1:
+ * ✅ Fix: Soporte para carga asíncrona de datos (Supabase)
+ * ✅ loadInitialData y refreshData ahora usan await
+ * ✅ Fix: Soporte para exportación asíncrona
  */
 
 class DashboardOrchestrator {
@@ -40,13 +39,6 @@ class DashboardOrchestrator {
         console.log('🎯 Iniciando DashboardOrchestrator...');
 
         try {
-            // TEMPORALMENTE DESHABILITADO PARA TESTING
-            // // 1. Verificar autenticación
-            // if (!this.verifyAuthentication()) {
-            //     this.redirectToLogin();
-            //     return;
-            // }
-
             // 2. Esperar a que los módulos estén disponibles
             await this.waitForModules();
 
@@ -108,7 +100,8 @@ class DashboardOrchestrator {
             'authSystem',
             'ingresosManager',
             'componentLoader',
-            'reportesManager'
+            'reportesManager',
+            'hybridStorage'
         ];
 
         return new Promise((resolve) => {
@@ -121,8 +114,6 @@ class DashboardOrchestrator {
                     moduleStatus[moduleName] = isAvailable;
                     if (!isAvailable) allAvailable = false;
                 });
-
-                // console.log('🔍 Estado de módulos:', moduleStatus); // TEMPORALMENTE COMENTADO
 
                 if (allAvailable) {
                     console.log('✅ Todos los módulos disponibles');
@@ -176,7 +167,8 @@ class DashboardOrchestrator {
                 throw new Error('StorageManager no disponible');
             }
 
-            this.state.dashboardData = storage.getDashboardData();
+            // FIX: Await para soportar promesas (Supabase)
+            this.state.dashboardData = await storage.getDashboardData();
             this.state.lastDataUpdate = new Date().toISOString();
 
             // Configurar moneda desde configuración
@@ -201,12 +193,13 @@ class DashboardOrchestrator {
     /**
      * Actualizar datos del dashboard
      */
-    refreshData() {
+    async refreshData() {
         console.log('🔄 Actualizando datos del dashboard...');
 
         const storage = this.modules.get('storage');
         if (storage) {
-            this.state.dashboardData = storage.getDashboardData();
+            // FIX: Await para soportar promesas
+            this.state.dashboardData = await storage.getDashboardData();
             this.state.lastDataUpdate = new Date().toISOString();
 
             this.updateStatCards();
@@ -583,18 +576,6 @@ class DashboardOrchestrator {
         console.log('🎧 Configurando event listeners...');
 
         // Eventos de datos
-        // 🔧 TEMPORALMENTE DESHABILITADO PARA EVITAR REFRESCO EN EDICIÓN INLINE
-        /*
-        window.addEventListener('storageSaved', () => {
-        if (!this.isUpdatingDashboard) {
-            this.isUpdatingDashboard = true;
-            setTimeout(() => {
-                this.handleDataChange();
-                this.isUpdatingDashboard = false;
-            }, 50);
-        }
-        });
-        */
         window.addEventListener('gastos_gastoAdded', () => this.handleDataChange());
         window.addEventListener('gastos_gastoUpdated', () => this.handleDataChange());
         window.addEventListener('income_incomeAdded', () => this.handleDataChange());
@@ -635,8 +616,10 @@ class DashboardOrchestrator {
 
         this.isUpdatingDashboard = true;
         console.log('🔄 Datos cambiados, actualizando...');
-        setTimeout(() => {
-            this.refreshData();
+
+        // FIX: Async handling
+        setTimeout(async () => {
+            await this.refreshData();
             this.isUpdatingDashboard = false; // Resetear flag
         }, 300);
     }
@@ -709,12 +692,24 @@ class DashboardOrchestrator {
     /**
      * Manejar exportar datos
      */
-    handleExportData() {
+    async handleExportData() {
         console.log('📤 Exportando datos...');
 
         const storage = this.modules.get('storage');
         if (storage) {
-            const exportResult = storage.exportData();
+            let exportResult = storage.exportData();
+
+            // Soporte para exportación asíncrona (Cloud)
+            if (exportResult instanceof Promise) {
+                try {
+                    exportResult = await exportResult;
+                } catch (error) {
+                    console.error('❌ Error exportando datos:', error);
+                    alert('Error al exportar datos');
+                    return;
+                }
+            }
+
             if (exportResult) {
                 this.downloadFile(exportResult.blob, exportResult.filename);
                 alert('Datos exportados exitosamente');
@@ -970,6 +965,6 @@ window.dashboardDebug = {
     checkIncomeTable: () => !!window.incomeTableEnhanced
 };
 
-console.log('🎯 Dashboard-main.js v1.2.0 - TABLA MEJORADA INTEGRADA');
+console.log('🎯 Dashboard-main.js v1.2.1 - ASYNC FIX APPLIED');
 console.log('🛠️ Debug disponible en: window.dashboardDebug');
 console.log('📊 Tabla mejorada de ingresos: Inicialización optimizada');

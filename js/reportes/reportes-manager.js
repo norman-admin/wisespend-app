@@ -20,12 +20,12 @@ class ReportesManager {
             year: '',
             period: 'monthly'
         };
-        
+
         if (!this.storage) {
             console.error('❌ StorageManager no disponible para reportes');
             return;
         }
-        
+
         console.log('📊 ReportesManager v2.1.0 inicializado');
         this.init();
     }
@@ -93,7 +93,7 @@ class ReportesManager {
         const targetSection = document.getElementById(`${section}-section`);
         if (targetSection) {
             targetSection.style.display = 'block';
-            
+
             // Cargar contenido específico
             switch (section) {
                 case 'search':
@@ -183,7 +183,7 @@ class ReportesManager {
     executeSearch() {
         const monthSelect = document.getElementById('search-month');
         const yearSelect = document.getElementById('search-year');
-        
+
         const selectedMonth = monthSelect ? monthSelect.value : '';
         const selectedYear = yearSelect ? yearSelect.value : '';
 
@@ -216,7 +216,7 @@ class ReportesManager {
         if (window.reportesGenerator) {
             window.reportesGenerator.setCurrentPeriod(month, year);
         }
-        
+
         // Actualizar header si existe
         if (window.gastosManager && window.gastosManager.updateHeaderTotals) {
             window.gastosManager.updateHeaderTotals();
@@ -230,7 +230,7 @@ class ReportesManager {
      */
     changePeriod(period) {
         this.currentPeriod = period;
-        
+
         // Actualizar botones activos
         const periodBtns = document.querySelectorAll('.period-btn');
         periodBtns.forEach(btn => {
@@ -242,7 +242,7 @@ class ReportesManager {
 
         // Regenerar reporte del período
         this.generatePeriodReport();
-        
+
         console.log(`🔄 Período cambiado a: ${period}`);
     }
 
@@ -311,7 +311,7 @@ class ReportesManager {
         if (!data) return '<p>No hay datos disponibles</p>';
 
         const periodName = this.getPeriodName(this.currentPeriod);
-        
+
         return `
             <div class="period-report-content">
                 <h4>Análisis ${periodName}</h4>
@@ -413,7 +413,7 @@ class ReportesManager {
     getPeriodName(period) {
         const periods = {
             monthly: 'mensual',
-            quarterly: 'trimestral', 
+            quarterly: 'trimestral',
             semester: 'semestral',
             yearly: 'anual'
         };
@@ -427,14 +427,209 @@ class ReportesManager {
         if (window.reportesGenerator) {
             window.reportesGenerator.refreshData();
         }
-        
+
         this.generateMonthlyReport();
         this.generatePeriodReport();
-        
+
         if (window.reportesCharts) {
             window.reportesCharts.updateCharts();
         }
-        
+
+        console.log('🔄 Datos de reportes actualizados');
+        this.generatePeriodReport();
+
+        console.log(`🔄 Período cambiado a: ${period}`);
+    }
+
+    /**
+     * 📊 GENERAR REPORTE MENSUAL
+     */
+    generateMonthlyReport() {
+        if (!window.reportesGenerator) return;
+
+        const reportContent = document.getElementById('monthly-report');
+        if (reportContent) {
+            const reportData = window.reportesGenerator.generateMonthlyReport();
+            reportContent.innerHTML = this.formatMonthlyReport(reportData);
+        }
+    }
+
+    /**
+     * 📊 GENERAR REPORTE POR PERÍODO
+     */
+    generatePeriodReport() {
+        if (!window.reportesGenerator) return;
+
+        const reportContent = document.getElementById('period-report');
+        if (reportContent) {
+            const reportData = window.reportesGenerator.generatePeriodReport(this.currentPeriod);
+            reportContent.innerHTML = this.formatPeriodReport(reportData);
+        }
+    }
+
+    /**
+     * 📄 FORMATEAR REPORTE MENSUAL
+     */
+    formatMonthlyReport(data) {
+        if (!data) return '<p>No hay datos disponibles</p>';
+
+        return `
+            <div class="monthly-report-content">
+                <div class="report-summary">
+                    <div class="summary-item">
+                        <strong>Total Ingresos:</strong> ${this.formatCurrency(data.totalIngresos)}
+                    </div>
+                    <div class="summary-item">
+                        <strong>Total Gastos:</strong> ${this.formatCurrency(data.totalGastos)}
+                    </div>
+                    <div class="summary-item ${data.balance >= 0 ? 'positive' : 'negative'}">
+                        <strong>Balance:</strong> ${this.formatCurrency(data.balance)}
+                    </div>
+                </div>
+                
+                <div class="report-highlights">
+                    <h4>Destacados del mes:</h4>
+                    <ul>
+                        <li><strong>Mayor ingreso:</strong> ${data.mayorIngreso?.fuente || 'N/A'} - ${this.formatCurrency(data.mayorIngreso?.monto || 0)}</li>
+                        <li><strong>Mayor gasto:</strong> ${data.mayorGasto?.categoria || 'N/A'} - ${this.formatCurrency(data.mayorGasto?.monto || 0)}</li>
+                        <li><strong>Categoría más costosa:</strong> ${data.categoriaMasCostosa || 'N/A'}</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * 📄 FORMATEAR REPORTE POR PERÍODO
+     */
+    formatPeriodReport(data) {
+        if (!data) return '<p>No hay datos disponibles</p>';
+
+        const periodName = this.getPeriodName(this.currentPeriod);
+
+        return `
+            <div class="period-report-content">
+                <h4>Análisis ${periodName}</h4>
+                <div class="period-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Promedio Ingresos:</span>
+                        <span class="stat-value">${this.formatCurrency(data.promedioIngresos)}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Promedio Gastos:</span>
+                        <span class="stat-value">${this.formatCurrency(data.promedioGastos)}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Tendencia:</span>
+                        <span class="stat-value ${data.tendencia === 'positiva' ? 'positive' : 'negative'}">${data.tendencia}</span>
+                    </div>
+                </div>
+                
+                <div class="period-analysis">
+                    <p>${data.analisis || 'Análisis no disponible'}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * 📤 EXPORTAR DATOS
+     */
+    exportData(format) {
+        if (!window.reportesExport) {
+            this.showMessage('Sistema de exportación no disponible', 'error');
+            return;
+        }
+
+        const options = {
+            includeCharts: document.getElementById('include-charts')?.checked || false,
+            includeSummary: document.getElementById('include-summary')?.checked || false,
+            includeDetails: document.getElementById('include-details')?.checked || false
+        };
+
+        this.showMessage(`Exportando en formato ${format.toUpperCase()}...`, 'info');
+
+        try {
+            window.reportesExport.exportData(format, options);
+            this.showMessage(`Exportación ${format.toUpperCase()} completada`, 'success');
+        } catch (error) {
+            console.error('❌ Error en exportación:', error);
+            this.showMessage(`Error al exportar en ${format.toUpperCase()}`, 'error');
+        }
+    }
+
+    /**
+     * 🗓️ CARGAR REPORTE POR DEFECTO
+     */
+    loadDefaultReport() {
+        // Mostrar sección de reportes por defecto
+        setTimeout(() => {
+            this.toggleSection('reports');
+        }, 100);
+    }
+
+    /**
+     * 💬 MOSTRAR MENSAJE
+     */
+    showMessage(message, type = 'info') {
+        const statusElement = document.getElementById('reports-status');
+        if (!statusElement) return;
+
+        statusElement.innerHTML = `<p class="${type}">${message}</p>`;
+        statusElement.style.display = 'block';
+
+        // Auto-ocultar después de 3 segundos
+        setTimeout(() => {
+            statusElement.style.display = 'none';
+        }, 3000);
+
+        console.log(`💬 Mensaje: ${message} (${type})`);
+    }
+
+    /**
+     * 🔧 UTILIDADES
+     */
+    formatCurrency(amount) {
+        return new Intl.NumberFormat('es-CL', {
+            style: 'currency',
+            currency: 'CLP',
+            minimumFractionDigits: 0
+        }).format(amount || 0);
+    }
+
+    getMonthName(monthNumber) {
+        const months = [
+            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+        ];
+        return months[parseInt(monthNumber) - 1] || 'Mes desconocido';
+    }
+
+    getPeriodName(period) {
+        const periods = {
+            monthly: 'mensual',
+            quarterly: 'trimestral',
+            semester: 'semestral',
+            yearly: 'anual'
+        };
+        return periods[period] || 'desconocido';
+    }
+
+    /**
+     * 🔄 REFRESCAR DATOS
+     */
+    refreshData() {
+        if (window.reportesGenerator) {
+            window.reportesGenerator.refreshData();
+        }
+
+        this.generateMonthlyReport();
+        this.generatePeriodReport();
+
+        if (window.reportesCharts) {
+            window.reportesCharts.updateCharts();
+        }
+
         console.log('🔄 Datos de reportes actualizados');
     }
 
@@ -460,7 +655,15 @@ function initializeReportesManager() {
         console.log('✅ ReportesManager v2.1.0 inicializado globalmente');
     } else {
         console.warn('⚠️ Esperando StorageManager para inicializar ReportesManager');
+        // Intentar de nuevo en 500ms
         setTimeout(initializeReportesManager, 500);
+
+        // También escuchar el evento por si acaso
+        window.addEventListener('storageManagerReady', () => {
+            if (!window.reportesManager) {
+                initializeReportesManager();
+            }
+        }, { once: true });
     }
 }
 

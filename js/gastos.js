@@ -1,14 +1,14 @@
 /**
  * GASTOS.JS - Sistema de Gestión de Gastos REFACTORIZADO
- * Presupuesto Familiar - Versión 1.5.0 - TABLA MEJORADA INTEGRADA
+ * Presupuesto Familiar - Versión 1.6.0 - TABLA MEJORADA + SINCRONIZACIÓN SUPABASE
  * 
- * 🔧 CAMBIOS REALIZADOS EN REFACTORING:
+ * 🔧 CAMBIOS v1.6.0:
+ * ✅ Sincronización automática con Supabase
+ * ✅ Vista de gastos variables actualizada dinámicamente
  * ✅ Sistema de modales unificado (modalSystem)
  * ✅ Funciones centralizadas (Utils)
  * ✅ Eliminación de código duplicado
  * ✅ Mantiene 100% de funcionalidades existentes
- * 🆕 INTEGRACIÓN: Modal-system.js + utils.js
- * 🎯 NUEVO v1.5.0: Priorización de tabla mejorada global
  */
 
 class GastosManager {
@@ -36,6 +36,72 @@ class GastosManager {
         console.log('💰 Inicializando Gestor de Gastos...');
         this.setupNavigation();
         console.log('✅ Gestor de Gastos inicializado correctamente');
+    }
+
+    /**
+     * 🔄 SINCRONIZAR DATOS DESDE SUPABASE
+     */
+    async syncDataFromSupabase() {
+        if (window.supabaseManager && window.hybridStorage?.useCloud) {
+            try {
+                console.log('🔄 Sincronizando datos desde Supabase...');
+                
+                // Obtener período actual
+                const periodo = window.supabaseManager.getPeriodo();
+                
+                // Obtener datos de Supabase
+                const [gastosFijosResult, gastosVariablesResult] = await Promise.all([
+                    window.supabaseManager.getGastosFijos(periodo.mes, periodo.anio),
+                    window.supabaseManager.getGastosVariables(periodo.mes, periodo.anio)
+                ]);
+                
+                // Actualizar localStorage con datos de Supabase
+                if (gastosFijosResult.success && gastosFijosResult.data) {
+                    const gastosFijos = {
+                        total: gastosFijosResult.data.reduce((sum, item) => sum + item.monto, 0),
+                        items: gastosFijosResult.data.map(item => ({
+                            ...item,
+                            activo: item.activo ?? true
+                        }))
+                    };
+                    this.storage.setGastosFijos(gastosFijos);
+                    console.log('✅ Gastos fijos sincronizados:', gastosFijos.items.length);
+                }
+                
+                if (gastosVariablesResult.success && gastosVariablesResult.data) {
+                    const gastosVariables = {
+                        total: gastosVariablesResult.data.reduce((sum, item) => sum + item.monto, 0),
+                        items: gastosVariablesResult.data.map(item => ({
+                            ...item,
+                            activo: item.activo ?? true
+                        }))
+                    };
+                    this.storage.setGastosVariables(gastosVariables);
+                    console.log('✅ Gastos variables sincronizados:', gastosVariables.items.length);
+                }
+                
+            } catch (error) {
+                console.error('❌ Error sincronizando desde Supabase:', error);
+            }
+        }
+    }
+
+    /**
+     * 🔄 Detectar vista actual
+     */
+    detectCurrentView() {
+        const container = this.getMainContainer();
+        if (!container) return 'unknown';
+        
+        const sectionTitle = container.querySelector('.section-header h2')?.textContent || '';
+        
+        if (sectionTitle.includes('Fijos y Variables')) return 'fixed-variable';
+        if (sectionTitle.includes('Gastos Fijos')) return 'fijos';
+        if (sectionTitle.includes('Gastos Variables')) return 'variables';
+        if (sectionTitle.includes('Ingresos')) return 'income';
+        if (sectionTitle.includes('Gastos Extras')) return 'extras';
+        
+        return 'unknown';
     }
 
     /**
@@ -128,363 +194,136 @@ class GastosManager {
             case 'reports':
                 if (window.reportesManager) {
                     window.reportesManager.showReportView(container.id || 'dynamic-content');
-                } else {
-                    container.innerHTML = '<p>Sistema de reportes cargando...</p>';
                 }
                 break;
             default:
-                this.renderIncomeSection(container);
+                this.renderExpensesSection(container);
+                break;
         }
-
-        this.updateHeaderTotals();
-
-        // 🆕 ACTIVAR MENÚ CONTEXTUAL después de cada cambio de vista
-        setTimeout(() => {
-            if (window.contextualManager) {
-                window.contextualManager.refresh();
-            }
-        }, 150);
     }
 
     /**
      * Obtener contenedor principal
      */
     getMainContainer() {
-        return document.querySelector('#dynamic-content') ||
-            document.querySelector('.content-area') ||
-            document.body;
+        return document.getElementById('dynamic-content') || 
+               document.getElementById('main-content') ||
+               document.querySelector('.main-content');
     }
 
     /**
-     * 🎯 RENDERIZAR SECCIÓN DE INGRESOS - CORREGIDO PARA PRIORIZAR TABLA GLOBAL
+     * RENDERIZAR SECCIÓN DE INGRESOS - DELEGADA A TABLA MEJORADA
      */
     renderIncomeSection(container) {
-        const ingresos = this.storage.getIngresos();
+        console.log('💰 Configurando sección de ingresos...');
 
-        // 🆕 PRIORIDAD 1: Asegurar que la tabla mejorada SIEMPRE esté disponible
-        if (window.IncomeTableEnhanced) {
-            if (!window.incomeTableEnhanced) {
-                window.incomeTableEnhanced = new window.IncomeTableEnhanced(this);
-                console.log('🎯 Creando tabla mejorada global (forzada)');
-            }
+        // 🎯 CAMBIO v1.5.0: PRIORIZAR tabla mejorada global
+        if (window.incomeTableEnhanced) {
             console.log('🎯 Usando tabla mejorada global PERSISTENTE');
             window.incomeTableEnhanced.renderIncomeSection(container);
-            return;
+        }
+        // 🆕 Crear tabla mejorada global si no existe
+        else if (window.IncomeTableEnhanced && window.gastosManager) {
+            console.log('🎯 Creando tabla mejorada global (forzada)');
+            window.incomeTableEnhanced = new window.IncomeTableEnhanced(window.gastosManager);
+            window.incomeTableEnhanced.renderIncomeSection(container);
+        }
+        // Fallback tradicional
+        else if (window.ingresosManager) {
+            window.ingresosManager.renderIncomeSection();
+        } else {
+            console.error('❌ Ningún sistema de ingresos disponible');
+            container.innerHTML = '<p>Sistema de ingresos no disponible</p>';
         }
 
-        // 🆕 PRIORIDAD 2: Si no hay instancia global, crear una local
-        if (window.IncomeTableEnhanced && !this.incomeTableEnhanced) {
-            this.incomeTableEnhanced = new window.IncomeTableEnhanced(this);
-            console.log('🎯 Creando tabla mejorada local');
-        }
+        this.updateNavigationState();
+    }
 
-        // 🆕 PRIORIDAD 3: Usar instancia local si existe
-        if (this.incomeTableEnhanced) {
-            this.incomeTableEnhanced.renderIncomeSection(container);
-            return;
-        }
-
-        // 🆕 FALLBACK: Solo usar tabla original si no hay tabla mejorada disponible
-        console.log('⚠️ Usando tabla fallback - tabla mejorada no disponible');
-
-        // Fallback al método original
+    /**
+     * RENDERIZAR SECCIÓN DE GASTOS - CON TARJETAS Y GESTIÓN UNIFICADA
+     */
+    renderExpensesSection(container) {
         const html = `
             <section class="content-section active">
                 <div class="section-header">
-                    <h2>Desglose de Ingresos</h2>
-                    <div class="section-actions">
-                        <button class="btn btn-primary" onclick="gastosManager.showAddIncomeModal()">
-                            Agregar Ingresos
-                        </button>
+                    <h2>💳 Agregar Gastos</h2>
+                    <p>Selecciona el tipo de gasto que deseas registrar</p>
+                </div>
+
+                <!-- TARJETAS DE GASTOS -->
+                <div class="expense-cards-grid">
+                    <div class="expense-card" data-tipo="fijos" onclick="gastosManager.showAddGastoModal('fijos')">
+                        <div class="card-icon">
+                            <div class="icon-bg fijos">
+                                🏠
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Gasto Fijo</h3>
+                            <p class="card-description">Pagos regulares como arriendo, servicios, créditos</p>
+                            <div class="card-action">
+                                <span class="action-text">Agregar Gasto Fijo</span>
+                                <span class="action-arrow">→</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="expense-card" data-tipo="variables" onclick="gastosManager.showAddGastoModal('variables')">
+                        <div class="card-icon">
+                            <div class="icon-bg variables">
+                                🛒
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Gasto Variable</h3>
+                            <p class="card-description">Gastos que cambian mes a mes como comida, transporte, entretenimiento</p>
+                            <div class="card-action">
+                                <span class="action-text">Agregar Gasto Variable</span>
+                                <span class="action-arrow">→</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="expense-card" data-tipo="extras" onclick="gastosManager.showAddGastoModal('extras')">
+                        <div class="card-icon">
+                            <div class="icon-bg extras">
+                                ⚡
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Gasto Extra</h3>
+                            <p class="card-description">Gastos imprevistos, compras especiales o emergencias</p>
+                            <div class="card-action">
+                                <span class="action-text">Agregar Gasto Extra</span>
+                                <span class="action-arrow">→</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="income-breakdown">
-                    ${ingresos.desglose.map(item => {
-            // 🆕 Asegurar que el item tenga ID
-            if (!item.id) {
-                item.id = Utils.id.generate('income');
-            }
-
-            return `
-                            <div class="breakdown-item" data-id="${item.id}">
-                                <span class="breakdown-name">${item.fuente}</span>
-                                <span class="breakdown-amount">${this.formatNumber(item.monto)}</span>
-                            </div>
-                        `;
-        }).join('')}
-                </div>
-                
-                <div class="total-section">
-                    <div class="total-line">
-                        <span class="total-label">Total Ingresos:</span>
-                        <span class="total-amount">${this.formatNumber(ingresos.total)}</span>
+                <!-- SECCIÓN INFORMATIVA SIMPLIFICADA -->
+                <div class="expense-categories-info">
+                    <div class="info-card-simple">
+                        <div class="info-content-horizontal">
+                            <span class="info-item">
+                                <span class="info-icon-small">🏠</span>
+                                <span class="info-text-compact"><strong>Fijos:</strong> Pagos regulares</span>
+                            </span>
+                            <span class="info-separator">|</span>
+                            <span class="info-item">
+                                <span class="info-icon-small">📊</span>
+                                <span class="info-text-compact"><strong>Variables:</strong> Según decisiones</span>
+                            </span>
+                            <span class="info-separator">|</span>
+                            <span class="info-item">
+                                <span class="info-icon-small">⚡</span>
+                                <span class="info-text-compact"><strong>Extras:</strong> No planificados</span>
+                            </span>
+                        </div>
                     </div>
                 </div>
             </section>
         `;
-
-        container.innerHTML = html;
-
-        // 🆕 ACTIVAR MENÚ CONTEXTUAL después de renderizar
-        setTimeout(() => {
-            if (window.contextualManager) {
-                window.contextualManager.refresh();
-            }
-        }, 100);
-    }
-
-    /**
-     * 🔄 REFACTORIZADO: Modal para agregar ingresos usando sistema unificado
-     */
-    showAddIncomeModal() {
-        window.modalSystem.form({
-            title: 'Agregar Nueva Fuente de Ingresos',
-            submitText: 'Agregar Ingreso',
-            fields: [
-                {
-                    type: 'text',
-                    name: 'fuente',
-                    label: 'Fuente de Ingresos',
-                    required: true,
-                    placeholder: 'Ej: Sueldo, Freelance, etc.'
-                },
-                {
-                    type: 'number',
-                    name: 'monto',
-                    label: 'Monto Mensual',
-                    required: true,
-                    placeholder: '0'
-                }
-            ]
-        }).then(data => {
-            if (data) {
-                this.saveIncomeFromModal(data);
-            }
-        });
-    }
-
-    /**
-     * 🆕 NUEVO: Guardar ingreso desde modal unificado
-     */
-    async saveIncomeFromModal(data) {
-        // ✅ DELEGAR A INGRESOSMANAGER que tiene integración con Supabase
-        if (window.ingresosManager && window.ingresosManager.saveIncomeFromModal) {
-            console.log('🔄 Delegando guardado a ingresosManager (con Supabase)');
-            await window.ingresosManager.saveIncomeFromModal(data, false, {});
-
-            // 🔄 RECARGAR LA TABLA DESPUÉS DE GUARDAR
-            console.log('🔄 Recargando tabla de ingresos...');
-            if (window.incomeTableEnhanced && window.incomeTableEnhanced.renderIncomeSection) {
-                const container = this.getMainContainer();
-                if (container) {
-                    window.incomeTableEnhanced.renderIncomeSection(container);
-                    console.log('✅ Tabla recargada exitosamente');
-                } else {
-                    console.warn('⚠️ Contenedor no encontrado, recargando página...');
-                    setTimeout(() => location.reload(), 500);
-                }
-            } else {
-                // Fallback: recargar página
-                console.log('🔄 Recargando página automáticamente...');
-                setTimeout(() => location.reload(), 500);
-            }
-
-            this.updateHeaderTotals();
-            console.log('✅ Ingreso guardado en Supabase correctamente');
-        } else {
-            console.error('❌ ingresosManager no disponible');
-            window.modalSystem.showMessage('Error: Sistema de ingresos no disponible', 'error');
-        }
-    }
-
-    /**
- * 🎯 AGREGAR NUEVA FILA SIN RECARGAR TABLA
- */
-    addNewIncomeRow(incomeData) {
-        const tableBody = document.getElementById('income-table-body');
-        if (!tableBody) {
-            // Si no hay tabla, recargar completamente
-            this.renderIncomeSection(this.getMainContainer());
-            return;
-        }
-
-        // Remover fila vacía si existe
-        const emptyRow = tableBody.querySelector('.empty-row');
-        if (emptyRow) {
-            emptyRow.remove();
-        }
-
-        const percentage = 10; // Se calculará después
-        const newRowHTML = `
-        <tr class="income-row ${!incomeData.activo ? 'inactive' : ''}" data-id="${incomeData.id}" style="opacity: 0;">
-            <td class="source-cell">
-                <div class="source-content breakdown-item" data-id="${incomeData.id}">
-                    <span class="source-name breakdown-name">${incomeData.fuente}</span>
-                </div>
-            </td>
-           <td class="amount-cell">
-    <div class="breakdown-item" data-id="${incomeData.id}">
-        <span class="amount-value breakdown-amount">$${new Intl.NumberFormat('es-CL').format(incomeData.monto)}</span>
-    </div>
-</td>
-            <td class="percentage-cell">
-    <div class="percentage-container">
-        <div class="progress-bar">
-            <div class="progress-fill progress-medium" style="width: ${percentage}%"></div>
-        </div>
-        <span class="percentage-text">${percentage.toFixed(1)}%</span>
-    </div>
-</td>
-            <td class="actions-cell">
-    <div class="action-buttons">
-        <button class="action-btn btn-edit" 
-                onclick="window.incomeTableEnhanced.editIncome('${incomeData.id}')" 
-                title="Editar">
-            ✏️
-        </button>
-        <button class="action-btn btn-delete" 
-                onclick="window.incomeTableEnhanced.deleteIncome('${incomeData.id}')" 
-                title="Eliminar">
-            🗑️
-        </button>
-    </div>
-</td>
-        </tr>
-    `;
-
-        // Agregar nueva fila
-        tableBody.insertAdjacentHTML('beforeend', newRowHTML);
-
-        // Animar entrada
-        const newRow = tableBody.querySelector(`[data-id="${incomeData.id}"]`);
-        if (newRow) {
-            setTimeout(() => {
-                newRow.style.transition = 'opacity 0.3s ease';
-                newRow.style.opacity = '1';
-            }, 10);
-        }
-
-        // Actualizar totales y porcentajes
-        this.recalculatePercentages();
-    }
-
-    /**
-     * 🎯 RECALCULAR PORCENTAJES SIN RECARGAR
-     */
-    recalculatePercentages() {
-        const ingresos = this.storage.getIngresos();
-        const total = ingresos.total;
-
-        ingresos.desglose.forEach(item => {
-            const percentage = ((item.monto / total) * 100).toFixed(1);
-            const row = document.querySelector(`[data-id="${item.id}"]`);
-            if (row) {
-                const percentageCell = row.querySelector('.breakdown-percentage');
-                if (percentageCell) {
-                    percentageCell.textContent = `${percentage}%`;
-                }
-            }
-        });
-
-        // Actualizar total en el footer de la tabla
-        const totalRowElement = document.querySelector('#income-total-row .amount, .total-amount');
-        if (totalRowElement) {
-            totalRowElement.textContent = this.formatNumber(total);
-        }
-    }
-
-    /**
-     * 🎯 FORMATEAR NÚMERO (HELPER)
-     */
-    formatNumber(amount) {
-        // Usar Utils.currency.format() que está disponible globalmente
-        return Utils.currency.format(amount);
-    }
-
-    /**
- * Renderizar sección de gastos (botones para elegir tipo) - VERSIÓN ORIGINAL RESTAURADA
- */
-    renderExpensesSection(container) {
-        const html = `
-        <section class="content-section active">
-            <div class="section-header">
-                <h2>💳 Agregar Nuevo Gasto</h2>
-            </div>
-
-            <div class="expense-cards-container">
-                <div class="expense-card" data-tipo="fijos" onclick="gastosManager.showAddGastoModal('fijos')">
-                    <div class="card-icon">
-                        <div class="icon-bg fijos">
-                            🏠
-                        </div>
-                    </div>
-                    <div class="card-content">
-                        <h3 class="card-title">Gasto Fijo</h3>
-                        <p class="card-description">Pagos recurrentes como arriendo, servicios básicos, créditos</p>
-                        <div class="card-action">
-                            <span class="action-text">Agregar Gasto Fijo</span>
-                            <span class="action-arrow">→</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="expense-card" data-tipo="variables" onclick="gastosManager.showAddGastoModal('variables')">
-                    <div class="card-icon">
-                        <div class="icon-bg variables">
-                            📊
-                        </div>
-                    </div>
-                    <div class="card-content">
-                        <h3 class="card-title">Gasto Variable</h3>
-                        <p class="card-description">Gastos que cambian mes a mes como comida, transporte, entretenimiento</p>
-                        <div class="card-action">
-                            <span class="action-text">Agregar Gasto Variable</span>
-                            <span class="action-arrow">→</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="expense-card" data-tipo="extras" onclick="gastosManager.showAddGastoModal('extras')">
-                    <div class="card-icon">
-                        <div class="icon-bg extras">
-                            ⚡
-                        </div>
-                    </div>
-                    <div class="card-content">
-                        <h3 class="card-title">Gasto Extra</h3>
-                        <p class="card-description">Gastos imprevistos, compras especiales o emergencias</p>
-                        <div class="card-action">
-                            <span class="action-text">Agregar Gasto Extra</span>
-                            <span class="action-arrow">→</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECCIÓN INFORMATIVA SIMPLIFICADA -->
-            <div class="expense-categories-info">
-                <div class="info-card-simple">
-                    <div class="info-content-horizontal">
-                        <span class="info-item">
-                            <span class="info-icon-small">🏠</span>
-                            <span class="info-text-compact"><strong>Fijos:</strong> Pagos regulares</span>
-                        </span>
-                        <span class="info-separator">|</span>
-                        <span class="info-item">
-                            <span class="info-icon-small">📊</span>
-                            <span class="info-text-compact"><strong>Variables:</strong> Según decisiones</span>
-                        </span>
-                        <span class="info-separator">|</span>
-                        <span class="info-item">
-                            <span class="info-icon-small">⚡</span>
-                            <span class="info-text-compact"><strong>Extras:</strong> No planificados</span>
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </section>
-    `;
 
         container.innerHTML = html;
         console.log('💳 Sección de gastos renderizada con tarjetas');
@@ -521,7 +360,7 @@ class GastosManager {
     }
 
     /**
-     * 🆕 NUEVO: Guardar gasto desde modal unificado
+     * 🆕 NUEVO: Guardar gasto desde modal unificado - CON SINCRONIZACIÓN
      */
     async saveGastoFromModal(data, tipo) {
         const gastoData = {
@@ -537,27 +376,23 @@ class GastosManager {
             return;
         }
 
-        try {
-            await this.addGasto(gastoData, tipo);
+        await this.addGasto(gastoData, tipo);
 
-            // 🎯 SOLUCIÓN: Solo actualizar totales, NO recargar vista
-            this.updateHeaderTotals();
-
-            // Si es gasto extra, actualizar también el panel de extras si está visible
-            if (tipo === 'extras' && window.gastosExtrasMejorados) {
-                window.gastosExtrasMejorados.notifyDynamicCards();
+        // 🎯 SOLUCIÓN MEJORADA: Esperar un momento y sincronizar
+        setTimeout(async () => {
+            await this.syncDataFromSupabase();
+            
+            // Si estamos en vista de fijos/variables, actualizar
+            const currentView = this.detectCurrentView();
+            if (currentView === 'fixed-variable') {
+                await this.showFijosVariablesView();
             }
+            
+            this.updateHeaderTotals();
+            console.log('✅ Gasto agregado y sincronizado');
+        }, 500);
 
-            console.log('✅ Gasto agregado sin refresco');
-            window.modalSystem.showMessage(`Gasto ${this.getTipoDisplayName(tipo).toLowerCase()} agregado correctamente`, 'success');
-
-            // Recargar la vista actual para mostrar el nuevo item
-            this.loadGastosView();
-
-        } catch (error) {
-            console.error('Error guardando gasto:', error);
-            window.modalSystem.showMessage('Error al guardar el gasto', 'error');
-        }
+        window.modalSystem.showMessage(`Gasto ${this.getTipoDisplayName(tipo).toLowerCase()} agregado correctamente`, 'success');
     }
 
     /**
@@ -631,8 +466,8 @@ class GastosManager {
     }
 
     /**
- * Renderizar gastos extras - VERSIÓN MEJORADA
- */
+     * Renderizar gastos extras - VERSIÓN MEJORADA
+     */
     renderGastosExtras(container) {
         // Usar el nuevo sistema de gastos extras mejorados
         if (window.gastosExtrasMejorados) {
@@ -653,41 +488,44 @@ class GastosManager {
         const porcentaje = gastosExtras.porcentaje || 10;
 
         const html = `
-        <section class="content-section active">
-            <div class="section-header">
-                <h2>Gastos Extras</h2>
-            </div>
-            
-            <div class="presupuesto-section">
-                <h3>Presupuesto Gasto Extra</h3>
-                <div class="presupuesto-input">
-                    <label>${porcentaje}%</label>
-                    <input type="number" value="${presupuesto}" id="presupuesto-extra" />
+            <section class="content-section active">
+                <div class="section-header">
+                    <h2>Gastos Extras</h2>
                 </div>
-            </div>
-            
-            <div class="gastos-content">
-                <div class="gastos-list">
-                    <h4>Gastos Extras</h4>
-                    <div class="gastos-items">
-                        ${gastosExtras.items.map(item => this.renderGastoItem(item, 'extras')).join('')}
-                    </div>
-                    <div class="gastos-total-section">
-                        <strong>Total Extras: ${this.formatNumber(gastosExtras.total)}</strong>
+                
+                <div class="presupuesto-section">
+                    <h3>Presupuesto Gasto Extra</h3>
+                    <div class="presupuesto-input">
+                        <label>${porcentaje}%</label>
+                        <input type="number" value="${presupuesto}" id="presupuesto-extra" />
                     </div>
                 </div>
-            </div>
-        </section>
-    `;
+                
+                <div class="gastos-content">
+                    <div class="gastos-list">
+                        <h4>Gastos Extras</h4>
+                        <div class="gastos-items">
+                            ${gastosExtras.items.map(item => this.renderGastoItem(item, 'extras')).join('')}
+                        </div>
+                        <div class="gastos-total-section">
+                            <strong>Total Extras: ${this.formatNumber(gastosExtras.total)}</strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        `;
 
         container.innerHTML = html;
         this.bindPresupuestoEvents();
     }
 
     /**
-     * Vista combinada fijos y variables
+     * Vista combinada fijos y variables - CON SINCRONIZACIÓN
      */
-    showFijosVariablesView() {
+    async showFijosVariablesView() {
+        // Sincronizar datos antes de renderizar
+        await this.syncDataFromSupabase();
+        
         const container = this.getMainContainer();
         const gastosFijos = this.storage.getGastosFijos();
         const gastosVariables = this.storage.getGastosVariables();
@@ -830,75 +668,20 @@ class GastosManager {
             itemElement.classList.toggle('paid', isPagado);
             const nameElement = itemElement.querySelector('.expense-name');
             const amountElement = itemElement.querySelector('.expense-amount');
-            if (nameElement) nameElement.classList.toggle('paid-text', isPagado);
-            if (amountElement) amountElement.classList.toggle('paid-text', isPagado);
+            if (nameElement) {
+                nameElement.classList.toggle('paid-text', isPagado);
+            }
+            if (amountElement) {
+                amountElement.classList.toggle('paid-text', isPagado);
+            }
         }
 
+        // Actualizar totales del header
         this.updateHeaderTotals();
     }
 
     /**
-     * 🆕 NUEVO: Asegurar que todos los items tengan ID único
-     */
-    ensureItemIds() {
-        let updated = false;
-
-        // Verificar ingresos
-        // Verificar ingresos
-        const ingresos = this.storage.getIngresos();
-        if (ingresos && ingresos.desglose) {
-            ingresos.desglose.forEach(item => {
-                if (!item.id) {
-                    item.id = Utils.id.generate('income');
-                    updated = true;
-                }
-            });
-            if (updated) this.storage.setIngresos(ingresos);
-        }
-
-        // Verificar gastos fijos
-        const gastosFijos = this.storage.getGastosFijos();
-        if (gastosFijos && gastosFijos.items) {
-            gastosFijos.items.forEach(item => {
-                if (!item.id) {
-                    item.id = Utils.id.generate('gasto_fijo');
-                    updated = true;
-                }
-            });
-            if (updated) this.storage.setGastosFijos(gastosFijos);
-        }
-
-        // Verificar gastos variables
-        const gastosVariables = this.storage.getGastosVariables();
-        if (gastosVariables && gastosVariables.items) {
-            gastosVariables.items.forEach(item => {
-                if (!item.id) {
-                    item.id = Utils.id.generate('gasto_variable');
-                    updated = true;
-                }
-            });
-            if (updated) this.storage.setGastosVariables(gastosVariables);
-        }
-
-        // Verificar gastos extras
-        const gastosExtras = this.storage.getGastosExtras();
-        if (gastosExtras && gastosExtras.items) {
-            gastosExtras.items.forEach(item => {
-                if (!item.id) {
-                    item.id = Utils.id.generate('gasto_extra');
-                    updated = true;
-                }
-            });
-            if (updated) this.storage.setGastosExtras(gastosExtras);
-        }
-
-        if (updated) {
-            console.log('✅ IDs agregados a elementos existentes');
-        }
-    }
-
-    /**
-     * Actualizar totales en header
+     * Actualizar totales del header 
      */
     updateHeaderTotals() {
         const gastosFijos = this.storage.getGastosFijos();
@@ -950,6 +733,137 @@ class GastosManager {
         if (elements.porPagar) {
             elements.porPagar.textContent = this.formatNumber(totalPendientes);
         }
+    }
+
+    /**
+     * 🔄 REFACTORIZADO: Mostrar modal para agregar ingreso usando sistema unificado
+     */
+    showAddIncomeModal(isEdit = false, editData = null) {
+        const title = isEdit ? 'Editar Ingreso' : 'Agregar Ingreso';
+        const submitText = isEdit ? 'Actualizar' : 'Agregar';
+
+        window.modalSystem.form({
+            title,
+            submitText,
+            fields: [
+                {
+                    type: 'text',
+                    name: 'fuente',
+                    label: 'Fuente de Ingresos',
+                    required: true,
+                    value: isEdit ? editData.fuente : '',
+                    placeholder: 'Ej: Sueldo, Freelance, etc.'
+                },
+                {
+                    type: 'number',
+                    name: 'monto',
+                    label: 'Monto',
+                    required: true,
+                    value: isEdit ? editData.monto : '',
+                    placeholder: '0'
+                }
+            ]
+        }).then(data => {
+            if (data) {
+                this.saveIncomeFromModal(data, isEdit, editData);
+            }
+        });
+    }
+
+    /**
+     * 🆕 NUEVO: Guardar ingreso desde modal unificado
+     */
+    saveIncomeFromModal(data, isEdit = false, originalData = null) {
+        const incomeData = {
+            fuente: data.fuente,
+            monto: parseInt(data.monto) || 0,
+            id: isEdit ? originalData.id : Utils.id.generate('income'),
+            fechaCreacion: isEdit ? originalData.fechaCreacion : Utils.time.now(),
+            fechaModificacion: Utils.time.now()
+        };
+
+        if (!incomeData.fuente || !incomeData.monto) {
+            window.modalSystem.showMessage('Por favor complete todos los campos requeridos', 'error');
+            return;
+        }
+
+        const ingresos = this.storage.getIngresos();
+
+        if (isEdit) {
+            // Actualizar ingreso existente
+            const index = ingresos.desglose.findIndex(ing => ing.id === incomeData.id);
+            if (index !== -1) {
+                ingresos.desglose[index] = incomeData;
+            }
+        } else {
+            // Agregar nuevo ingreso
+            ingresos.desglose.push(incomeData);
+        }
+
+        // Recalcular totales y porcentajes
+        ingresos.total = ingresos.desglose.reduce((sum, ing) => sum + (ing.monto || 0), 0);
+        
+        if (ingresos.total > 0) {
+            ingresos.desglose.forEach(ing => {
+                ing.porcentaje = ((ing.monto || 0) / ingresos.total) * 100;
+            });
+        }
+
+        // Guardar en storage
+        this.storage.setIngresos(ingresos);
+
+        // 🎯 SOLUCIÓN: Solo actualizar totales, NO recargar vista
+        this.updateHeaderTotals();
+        console.log('✅ Ingreso agregado sin refresco');
+
+        // 🆕 Actualizar gastos extras cuando cambien los ingresos
+        if (window.gastosExtrasMejorados) {
+            window.gastosExtrasMejorados.updateIngresosTotales();
+            window.gastosExtrasMejorados.updateDisplays();
+        }
+
+        window.modalSystem.showMessage(
+            `Ingreso ${isEdit ? 'actualizado' : 'agregado'} correctamente`,
+            'success'
+        );
+    }
+
+    /**
+     * 🆕 Asegurar IDs en elementos existentes
+     */
+    ensureItemIds() {
+        // Gastos Fijos
+        const gastosFijos = this.storage.getGastosFijos();
+        let fixChanged = false;
+        gastosFijos.items.forEach(item => {
+            if (!item.id) {
+                item.id = Utils.id.generate('gasto_fijos');
+                fixChanged = true;
+            }
+        });
+        if (fixChanged) this.storage.setGastosFijos(gastosFijos);
+
+        // Gastos Variables
+        const gastosVariables = this.storage.getGastosVariables();
+        let varChanged = false;
+        gastosVariables.items.forEach(item => {
+            if (!item.id) {
+                item.id = Utils.id.generate('gasto_variables');
+                varChanged = true;
+            }
+        });
+        if (varChanged) this.storage.setGastosVariables(gastosVariables);
+
+        // Gastos Extras
+        const gastosExtras = this.storage.getGastosExtras();
+        let extraChanged = false;
+        gastosExtras.items.forEach(item => {
+            if (!item.id) {
+                item.id = Utils.id.generate('gasto_extras');
+                extraChanged = true;
+            }
+        });
+        if (extraChanged) this.storage.setGastosExtras(gastosExtras);
     }
 
     /**
@@ -1114,4 +1028,4 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = GastosManager;
 }
 
-console.log('💰 Gastos.js v1.5.0 - TABLA MEJORADA PRIORITARIA INTEGRADA');
+console.log('💰 Gastos.js v1.6.0 - TABLA MEJORADA + SINCRONIZACIÓN SUPABASE');

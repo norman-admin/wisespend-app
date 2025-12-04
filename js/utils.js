@@ -12,7 +12,7 @@
  */
 
 window.Utils = {
-    
+
     /**
      * 💰 UTILIDADES DE MONEDA
      */
@@ -60,8 +60,8 @@ window.Utils = {
             return {
                 valid: num >= min && num <= max,
                 value: num,
-                message: num < min ? `Mínimo ${this.format(min)}` : 
-                        num > max ? `Máximo ${this.format(max)}` : ''
+                message: num < min ? `Mínimo ${this.format(min)}` :
+                    num > max ? `Máximo ${this.format(max)}` : ''
             };
         }
     },
@@ -71,12 +71,14 @@ window.Utils = {
      */
     id: {
         /**
-         * Generar ID único
+         * Generar ID único (UUID v4)
          */
         generate(prefix = 'item') {
-            const timestamp = Date.now();
-            const random = Math.random().toString(36).substr(2, 9);
-            return `${prefix}_${timestamp}_${random}`;
+            const uuid = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+            return uuid;
         },
 
         /**
@@ -90,7 +92,7 @@ window.Utils = {
          * Validar formato de ID
          */
         isValid(id) {
-            return typeof id === 'string' && id.length > 5 && id.includes('_');
+            return typeof id === 'string' && id.length > 5;
         }
     },
 
@@ -103,17 +105,9 @@ window.Utils = {
          */
         requiredText(value, minLength = 2, maxLength = 50) {
             const trimmed = (value || '').trim();
-            
-            if (!trimmed) {
-                return { valid: false, message: 'Este campo es obligatorio' };
-            }
-            if (trimmed.length < minLength) {
-                return { valid: false, message: `Mínimo ${minLength} caracteres` };
-            }
-            if (trimmed.length > maxLength) {
-                return { valid: false, message: `Máximo ${maxLength} caracteres` };
-            }
-            
+            if (!trimmed) return { valid: false, message: 'Este campo es obligatorio' };
+            if (trimmed.length < minLength) return { valid: false, message: `Mínimo ${minLength} caracteres` };
+            if (trimmed.length > maxLength) return { valid: false, message: `Máximo ${maxLength} caracteres` };
             return { valid: true, value: trimmed };
         },
 
@@ -123,14 +117,8 @@ window.Utils = {
         email(value) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             const trimmed = (value || '').trim();
-            
-            if (!trimmed) {
-                return { valid: false, message: 'Email es obligatorio' };
-            }
-            if (!emailRegex.test(trimmed)) {
-                return { valid: false, message: 'Email no válido' };
-            }
-            
+            if (!trimmed) return { valid: false, message: 'Email es obligatorio' };
+            if (!emailRegex.test(trimmed)) return { valid: false, message: 'Email no válido' };
             return { valid: true, value: trimmed };
         },
 
@@ -139,15 +127,8 @@ window.Utils = {
          */
         unique(value, existingValues, fieldName = 'valor') {
             const trimmed = (value || '').trim().toLowerCase();
-            const exists = existingValues.some(existing => 
-                (existing || '').trim().toLowerCase() === trimmed
-            );
-            
-            return {
-                valid: !exists,
-                message: exists ? `Ya existe un ${fieldName} con ese nombre` : '',
-                value: trimmed
-            };
+            const exists = existingValues.some(existing => (existing || '').trim().toLowerCase() === trimmed);
+            return { valid: !exists, message: exists ? `Ya existe un ${fieldName} con ese nombre` : '', value: trimmed };
         },
 
         /**
@@ -156,43 +137,18 @@ window.Utils = {
         form(formElement, rules = {}) {
             const results = { valid: true, errors: {}, data: {} };
             const formData = new FormData(formElement);
-            
             for (const [fieldName, value] of formData.entries()) {
                 const rule = rules[fieldName];
                 if (!rule) continue;
-                
                 let result = { valid: true, value };
-                
-                // Aplicar validaciones según el tipo
-                if (rule.required) {
-                    result = this.requiredText(value, rule.minLength, rule.maxLength);
-                }
-                
-                if (result.valid && rule.type === 'email') {
-                    result = this.email(value);
-                }
-                
-                if (result.valid && rule.type === 'currency') {
-                    result = Utils.currency.validateAmount(value, rule.min, rule.max);
-                }
-                
-                if (result.valid && rule.unique) {
-                    result = this.unique(value, rule.unique, rule.fieldName || fieldName);
-                }
-                
-                // Validación personalizada
-                if (result.valid && rule.custom) {
-                    result = rule.custom(value);
-                }
-                
-                if (!result.valid) {
-                    results.valid = false;
-                    results.errors[fieldName] = result.message;
-                } else {
-                    results.data[fieldName] = result.value;
-                }
+                if (rule.required) result = this.requiredText(value, rule.minLength, rule.maxLength);
+                if (result.valid && rule.type === 'email') result = this.email(value);
+                if (result.valid && rule.type === 'currency') result = Utils.currency.validateAmount(value, rule.min, rule.max);
+                if (result.valid && rule.unique) result = this.unique(value, rule.unique, rule.fieldName || fieldName);
+                if (result.valid && rule.custom) result = rule.custom(value);
+                if (!result.valid) { results.valid = false; results.errors[fieldName] = result.message; }
+                else { results.data[fieldName] = result.value; }
             }
-            
             return results;
         }
     },
@@ -206,7 +162,6 @@ window.Utils = {
          */
         create(tag, attributes = {}, content = '') {
             const element = document.createElement(tag);
-            
             Object.entries(attributes).forEach(([key, value]) => {
                 if (key === 'className') {
                     element.className = value;
@@ -218,11 +173,9 @@ window.Utils = {
                     element.setAttribute(key, value);
                 }
             });
-            
             if (content) {
                 element.innerHTML = content;
             }
-            
             return element;
         },
 
@@ -243,7 +196,6 @@ window.Utils = {
         addClassWithTransition(element, className, duration = 300) {
             element.style.transition = `all ${duration}ms ease`;
             element.classList.add(className);
-            
             setTimeout(() => {
                 element.style.transition = '';
             }, duration);
@@ -255,7 +207,6 @@ window.Utils = {
         toggleClass(element, className, callback) {
             const hasClass = element.classList.contains(className);
             element.classList.toggle(className);
-            
             if (callback) {
                 callback(!hasClass);
             }
@@ -269,11 +220,9 @@ window.Utils = {
                 element.innerHTML = '';
                 return Promise.resolve();
             }
-            
             return new Promise(resolve => {
                 element.style.opacity = '0';
                 element.style.transition = 'opacity 200ms ease';
-                
                 setTimeout(() => {
                     element.innerHTML = '';
                     element.style.opacity = '1';
@@ -293,13 +242,11 @@ window.Utils = {
          */
         showFieldError(fieldElement, message) {
             const errorElement = fieldElement.parentNode.querySelector('.field-error') ||
-                               fieldElement.nextElementSibling;
-            
+                fieldElement.nextElementSibling;
             if (errorElement && errorElement.classList.contains('field-error')) {
                 errorElement.textContent = message;
                 errorElement.style.display = 'block';
             }
-            
             fieldElement.style.borderColor = '#ef4444';
             fieldElement.setAttribute('aria-invalid', 'true');
         },
@@ -309,13 +256,11 @@ window.Utils = {
          */
         clearFieldError(fieldElement) {
             const errorElement = fieldElement.parentNode.querySelector('.field-error') ||
-                               fieldElement.nextElementSibling;
-            
+                fieldElement.nextElementSibling;
             if (errorElement && errorElement.classList.contains('field-error')) {
                 errorElement.textContent = '';
                 errorElement.style.display = 'none';
             }
-            
             fieldElement.style.borderColor = '';
             fieldElement.removeAttribute('aria-invalid');
         },
@@ -325,30 +270,23 @@ window.Utils = {
          */
         setupRealTimeValidation(form, rules) {
             const inputs = form.querySelectorAll('input, textarea, select');
-            
             inputs.forEach(input => {
                 const rule = rules[input.name];
                 if (!rule) return;
-                
                 const validateField = () => {
                     const result = Utils.validation.form(form, { [input.name]: rule });
-                    
                     if (result.errors[input.name]) {
                         this.showFieldError(input, result.errors[input.name]);
                     } else {
                         this.clearFieldError(input);
                     }
-                    
                     return result.valid;
                 };
-                
-                // Validar en blur y input (con debounce)
                 let timeout;
                 input.addEventListener('input', () => {
                     clearTimeout(timeout);
                     timeout = setTimeout(validateField, 300);
                 });
-                
                 input.addEventListener('blur', validateField);
             });
         },
@@ -359,9 +297,7 @@ window.Utils = {
         serialize(form) {
             const formData = new FormData(form);
             const data = {};
-            
             for (const [key, value] of formData.entries()) {
-                // Manejar checkboxes múltiples
                 if (data[key]) {
                     if (Array.isArray(data[key])) {
                         data[key].push(value);
@@ -372,7 +308,6 @@ window.Utils = {
                     data[key] = value;
                 }
             }
-            
             return data;
         }
     },
@@ -391,7 +326,6 @@ window.Utils = {
                 day: 'numeric',
                 ...options
             };
-            
             const dateObj = typeof date === 'string' ? new Date(date) : date;
             return dateObj.toLocaleDateString('es-CL', defaultOptions);
         },
@@ -403,16 +337,13 @@ window.Utils = {
             const now = new Date();
             const dateObj = typeof date === 'string' ? new Date(date) : date;
             const diff = now - dateObj;
-            
             const minutes = Math.floor(diff / 60000);
             const hours = Math.floor(diff / 3600000);
             const days = Math.floor(diff / 86400000);
-            
             if (minutes < 1) return 'Ahora mismo';
             if (minutes < 60) return `Hace ${minutes} minuto${minutes !== 1 ? 's' : ''}`;
             if (hours < 24) return `Hace ${hours} hora${hours !== 1 ? 's' : ''}`;
             if (days < 30) return `Hace ${days} día${days !== 1 ? 's' : ''}`;
-            
             return this.formatDate(dateObj);
         },
 
@@ -484,9 +415,7 @@ window.Utils = {
         showButtonLoading(button, loading = true) {
             const text = button.querySelector('.button-text');
             const spinner = button.querySelector('.button-spinner');
-            
             button.disabled = loading;
-            
             if (text) text.style.display = loading ? 'none' : 'inline';
             if (spinner) spinner.style.display = loading ? 'flex' : 'none';
         },
@@ -500,7 +429,6 @@ window.Utils = {
                 block: 'center',
                 ...options
             };
-            
             element.scrollIntoView(defaultOptions);
         },
 
@@ -544,7 +472,7 @@ window.Utils = {
          */
         throttle(func, limit) {
             let inThrottle;
-            return function() {
+            return function () {
                 const args = arguments;
                 const context = this;
                 if (!inThrottle) {
@@ -567,12 +495,10 @@ window.Utils = {
             if (obj === null || typeof obj !== 'object') return obj;
             if (obj instanceof Date) return new Date(obj.getTime());
             if (obj instanceof Array) return obj.map(item => this.deepClone(item));
-            
             const cloned = {};
             Object.keys(obj).forEach(key => {
                 cloned[key] = this.deepClone(obj[key]);
             });
-            
             return cloned;
         },
 
@@ -595,7 +521,6 @@ window.Utils = {
             return [...array].sort((a, b) => {
                 const aVal = a[key];
                 const bVal = b[key];
-                
                 if (aVal < bVal) return order === 'asc' ? -1 : 1;
                 if (aVal > bVal) return order === 'asc' ? 1 : -1;
                 return 0;
@@ -621,7 +546,7 @@ window.Utils = {
          */
         unique(array, key) {
             if (key) {
-                return array.filter((item, index, self) => 
+                return array.filter((item, index, self) =>
                     index === self.findIndex(t => t[key] === item[key])
                 );
             }
@@ -638,22 +563,18 @@ window.Utils = {
          */
         simple(items, query, fields = []) {
             if (!query.trim()) return items;
-            
             const searchTerm = query.toLowerCase().trim();
-            
             return items.filter(item => {
                 if (fields.length === 0) {
-                    // Buscar en todas las propiedades string del objeto
-                    return Object.values(item).some(value => 
-                        typeof value === 'string' && 
+                    return Object.values(item).some(value =>
+                        typeof value === 'string' &&
                         value.toLowerCase().includes(searchTerm)
                     );
                 } else {
-                    // Buscar solo en campos específicos
                     return fields.some(field => {
                         const value = item[field];
-                        return typeof value === 'string' && 
-                               value.toLowerCase().includes(searchTerm);
+                        return typeof value === 'string' &&
+                            value.toLowerCase().includes(searchTerm);
                     });
                 }
             });
@@ -664,33 +585,23 @@ window.Utils = {
          */
         advanced(items, query, options = {}) {
             const { fields = [], threshold = 0.3 } = options;
-            
             if (!query.trim()) return items;
-            
             const searchTerms = query.toLowerCase().trim().split(' ');
-            
             const scored = items.map(item => {
                 let score = 0;
                 const searchFields = fields.length > 0 ? fields : Object.keys(item);
-                
                 searchFields.forEach(field => {
                     const value = (item[field] || '').toString().toLowerCase();
-                    
                     searchTerms.forEach(term => {
                         if (value.includes(term)) {
-                            // Bonus para coincidencias exactas
                             if (value === term) score += 1;
-                            // Bonus para coincidencias al inicio
                             else if (value.startsWith(term)) score += 0.8;
-                            // Puntuación normal para coincidencias en el medio
                             else score += 0.5;
                         }
                     });
                 });
-                
                 return { item, score };
             });
-            
             return scored
                 .filter(({ score }) => score >= threshold)
                 .sort((a, b) => b.score - a.score)
@@ -779,7 +690,6 @@ window.Utils = {
         log(message, category = 'INFO', data = null) {
             const timestamp = new Date().toISOString();
             const prefix = `[${timestamp}] [${category}]`;
-            
             if (data) {
                 console.log(`${prefix} ${message}`, data);
             } else {
@@ -792,7 +702,6 @@ window.Utils = {
          */
         time(label) {
             const start = performance.now();
-            
             return {
                 end: () => {
                     const duration = performance.now() - start;
@@ -823,10 +732,8 @@ window.Utils = {
                     fechaCreacion: Utils.time.now()
                 })
             };
-            
             const generator = generators[type];
             if (!generator) return [];
-            
             return Array.from({ length: count }, generator);
         }
     }

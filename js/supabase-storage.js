@@ -10,12 +10,12 @@ class SupabaseStorageManager {
             console.error('❌ window.supabase no está disponible');
             throw new Error('Supabase no está inicializado. Verifica que el SDK esté cargado.');
         }
-        
+
         console.log('✅ window.supabase detectado:', typeof window.supabase);
-        
+
         // Usar el cliente ya inicializado desde el HTML
         this.supabase = window.supabase;
-        
+
         this.currentUser = null;
         this.cache = {
             ingresos: null,
@@ -106,7 +106,7 @@ class SupabaseStorageManager {
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            
+
             this.cache.ingresos = data || [];
             return this.cache.ingresos;
         } catch (error) {
@@ -143,7 +143,7 @@ class SupabaseStorageManager {
                 this.cache.ingresos = data;
                 return data;
             }
-            
+
             this.cache.ingresos = [];
             return [];
         } catch (error) {
@@ -162,14 +162,13 @@ class SupabaseStorageManager {
             if (!user) throw new Error('Usuario no autenticado');
 
             const { data, error } = await this.supabase
-                .from('gastos')
+                .from('fixed_expenses')
                 .select('*')
                 .eq('user_id', user.id)
-                .eq('tipo', 'fijo')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            
+
             this.cache.gastosFijos = data || [];
             return this.cache.gastosFijos;
         } catch (error) {
@@ -178,41 +177,62 @@ class SupabaseStorageManager {
         }
     }
 
-    async setGastosFijos(gastos) {
+    setGastosFijos(gastos) {
+        // ... (existing implementation kept for bulk operations)
+        return this._setGastos(gastos, 'fijo');
+    }
+
+    // Helper interno para setGastos masivo
+    async _setGastos(gastos, tipo) {
         try {
             const user = await this.getCurrentUser();
             if (!user) throw new Error('Usuario no autenticado');
 
+            const tableName = this.getTableName(tipo);
+
             await this.supabase
-                .from('gastos')
+                .from(tableName)
                 .delete()
-                .eq('user_id', user.id)
-                .eq('tipo', 'fijo');
+                .eq('user_id', user.id);
 
             if (gastos && gastos.length > 0) {
-                const gastosConUserId = gastos.map(gasto => ({
-                    ...gasto,
-                    user_id: user.id,
-                    tipo: 'fijo',
-                    id: gasto.id || undefined
-                }));
+                const gastosConUserId = gastos.map(gasto => {
+                    const { tipo: _, ...gastoSinTipo } = gasto; // Eliminar tipo si existe
+                    return {
+                        ...gastoSinTipo,
+                        user_id: user.id,
+                        id: gasto.id || undefined
+                    };
+                });
 
                 const { data, error } = await this.supabase
-                    .from('gastos')
+                    .from(tableName)
                     .insert(gastosConUserId)
                     .select();
 
                 if (error) throw error;
-                this.cache.gastosFijos = data;
+                this.updateCache(tipo, data);
                 return data;
             }
-            
-            this.cache.gastosFijos = [];
+
+            this.updateCache(tipo, []);
             return [];
         } catch (error) {
-            console.error('Error guardando gastos fijos:', error);
+            console.error(`Error guardando gastos ${tipo}:`, error);
             throw error;
         }
+    }
+
+    async addGastoFijo(gasto) {
+        return this.addGasto(gasto, 'fijo');
+    }
+
+    async updateGastoFijo(id, updates) {
+        return this.updateGasto(id, updates, 'fijo');
+    }
+
+    async deleteGastoFijo(id) {
+        return this.deleteGasto(id, 'fijo');
     }
 
     // ============================================
@@ -225,14 +245,13 @@ class SupabaseStorageManager {
             if (!user) throw new Error('Usuario no autenticado');
 
             const { data, error } = await this.supabase
-                .from('gastos')
+                .from('variable_expenses')
                 .select('*')
                 .eq('user_id', user.id)
-                .eq('tipo', 'variable')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            
+
             this.cache.gastosVariables = data || [];
             return this.cache.gastosVariables;
         } catch (error) {
@@ -241,41 +260,20 @@ class SupabaseStorageManager {
         }
     }
 
-    async setGastosVariables(gastos) {
-        try {
-            const user = await this.getCurrentUser();
-            if (!user) throw new Error('Usuario no autenticado');
+    setGastosVariables(gastos) {
+        return this._setGastos(gastos, 'variable');
+    }
 
-            await this.supabase
-                .from('gastos')
-                .delete()
-                .eq('user_id', user.id)
-                .eq('tipo', 'variable');
+    async addGastoVariable(gasto) {
+        return this.addGasto(gasto, 'variable');
+    }
 
-            if (gastos && gastos.length > 0) {
-                const gastosConUserId = gastos.map(gasto => ({
-                    ...gasto,
-                    user_id: user.id,
-                    tipo: 'variable',
-                    id: gasto.id || undefined
-                }));
+    async updateGastoVariable(id, updates) {
+        return this.updateGasto(id, updates, 'variable');
+    }
 
-                const { data, error } = await this.supabase
-                    .from('gastos')
-                    .insert(gastosConUserId)
-                    .select();
-
-                if (error) throw error;
-                this.cache.gastosVariables = data;
-                return data;
-            }
-            
-            this.cache.gastosVariables = [];
-            return [];
-        } catch (error) {
-            console.error('Error guardando gastos variables:', error);
-            throw error;
-        }
+    async deleteGastoVariable(id) {
+        return this.deleteGasto(id, 'variable');
     }
 
     // ============================================
@@ -288,14 +286,13 @@ class SupabaseStorageManager {
             if (!user) throw new Error('Usuario no autenticado');
 
             const { data, error } = await this.supabase
-                .from('gastos')
+                .from('extra_expenses')
                 .select('*')
                 .eq('user_id', user.id)
-                .eq('tipo', 'extra')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            
+
             this.cache.gastosExtras = data || [];
             return this.cache.gastosExtras;
         } catch (error) {
@@ -304,41 +301,161 @@ class SupabaseStorageManager {
         }
     }
 
-    async setGastosExtras(gastos) {
+    setGastosExtras(gastos) {
+        return this._setGastos(gastos, 'extra');
+    }
+
+    async addGastoExtra(gasto) {
+        return this.addGasto(gasto, 'extra');
+    }
+
+    async updateGastoExtra(id, updates) {
+        return this.updateGasto(id, updates, 'extra');
+    }
+
+    async deleteGastoExtra(id) {
+        return this.deleteGasto(id, 'extra');
+    }
+
+    // ============================================
+    // MÉTODOS GENÉRICOS DE GASTOS (CRUD)
+    // ============================================
+
+    getTableName(tipo) {
+        const map = {
+            'fijo': 'fixed_expenses',
+            'variable': 'variable_expenses',
+            'extra': 'extra_expenses'
+        };
+        return map[tipo] || 'gastos';
+    }
+
+    async addGasto(gasto, tipo) {
         try {
             const user = await this.getCurrentUser();
             if (!user) throw new Error('Usuario no autenticado');
 
-            await this.supabase
-                .from('gastos')
-                .delete()
-                .eq('user_id', user.id)
-                .eq('tipo', 'extra');
+            const tableName = this.getTableName(tipo);
+            const { tipo: _, ...gastoSinTipo } = gasto; // Eliminar tipo del objeto a guardar
 
-            if (gastos && gastos.length > 0) {
-                const gastosConUserId = gastos.map(gasto => ({
-                    ...gasto,
-                    user_id: user.id,
-                    tipo: 'extra',
-                    id: gasto.id || undefined
-                }));
+            const gastoData = {
+                user_id: user.id,
+                id: gasto.id || undefined,
+                categoria: gasto.categoria,
+                monto: gasto.monto,
+                activo: gasto.activo !== undefined ? gasto.activo : true,
+                pagado: gasto.pagado !== undefined ? gasto.pagado : false,
+                created_at: gasto.fechaCreacion || new Date().toISOString()
+            };
 
-                const { data, error } = await this.supabase
-                    .from('gastos')
-                    .insert(gastosConUserId)
-                    .select();
+            const { data, error } = await this.supabase
+                .from(tableName)
+                .insert(gastoData)
+                .select()
+                .single();
 
-                if (error) throw error;
-                this.cache.gastosExtras = data;
-                return data;
-            }
-            
-            this.cache.gastosExtras = [];
-            return [];
+            if (error) throw error;
+
+            // Actualizar caché
+            this.addToCache(tipo, data);
+            return data;
         } catch (error) {
-            console.error('Error guardando gastos extras:', error);
+            console.error(`Error agregando gasto ${tipo}:`, error);
             throw error;
         }
+    }
+
+    async updateGasto(id, updates, tipo) {
+        try {
+            const user = await this.getCurrentUser();
+            if (!user) throw new Error('Usuario no autenticado');
+
+            const tableName = this.getTableName(tipo);
+            const { tipo: _, ...updatesSinTipo } = updates;
+
+            const { data, error } = await this.supabase
+                .from(tableName)
+                .update(updatesSinTipo)
+                .eq('id', id)
+                .eq('user_id', user.id)
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            // Actualizar caché
+            this.updateInCache(tipo, id, updates);
+            return data;
+        } catch (error) {
+            console.error(`Error actualizando gasto ${tipo}:`, error);
+            throw error;
+        }
+    }
+
+    async deleteGasto(id, tipo) {
+        try {
+            const user = await this.getCurrentUser();
+            if (!user) throw new Error('Usuario no autenticado');
+
+            const tableName = this.getTableName(tipo);
+
+            const { error } = await this.supabase
+                .from(tableName)
+                .delete()
+                .eq('id', id)
+                .eq('user_id', user.id);
+
+            if (error) throw error;
+
+            // Actualizar caché
+            this.removeFromCache(tipo, id);
+            return true;
+        } catch (error) {
+            console.error(`Error eliminando gasto ${tipo}:`, error);
+            throw error;
+        }
+    }
+
+    // ============================================
+    // GESTIÓN DE CACHÉ
+    // ============================================
+
+    updateCache(tipo, data) {
+        const key = this.getCacheKey(tipo);
+        if (key) this.cache[key] = data;
+    }
+
+    addToCache(tipo, item) {
+        const key = this.getCacheKey(tipo);
+        if (key && this.cache[key]) {
+            this.cache[key].unshift(item);
+        }
+    }
+
+    updateInCache(tipo, id, updates) {
+        const key = this.getCacheKey(tipo);
+        if (key && this.cache[key]) {
+            const index = this.cache[key].findIndex(i => i.id === id);
+            if (index !== -1) {
+                this.cache[key][index] = { ...this.cache[key][index], ...updates };
+            }
+        }
+    }
+
+    removeFromCache(tipo, id) {
+        const key = this.getCacheKey(tipo);
+        if (key && this.cache[key]) {
+            this.cache[key] = this.cache[key].filter(i => i.id !== id);
+        }
+    }
+
+    getCacheKey(tipo) {
+        const map = {
+            'fijo': 'gastosFijos',
+            'variable': 'gastosVariables',
+            'extra': 'gastosExtras'
+        };
+        return map[tipo];
     }
 
     // ============================================
@@ -357,7 +474,7 @@ class SupabaseStorageManager {
                 .single();
 
             if (error && error.code !== 'PGRST116') throw error;
-            
+
             this.cache.configuracion = data || this.getDefaultConfig();
             return this.cache.configuracion;
         } catch (error) {
@@ -432,7 +549,7 @@ class SupabaseStorageManager {
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            
+
             this.cache.notas = data || [];
             return this.cache.notas;
         } catch (error) {
@@ -467,7 +584,7 @@ class SupabaseStorageManager {
                 this.cache.notas = data;
                 return data;
             }
-            
+
             this.cache.notas = [];
             return [];
         } catch (error) {
@@ -525,7 +642,7 @@ if (window.supabase) {
 } else {
     console.error('❌ No se puede inicializar SupabaseStorageManager: window.supabase no disponible');
     console.log('⏳ Esperando a que Supabase esté disponible...');
-    
+
     // Intentar inicializar después de un delay
     setTimeout(() => {
         if (window.supabase) {

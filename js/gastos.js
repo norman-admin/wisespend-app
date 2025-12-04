@@ -523,7 +523,7 @@ class GastosManager {
     /**
      * 🆕 NUEVO: Guardar gasto desde modal unificado
      */
-    saveGastoFromModal(data, tipo) {
+    async saveGastoFromModal(data, tipo) {
         const gastoData = {
             categoria: data.categoria,
             monto: parseInt(data.monto) || 0,
@@ -537,13 +537,27 @@ class GastosManager {
             return;
         }
 
-        this.addGasto(gastoData, tipo);
+        try {
+            await this.addGasto(gastoData, tipo);
 
-        // 🎯 SOLUCIÓN: Solo actualizar totales, NO recargar vista
-        this.updateHeaderTotals();
-        console.log('✅ Gasto agregado sin refresco');
+            // 🎯 SOLUCIÓN: Solo actualizar totales, NO recargar vista
+            this.updateHeaderTotals();
 
-        window.modalSystem.showMessage(`Gasto ${this.getTipoDisplayName(tipo).toLowerCase()} agregado correctamente`, 'success');
+            // Si es gasto extra, actualizar también el panel de extras si está visible
+            if (tipo === 'extras' && window.gastosExtrasMejorados) {
+                window.gastosExtrasMejorados.notifyDynamicCards();
+            }
+
+            console.log('✅ Gasto agregado sin refresco');
+            window.modalSystem.showMessage(`Gasto ${this.getTipoDisplayName(tipo).toLowerCase()} agregado correctamente`, 'success');
+
+            // Recargar la vista actual para mostrar el nuevo item
+            this.loadGastosView();
+
+        } catch (error) {
+            console.error('Error guardando gasto:', error);
+            window.modalSystem.showMessage('Error al guardar el gasto', 'error');
+        }
     }
 
     /**
@@ -758,16 +772,16 @@ class GastosManager {
     /**
      * Agregar nuevo gasto
      */
-    addGasto(gastoData, tipo) {
+    async addGasto(gastoData, tipo) {
         switch (tipo) {
             case 'fijos':
-                this.storage.addGastoFijo(gastoData);
+                await this.storage.addGastoFijo(gastoData);
                 break;
             case 'variables':
-                this.storage.addGastoVariable(gastoData);
+                await this.storage.addGastoVariable(gastoData);
                 break;
             case 'extras':
-                this.storage.addGastoExtra(gastoData);
+                await this.storage.addGastoExtra(gastoData);
                 break;
         }
     }

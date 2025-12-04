@@ -52,9 +52,9 @@ class SupabaseManager {
     async checkSession() {
         try {
             const { data: { session }, error } = await supabase.auth.getSession();
-            
+
             if (error) throw error;
-            
+
             if (session) {
                 this.currentUser = session.user;
                 console.log('✅ Usuario autenticado:', this.currentUser.email);
@@ -94,7 +94,7 @@ class SupabaseManager {
     async getIngresos(mes = null, anio = null) {
         try {
             const periodo = mes && anio ? { mes, anio } : this.currentPeriod;
-            
+
             const { data, error } = await supabase
                 .from('income_sources')
                 .select('*')
@@ -117,7 +117,7 @@ class SupabaseManager {
     /**
      * ➕ AGREGAR NUEVO INGRESO
      */
-    async addIngreso(fuente, monto, porcentaje = 0) {
+    async addIngreso(fuente, monto, porcentaje = 0, activo = true) {
         try {
             const { data, error } = await supabase
                 .from('income_sources')
@@ -126,7 +126,7 @@ class SupabaseManager {
                     fuente,
                     monto,
                     porcentaje,
-                    activo: true,
+                    activo,
                     periodo_mes: this.currentPeriod.mes,
                     periodo_anio: this.currentPeriod.anio
                 }])
@@ -195,7 +195,7 @@ class SupabaseManager {
     async getGastosFijos(mes = null, anio = null) {
         try {
             const periodo = mes && anio ? { mes, anio } : this.currentPeriod;
-            
+
             const { data, error } = await supabase
                 .from('fixed_expenses')
                 .select('*')
@@ -250,7 +250,7 @@ class SupabaseManager {
         try {
             const { data, error } = await supabase
                 .from('fixed_expenses')
-                .update({ 
+                .update({
                     pagado,
                     fecha_pago: pagado ? new Date().toISOString() : null
                 })
@@ -321,7 +321,7 @@ class SupabaseManager {
     async getGastosVariables(mes = null, anio = null) {
         try {
             const periodo = mes && anio ? { mes, anio } : this.currentPeriod;
-            
+
             const { data, error } = await supabase
                 .from('variable_expenses')
                 .select('*')
@@ -376,7 +376,7 @@ class SupabaseManager {
         try {
             const { data, error } = await supabase
                 .from('variable_expenses')
-                .update({ 
+                .update({
                     pagado,
                     fecha_pago: pagado ? new Date().toISOString() : null
                 })
@@ -447,7 +447,7 @@ class SupabaseManager {
     async getGastosExtras(mes = null, anio = null) {
         try {
             const periodo = mes && anio ? { mes, anio } : this.currentPeriod;
-            
+
             const { data, error } = await supabase
                 .from('extra_expenses')
                 .select('*')

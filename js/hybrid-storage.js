@@ -6,7 +6,15 @@
 
 class HybridStorageManager {
     constructor() {
-        this.local = new StorageManager(); // Instancia del storage original
+
+        // Usar TemporalStorage si está disponible (para soporte de períodos)
+        if (window.TemporalStorage) {
+            this.local = new window.TemporalStorage();
+            console.log('🔄 HybridStorage usando TemporalStorage');
+        } else {
+            this.local = new StorageManager(); // Instancia del storage original
+            console.log('⚠️ HybridStorage usando StorageManager (Legacy)');
+        }
         this.cloud = window.supabaseManager; // Instancia del cliente Supabase
         this.isOnline = navigator.onLine;
         this.useCloud = false;
@@ -60,26 +68,27 @@ class HybridStorageManager {
         return result;
     }
 
-    addIngreso(ingreso) {
+    async addIngreso(ingreso) {
         const result = this.local.addIngreso(ingreso);
         if (this.useCloud && this.isOnline) {
-            window.supabaseManager.addIngreso(ingreso).catch(console.error);
+            // CORRECCIÓN: Pasar los parámetros correctamente (fuente, monto)
+            await window.supabaseManager.addIngreso(ingreso.fuente, ingreso.monto).catch(console.error);
         }
         return result;
     }
 
-    updateIngreso(id, updates) {
+    async updateIngreso(id, updates) {
         const result = this.local.updateIngreso(id, updates);
         if (this.useCloud && this.isOnline) {
-            window.supabaseManager.updateIngreso(id, updates).catch(console.error);
+            await window.supabaseManager.updateIngreso(id, updates).catch(console.error);
         }
         return result;
     }
 
-    deleteIngreso(id) {
+    async deleteIngreso(id) {
         const result = this.local.deleteIngreso(id);
         if (this.useCloud && this.isOnline) {
-            window.supabaseManager.deleteIngreso(id).catch(console.error);
+            await window.supabaseManager.deleteIngreso(id).catch(console.error);
         }
         return result;
     }
@@ -97,26 +106,36 @@ class HybridStorageManager {
         return result;
     }
 
-    addGastoFijo(gasto) {
+    async addGastoFijo(gasto) {
         const result = this.local.addGastoFijo(gasto);
         if (this.useCloud && this.isOnline) {
-            window.supabaseManager.addGastoFijo(gasto).catch(console.error);
+            // CORRECCIÓN: Pasar los parámetros correctamente (categoria, monto)
+            await window.supabaseManager.addGastoFijo(gasto.categoria, gasto.monto).catch(console.error);
         }
         return result;
     }
 
-    updateGastoFijo(id, updates) {
+    async updateGastoFijo(id, updates) {
         const result = this.local.updateGastoFijo(id, updates);
         if (this.useCloud && this.isOnline) {
-            window.supabaseManager.updateGastoFijo(id, updates).catch(console.error);
+            await window.supabaseManager.updateGastoFijo(id, updates).catch(console.error);
         }
         return result;
     }
 
-    deleteGastoFijo(id) {
+    async deleteGastoFijo(id) {
+        console.log('🗑️ HybridStorage: deleteGastoFijo', id);
+        console.log('📦 this.local constructor:', this.local && this.local.constructor ? this.local.constructor.name : 'Unknown');
+
+        if (!this.local.deleteGastoFijo) {
+            console.error('❌ CRITICAL: deleteGastoFijo missing from local storage implementation');
+            console.log('Methods available:', Object.getOwnPropertyNames(Object.getPrototypeOf(this.local)));
+            return false;
+        }
+
         const result = this.local.deleteGastoFijo(id);
         if (this.useCloud && this.isOnline) {
-            window.supabaseManager.deleteGastoFijo(id).catch(console.error);
+            await window.supabaseManager.deleteGastoFijo(id).catch(console.error);
         }
         return result;
     }
@@ -134,26 +153,27 @@ class HybridStorageManager {
         return result;
     }
 
-    addGastoVariable(gasto) {
+    async addGastoVariable(gasto) {
         const result = this.local.addGastoVariable(gasto);
         if (this.useCloud && this.isOnline) {
-            window.supabaseManager.addGastoVariable(gasto).catch(console.error);
+            // CORRECCIÓN: Pasar los parámetros correctamente (categoria, monto)
+            await window.supabaseManager.addGastoVariable(gasto.categoria, gasto.monto).catch(console.error);
         }
         return result;
     }
 
-    updateGastoVariable(id, updates) {
+    async updateGastoVariable(id, updates) {
         const result = this.local.updateGastoVariable(id, updates);
         if (this.useCloud && this.isOnline) {
-            window.supabaseManager.updateGastoVariable(id, updates).catch(console.error);
+            await window.supabaseManager.updateGastoVariable(id, updates).catch(console.error);
         }
         return result;
     }
 
-    deleteGastoVariable(id) {
+    async deleteGastoVariable(id) {
         const result = this.local.deleteGastoVariable(id);
         if (this.useCloud && this.isOnline) {
-            window.supabaseManager.deleteGastoVariable(id).catch(console.error);
+            await window.supabaseManager.deleteGastoVariable(id).catch(console.error);
         }
         return result;
     }
@@ -171,26 +191,27 @@ class HybridStorageManager {
         return result;
     }
 
-    addGastoExtra(gasto) {
+    async addGastoExtra(gasto) {
         const result = this.local.addGastoExtra(gasto);
         if (this.useCloud && this.isOnline) {
-            window.supabaseManager.addGastoExtra(gasto).catch(console.error);
+            // CORRECCIÓN: Pasar los parámetros correctamente (categoria, monto)
+            await window.supabaseManager.addGastoExtra(gasto.categoria, gasto.monto).catch(console.error);
         }
         return result;
     }
 
-    updateGastoExtra(id, updates) {
+    async updateGastoExtra(id, updates) {
         const result = this.local.updateGastoExtra(id, updates);
         if (this.useCloud && this.isOnline) {
-            window.supabaseManager.updateGastoExtra(id, updates).catch(console.error);
+            await window.supabaseManager.updateGastoExtra(id, updates).catch(console.error);
         }
         return result;
     }
 
-    deleteGastoExtra(id) {
+    async deleteGastoExtra(id) {
         const result = this.local.deleteGastoExtra(id);
         if (this.useCloud && this.isOnline) {
-            window.supabaseManager.deleteGastoExtra(id).catch(console.error);
+            await window.supabaseManager.deleteGastoExtra(id).catch(console.error);
         }
         return result;
     }

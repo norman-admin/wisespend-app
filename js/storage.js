@@ -248,7 +248,6 @@ class StorageManager {
     /**
      * MÉTODOS ESPECÍFICOS PARA DATOS DE LA APLICACIÓN
      */
-
     // Ingresos
     getIngresos() {
         return this.getItem(this.storageKeys.INGRESOS) || this.defaultData.ingresos;
@@ -267,6 +266,36 @@ class StorageManager {
         return this.setItem(this.storageKeys.GASTOS_FIJOS, gastosFijos);
     }
 
+    addGastoFijo(gasto) {
+        const gastos = this.getGastosFijos();
+        if (!gastos.items) gastos.items = [];
+        gastos.items.push(gasto);
+        gastos.total = this.calculateTotal(gastos.items);
+        return this.setGastosFijos(gastos);
+    }
+
+    updateGastoFijo(id, updates) {
+        const gastos = this.getGastosFijos();
+        const index = gastos.items.findIndex(item => item.id === id);
+        if (index !== -1) {
+            gastos.items[index] = { ...gastos.items[index], ...updates };
+            gastos.total = this.calculateTotal(gastos.items);
+            return this.setGastosFijos(gastos);
+        }
+        return false;
+    }
+
+    deleteGastoFijo(id) {
+        const gastos = this.getGastosFijos();
+        const initialLength = gastos.items.length;
+        gastos.items = gastos.items.filter(item => item.id !== id);
+        if (gastos.items.length !== initialLength) {
+            gastos.total = this.calculateTotal(gastos.items);
+            return this.setGastosFijos(gastos);
+        }
+        return false;
+    }
+
     // Gastos Variables
     getGastosVariables() {
         return this.getItem(this.storageKeys.GASTOS_VARIABLES) || this.defaultData.gastosVariables;
@@ -276,6 +305,36 @@ class StorageManager {
         return this.setItem(this.storageKeys.GASTOS_VARIABLES, gastosVariables);
     }
 
+    addGastoVariable(gasto) {
+        const gastos = this.getGastosVariables();
+        if (!gastos.items) gastos.items = [];
+        gastos.items.push(gasto);
+        gastos.total = this.calculateTotal(gastos.items);
+        return this.setGastosVariables(gastos);
+    }
+
+    updateGastoVariable(id, updates) {
+        const gastos = this.getGastosVariables();
+        const index = gastos.items.findIndex(item => item.id === id);
+        if (index !== -1) {
+            gastos.items[index] = { ...gastos.items[index], ...updates };
+            gastos.total = this.calculateTotal(gastos.items);
+            return this.setGastosVariables(gastos);
+        }
+        return false;
+    }
+
+    deleteGastoVariable(id) {
+        const gastos = this.getGastosVariables();
+        const initialLength = gastos.items.length;
+        gastos.items = gastos.items.filter(item => item.id !== id);
+        if (gastos.items.length !== initialLength) {
+            gastos.total = this.calculateTotal(gastos.items);
+            return this.setGastosVariables(gastos);
+        }
+        return false;
+    }
+
     // Gastos Extras
     getGastosExtras() {
         return this.getItem(this.storageKeys.GASTOS_EXTRAS) || this.defaultData.gastosExtras;
@@ -283,6 +342,36 @@ class StorageManager {
 
     setGastosExtras(gastosExtras) {
         return this.setItem(this.storageKeys.GASTOS_EXTRAS, gastosExtras);
+    }
+
+    addGastoExtra(gasto) {
+        const gastos = this.getGastosExtras();
+        if (!gastos.items) gastos.items = [];
+        gastos.items.push(gasto);
+        gastos.total = this.calculateTotal(gastos.items);
+        return this.setGastosExtras(gastos);
+    }
+
+    updateGastoExtra(id, updates) {
+        const gastos = this.getGastosExtras();
+        const index = gastos.items.findIndex(item => item.id === id);
+        if (index !== -1) {
+            gastos.items[index] = { ...gastos.items[index], ...updates };
+            gastos.total = this.calculateTotal(gastos.items);
+            return this.setGastosExtras(gastos);
+        }
+        return false;
+    }
+
+    deleteGastoExtra(id) {
+        const gastos = this.getGastosExtras();
+        const initialLength = gastos.items.length;
+        gastos.items = gastos.items.filter(item => item.id !== id);
+        if (gastos.items.length !== initialLength) {
+            gastos.total = this.calculateTotal(gastos.items);
+            return this.setGastosExtras(gastos);
+        }
+        return false;
     }
 
     // Configuración
@@ -301,6 +390,16 @@ class StorageManager {
 
     setUserData(userData) {
         return this.setItem(this.storageKeys.USER_DATA, userData);
+    }
+
+    /**
+     * Calcular total de items activos
+     */
+    calculateTotal(items) {
+        if (!items || !Array.isArray(items)) return 0;
+        return items
+            .filter(item => item.activo !== false)
+            .reduce((total, item) => total + (item.monto || 0), 0);
     }
 
     calcularBalance() {
@@ -557,8 +656,8 @@ class StorageManager {
     }
 
     /**
- * Dispara evento personalizado de guardado CON DEBOUNCE
- */
+    * Dispara evento personalizado de guardado CON DEBOUNCE
+    */
     dispatchSaveEvent() {
         // Limpiar timeout anterior si existe
         if (this.saveEventTimeout) {

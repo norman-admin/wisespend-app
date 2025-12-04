@@ -1,13 +1,13 @@
 /**
  * CONTEXTUAL-MENU-ACTIONS.JS - Acciones del Menú Contextual
- * Presupuesto Familiar - Versión 2.0.0 FINAL CORREGIDO DEFINITIVO
+ * Presupuesto Familiar - Versión 2.1.0 - SYNC FIX
  * 
  * 🎯 RESPONSABILIDADES:
  * ✅ Modal de edición con navegación Enter
  * ✅ Actualización sin refresco de pantalla
- * ✅ Duplicar elementos
- * ✅ Mover elementos arriba/abajo
- * ✅ Eliminar con modal elegante correcto
+ * ✅ Duplicar elementos (Sincronizado con Supabase)
+ * ✅ Mover elementos arriba/abajo (Local, ordenamiento pendiente en nube)
+ * ✅ Eliminar con modal elegante (Sincronizado con Supabase)
  * ✅ Consistencia total con sistema de ingresos
  */
 
@@ -17,7 +17,7 @@ class ContextualMenuActions {
         this.storage = contextualManager.storage;
         this.currency = contextualManager.currency;
 
-        console.log('🎬 ContextualMenuActions v2.0.0 inicializado - FINAL CORREGIDO DEFINITIVO');
+        console.log('🎬 ContextualMenuActions v2.1.0 inicializado - SYNC FIX');
     }
 
     /**
@@ -146,7 +146,7 @@ class ContextualMenuActions {
     /**
      * 💾 GUARDAR ELEMENTO EDITADO - CORREGIDO SIN REFRESCO
      */
-    saveEditedItem(type, itemId, data) {
+    async saveEditedItem(type, itemId, data) {
         console.log('💾 Guardando elemento editado:', type, itemId, data);
 
         // Preparar datos según el tipo
@@ -161,12 +161,21 @@ class ContextualMenuActions {
             updatedData.categoria = data.nombre.trim();
         }
 
-        // Actualizar según el tipo
+        // Actualizar usando StorageManager (Hybrid)
         let updateSuccess = false;
-        if (type === 'ingresos') {
-            updateSuccess = this.updateIncomeItem(itemId, updatedData);
-        } else if (type.includes('gastos')) {
-            updateSuccess = this.updateGastoItem(itemId, updatedData, type);
+        try {
+            if (type === 'ingresos') {
+                updateSuccess = await this.storage.updateIngreso(itemId, updatedData);
+            } else if (type === 'gastos-fijos') {
+                updateSuccess = await this.storage.updateGastoFijo(itemId, updatedData);
+            } else if (type === 'gastos-variables') {
+                updateSuccess = await this.storage.updateGastoVariable(itemId, updatedData);
+            } else if (type === 'gastos-extras') {
+                updateSuccess = await this.storage.updateGastoExtra(itemId, updatedData);
+            }
+        } catch (error) {
+            console.error('Error updating item:', error);
+            updateSuccess = false;
         }
 
         if (updateSuccess) {
@@ -179,11 +188,6 @@ class ContextualMenuActions {
             if (window.gastosManager) {
                 // Actualizar totales del header
                 window.gastosManager.updateHeaderTotals();
-
-                // ✅ SOLO ACTUALIZAR TOTALES SIN PESTAÑEO
-                if (window.gastosManager) {
-                    window.gastosManager.updateHeaderTotals();
-                }
 
                 // Reactivar menú contextual
                 setTimeout(() => {
@@ -235,145 +239,42 @@ class ContextualMenuActions {
     }
 
     /**
-     * 📝 ACTUALIZAR ELEMENTO DE INGRESOS
-     */
-    updateIncomeItem(itemId, updatedData) {
-        try {
-            if (window.ingresosManager) {
-                const income = window.ingresosManager.findIncomeById(itemId);
-                if (income) {
-                    Object.assign(income, updatedData);
-                    window.ingresosManager.updateIncomeInStorage(income);
-                    return true;
-                }
-            }
-
-            // Fallback: acceso directo al storage
-            const ingresos = this.storage.getIngresos();
-            const incomeIndex = ingresos.desglose.findIndex(item => item.id === itemId);
-
-            if (incomeIndex !== -1) {
-                Object.assign(ingresos.desglose[incomeIndex], updatedData);
-                ingresos.total = ingresos.desglose.reduce((total, item) => total + (item.monto || 0), 0);
-                this.storage.setIngresos(ingresos);
-                return true;
-            }
-
-            return false;
-        } catch (error) {
-            console.error('❌ Error actualizando ingreso:', error);
-            return false;
-        }
-    }
-
-    /**
-     * 💰 ACTUALIZAR ELEMENTO DE GASTOS
-     */
-    updateGastoItem(itemId, updatedData, type) {
-        try {
-            // if (!window.gastosManager) return false; // Permitir actualización aunque gastosManager no esté listo
-
-            let gastos;
-            const tipoGasto = type.replace('gastos-', '');
-
-            // Obtener gastos según el tipo
-            switch (tipoGasto) {
-                case 'fijos':
-                    gastos = this.storage.getGastosFijos();
-                    break;
-                case 'variables':
-                    gastos = this.storage.getGastosVariables();
-                    break;
-                case 'extras':
-                    gastos = this.storage.getGastosExtras();
-                    break;
-                default:
-                    console.error('Tipo de gasto no reconocido:', tipoGasto);
-                    return false;
-            }
-
-            // Encontrar y actualizar el elemento
-            let itemIndex = gastos.items.findIndex(item => item.id === itemId);
-
-            // 🔄 FALLBACK: Si no se encuentra por ID, buscar por contenido
-            if (itemIndex === -1) {
-                console.warn('⚠️ Item no encontrado por ID, buscando por contenido...', itemId);
-                itemIndex = gastos.items.findIndex(item =>
-                    (item.categoria === updatedData.categoria || item.fuente === updatedData.fuente) &&
-                    Math.abs((item.monto || 0) - (updatedData.monto || 0)) < 0.01
-                );
-            }
-
-            if (itemIndex !== -1) {
-                // Preservar el ID original si existe en el item encontrado
-                const originalId = gastos.items[itemIndex].id;
-
-                Object.assign(gastos.items[itemIndex], updatedData);
-
-                // Asegurar que el ID se mantenga
-                if (originalId) {
-                    gastos.items[itemIndex].id = originalId;
-                } else {
-                    gastos.items[itemIndex].id = itemId; // Asignar el ID que venía del DOM
-                }
-
-                // 🔴 CRÍTICO: Recalcular el total CORRECTAMENTE
-                gastos.total = gastos.items
-                    .filter(item => item.activo !== false)
-                    .reduce((sum, item) => sum + (item.monto || 0), 0);
-
-                // Guardar en storage
-                switch (tipoGasto) {
-                    case 'fijos':
-                        this.storage.setGastosFijos(gastos);
-                        break;
-                    case 'variables':
-                        this.storage.setGastosVariables(gastos);
-                        break;
-                    case 'extras':
-                        this.storage.setGastosExtras(gastos);
-                        break;
-                }
-
-                console.log('✅ Gasto actualizado:', tipoGasto, itemId);
-                return true;
-            }
-
-            console.error('❌ No se pudo encontrar el item para actualizar:', itemId);
-            return false;
-        } catch (error) {
-            console.error('❌ Error actualizando gasto:', error);
-            return false;
-        }
-    }
-
-    /**
      * 📄 DUPLICAR ELEMENTO
      */
-    duplicateItem(type, itemId, itemData) {
+    async duplicateItem(type, itemId, itemData) {
+        // Generar nuevo ID (UUID si es posible, o fallback)
+        // Usamos Utils.id.generate si está disponible
+        const newId = window.Utils && window.Utils.id ? window.Utils.id.generate() : this.contextualManager.generateId(type);
+
         const newItem = {
             ...itemData,
-            id: this.contextualManager.generateId(type),
+            id: newId,
             categoria: itemData.categoria ? `${itemData.categoria} (copia)` : undefined,
             fuente: itemData.fuente ? `${itemData.fuente} (copia)` : undefined,
-            fechaCreacion: new Date().toISOString()
+            fechaCreacion: new Date().toISOString(),
+            monto: parseFloat(itemData.monto) || 0,
+            activo: true,
+            pagado: false
         };
 
-        const data = this.contextualManager.getStorageData(type);
-        const items = this.contextualManager.getItemsArray(data);
+        // Guardar usando StorageManager (Hybrid)
+        let saveSuccess = false;
+        try {
+            if (type === 'ingresos') {
+                saveSuccess = await this.storage.addIngreso(newItem);
+            } else if (type === 'gastos-fijos') {
+                saveSuccess = await this.storage.addGastoFijo(newItem);
+            } else if (type === 'gastos-variables') {
+                saveSuccess = await this.storage.addGastoVariable(newItem);
+            } else if (type === 'gastos-extras') {
+                saveSuccess = await this.storage.addGastoExtra(newItem);
+            }
+        } catch (error) {
+            console.error('Error duplicating item:', error);
+            saveSuccess = false;
+        }
 
-        // Encontrar posición del elemento original
-        const originalIndex = items.findIndex(item => item.id === itemId);
-
-        // Insertar después del original
-        items.splice(originalIndex + 1, 0, newItem);
-
-        // Recalcular total
-        data.total = items
-            .filter(item => item.activo !== false)
-            .reduce((total, item) => total + (item.monto || 0), 0);
-
-        if (this.contextualManager.saveStorageData(type, data)) {
+        if (saveSuccess) {
             // Solo actualizar totales del header
             if (window.gastosManager) {
                 window.gastosManager.updateHeaderTotals();
@@ -421,13 +322,13 @@ class ContextualMenuActions {
             this.contextualManager.showMessage('Elemento duplicado correctamente', 'success');
             // Actualizar totales
             this.updateSectionTotalsVisual(type);
+
+            // 🆕 AGREGAR: Actualizar la sección de gastos extras
+            if (window.gastosExtrasMejorados) {
+                window.gastosExtrasMejorados.refresh();
+            }
         } else {
             this.contextualManager.showMessage('Error al duplicar elemento', 'error');
-        }
-
-        // 🆕 AGREGAR: Actualizar la sección de gastos extras
-        if (window.gastosExtrasMejorados) {
-            window.gastosExtrasMejorados.refresh();
         }
     }
 
@@ -435,6 +336,10 @@ class ContextualMenuActions {
      * ⬆️⬇️ MOVER ELEMENTO
      */
     moveItem(type, itemId, direction) {
+        // Mover elementos es una operación puramente visual/local por ahora
+        // ya que Supabase no tiene un campo de "orden" explícito en este esquema simple.
+        // Se mantiene la lógica original de manipulación de array local.
+
         const data = this.contextualManager.getStorageData(type);
         const items = this.contextualManager.getItemsArray(data);
 
@@ -505,8 +410,6 @@ class ContextualMenuActions {
         if (window.gastosExtrasMejorados) {
             window.gastosExtrasMejorados.refresh();
         }
-
-        this.contextualManager.showMessage(`Elemento movido ${direction === 'up' ? 'arriba' : 'abajo'}`, 'success');
     }
 
     /**
@@ -534,53 +437,57 @@ class ContextualMenuActions {
 
         if (!confirmed) return;
 
-        const data = this.contextualManager.getStorageData(type);
-        const items = this.contextualManager.getItemsArray(data);
-
-        const itemIndex = items.findIndex(item => item.id === itemId);
-        if (itemIndex !== -1) {
-            items.splice(itemIndex, 1);
-
-            // Recalcular total
-            data.total = items
-                .filter(item => item.activo !== false)
-                .reduce((total, item) => total + (item.monto || 0), 0);
-
-            if (this.contextualManager.saveStorageData(type, data)) {
-                // 🎯 ACTUALIZACIÓN INTELIGENTE SIN RECARGAR - IGUAL QUE INGRESOS
-                if (window.gastosManager) {
-                    window.gastosManager.updateHeaderTotals();
-                }
-
-                // 🆕 AGREGAR: Actualizar la sección de gastos extras
-                if (window.gastosExtrasMejorados) {
-                    window.gastosExtrasMejorados.refresh();
-                }
-
-                // 🆕 ACTUALIZAR TOTALES ESPECÍFICOS POR SECCIÓN
-                this.updateSectionTotalsVisual(type);
-
-                // Forzar eliminación visual del elemento
-                const elementToRemove = document.querySelector(`[data-id="${itemId}"]`);
-                if (elementToRemove) {
-                    elementToRemove.style.transition = 'opacity 0.3s ease';
-                    elementToRemove.style.opacity = '0';
-                    setTimeout(() => {
-                        elementToRemove.remove();
-                    }, 300);
-                }
-
-                // Reactivar menú contextual SIN recargar vista
-                setTimeout(() => {
-                    if (window.contextualManager) {
-                        window.contextualManager.bindExistingElements();
-                    }
-                }, 400);
-
-                this.contextualManager.showMessage('Elemento eliminado correctamente', 'success');
-            } else {
-                this.contextualManager.showMessage('Error al eliminar elemento', 'error');
+        // Usar StorageManager (Hybrid) para eliminar
+        let deleteSuccess = false;
+        try {
+            if (type === 'ingresos') {
+                deleteSuccess = await this.storage.deleteIngreso(itemId);
+            } else if (type === 'gastos-fijos') {
+                deleteSuccess = await this.storage.deleteGastoFijo(itemId);
+            } else if (type === 'gastos-variables') {
+                deleteSuccess = await this.storage.deleteGastoVariable(itemId);
+            } else if (type === 'gastos-extras') {
+                deleteSuccess = await this.storage.deleteGastoExtra(itemId);
             }
+        } catch (error) {
+            console.error('Error deleting item:', error);
+            deleteSuccess = false;
+        }
+
+        if (deleteSuccess) {
+            // 🎯 ACTUALIZACIÓN INTELIGENTE SIN RECARGAR - IGUAL QUE INGRESOS
+            if (window.gastosManager) {
+                window.gastosManager.updateHeaderTotals();
+            }
+
+            // 🆕 AGREGAR: Actualizar la sección de gastos extras
+            if (window.gastosExtrasMejorados) {
+                window.gastosExtrasMejorados.refresh();
+            }
+
+            // 🆕 ACTUALIZAR TOTALES ESPECÍFICOS POR SECCIÓN
+            this.updateSectionTotalsVisual(type);
+
+            // Forzar eliminación visual del elemento
+            const elementToRemove = document.querySelector(`[data-id="${itemId}"]`);
+            if (elementToRemove) {
+                elementToRemove.style.transition = 'opacity 0.3s ease';
+                elementToRemove.style.opacity = '0';
+                setTimeout(() => {
+                    elementToRemove.remove();
+                }, 300);
+            }
+
+            // Reactivar menú contextual SIN recargar vista
+            setTimeout(() => {
+                if (window.contextualManager) {
+                    window.contextualManager.bindExistingElements();
+                }
+            }, 400);
+
+            this.contextualManager.showMessage('Elemento eliminado correctamente', 'success');
+        } else {
+            this.contextualManager.showMessage('Error al eliminar elemento', 'error');
         }
     }
 
@@ -588,6 +495,15 @@ class ContextualMenuActions {
       * 🆕 ACTUALIZAR TOTALES ESPECÍFICOS POR SECCIÓN
       */
     updateSectionTotals(type, data) {
+        // ... (Se mantiene igual, pero data.total puede necesitar recalcularse si data no se pasa)
+        // En la implementación anterior, data se pasaba desde saveStorageData.
+        // Ahora, como usamos this.storage.delete..., no tenemos 'data' actualizado aquí directamente.
+        // Pero updateSectionTotalsVisual ya maneja la obtención de datos frescos.
+        // Así que esta función podría ser redundante o necesitar adaptación.
+        // Sin embargo, updateSectionTotalsVisual es la que llamamos en deleteItem.
+        // Esta función 'updateSectionTotals' parece ser un remanente o usada internamente.
+        // La mantendré por compatibilidad pero updateSectionTotalsVisual es la clave.
+
         if (type === 'gastos-extras' && window.gastosExtrasMejorados) {
             // Actualizar gastos extras
             const gastosExtras = this.storage.getGastosExtras();
@@ -614,6 +530,11 @@ class ContextualMenuActions {
         } else if (type === 'gastos-fijos' || type === 'gastos-variables') {
             // Actualizar totales de gastos fijos/variables SIN RECARGAR
             const tipoGasto = type.replace('gastos-', '');
+
+            // Obtener datos frescos
+            let data;
+            if (tipoGasto === 'fijos') data = this.storage.getGastosFijos();
+            else data = this.storage.getGastosVariables();
 
             // Buscar el elemento del total según la vista actual
             let totalElement = null;
@@ -667,8 +588,8 @@ class ContextualMenuActions {
 setTimeout(() => {
     if (window.contextualManager) {
         window.contextualMenuActions = new ContextualMenuActions(window.contextualManager);
-        console.log('🎬 ContextualMenuActions v2.0.0 auto-inicializado - FINAL CORREGIDO DEFINITIVO');
+        console.log('🎬 ContextualMenuActions v2.1.0 auto-inicializado - SYNC FIX');
     }
 }, 1000);
 
-console.log('🎬 contextual-menu-actions.js v2.0.0 cargado - CON NAVEGACIÓN ENTER Y SIN REFRESCOS');
+console.log('🎬 contextual-menu-actions.js v2.1.0 cargado - SYNC FIX');
